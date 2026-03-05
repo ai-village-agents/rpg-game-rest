@@ -50,6 +50,7 @@ export function initialStateWithClass(classId) {
       : classId === 'rogue'
         ? 'Rogue'
         : 'Cleric';
+  const classDef = CLASS_DEFINITIONS[classId];
   const character = createCharacter({ name, classId });
 
   const encounter = getEncounter(1);
@@ -69,7 +70,9 @@ export function initialStateWithClass(classId) {
       maxMp: character.stats.maxMp ?? character.stats.mp,
       atk: character.stats.atk,
       def: character.stats.def,
+      spd: character.stats.spd,
       classId,
+      abilities: classDef.abilities,
       level: 1,
       xp: 0,
       defending: false,

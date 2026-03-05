@@ -1,6 +1,9 @@
 import { clamp, pushLog } from './state.js';
 import { items } from './data/items.js';
 import { getEnemy, getEncounter } from './data/enemies.js';
+import { getAbility, getAbilityDisplayInfo } from './combat/abilities.js';
+import { calculateDamage, calculateHeal, getElementMultiplier } from './combat/damage-calc.js';
+import { StatusEffect } from './combat/status-effects.js';
 
 // Minimal deterministic RNG (Park-Miller LCG)
 export function nextRng(seed) {
@@ -210,6 +213,103 @@ export function playerUsePotion(state) {
   return { ...state, phase: 'enemy-turn' };
 }
 
+export function playerUseAbility(state, abilityId) {
+  if (state.phase !== 'player-turn') return state;
+
+  const ability = getAbility(abilityId);
+  if (!ability) {
+    return pushLog(state, 'Unknown ability.');
+  }
+
+  // Check if the player actually has this ability
+  const playerAbilities = state.player.abilities ?? [];
+  if (!playerAbilities.includes(abilityId)) {
+    return pushLog(state, `You don't know ${ability.name}.`);
+  }
+
+  // Check MP
+  const currentMp = state.player.mp ?? 0;
+  if (currentMp < ability.mpCost) {
+    return pushLog(state, `Not enough MP! ${ability.name} costs ${ability.mpCost} MP. You have ${currentMp} MP.`);
+  }
+
+  // Deduct MP
+  state = {
+    ...state,
+    player: {
+      ...state.player,
+      mp: currentMp - ability.mpCost,
+      defending: false,
+    },
+  };
+
+  state = pushLog(state, `You use ${ability.name}!`);
+
+  // Get RNG value for damage calculations
+  const { seed, value: rngValue } = nextRng(state.rngSeed);
+  state = { ...state, rngSeed: seed };
+
+  // Handle by target type
+  if (ability.targetType === 'single-enemy' || ability.targetType === 'all-enemies') {
+    // Damage ability targeting enemy
+    if (ability.power > 0) {
+      const atkStat = state.player.atk;
+      const defStat = state.enemy.def;
+      const abilityPower = ability.power;
+      const raw = Math.floor(atkStat * abilityPower) - defStat;
+      const damage = Math.max(1, raw);
+
+      const enemyHp = clamp(state.enemy.hp - damage, 0, state.enemy.maxHp);
+      state = {
+        ...state,
+        enemy: { ...state.enemy, hp: enemyHp },
+      };
+      state = pushLog(state, `${state.enemy.name} takes ${damage} ${ability.element} damage!`);
+    }
+
+    // Apply status effect to enemy
+    if (ability.statusEffect) {
+      state = addStatusEffect(state, 'enemy', ability.statusEffect);
+      state = pushLog(state, `${state.enemy.name} is afflicted with ${ability.statusEffect.name}!`);
+    }
+  } else if (ability.targetType === 'single-ally' || ability.targetType === 'all-allies' || ability.targetType === 'self') {
+    // Healing ability targeting player
+    if (ability.healPower > 0) {
+      const healAmount = ability.healPower;
+      const oldHp = state.player.hp;
+      const newHp = clamp(oldHp + healAmount, 0, state.player.maxHp);
+      state = {
+        ...state,
+        player: { ...state.player, hp: newHp },
+      };
+      state = pushLog(state, `You are healed for ${newHp - oldHp} HP!`);
+    }
+
+    // Apply buff/status to player
+    if (ability.statusEffect) {
+      state = addStatusEffect(state, 'player', ability.statusEffect);
+      state = pushLog(state, `You gain ${ability.statusEffect.name}!`);
+    }
+
+    // Handle purify special: remove negative status effects
+    if (ability.special === 'cleanse') {
+      const currentEffects = state.player.statusEffects ?? [];
+      const debuffTypes = ['poison', 'burn', 'stun', 'sleep', 'atk-down', 'def-down', 'spd-down'];
+      const cleaned = currentEffects.filter(e => !debuffTypes.includes(e.type));
+      state = {
+        ...state,
+        player: { ...state.player, statusEffects: cleaned },
+      };
+      state = pushLog(state, `Negative effects purified!`);
+    }
+  }
+
+  // Transition to enemy turn
+  state = { ...state, phase: 'enemy-turn' };
+  return applyVictoryDefeat(state);
+}
+
+
 export function enemyAct(state) {
   if (state.phase !== 'enemy-turn') return state;
   if (state.enemy.hp <= 0 || state.player.hp <= 0) return applyVictoryDefeat(state);
@@ -254,3 +354,5 @@ export function enemyAct(state) {
   state = pushLog(state, `Your turn.`);
   return { ...state, phase: 'player-turn' };
 }
+
+export { getAbilityDisplayInfo };
