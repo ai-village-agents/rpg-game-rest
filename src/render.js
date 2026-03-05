@@ -5,6 +5,7 @@ import { getCategorizedInventory, getEquipmentDisplay, getItemDetails, INVENTORY
 import { getCurrentLevelUp, getStatDiffs, formatStatName, xpForNextLevel } from './level-up.js';
 import { getNPCsInRoom, getCurrentDialogLine, getDialogProgress } from './npc-dialog.js';
 import { getActiveQuestsSummary, getAvailableQuestsInRoom } from './quest-integration.js';
+import { getAbilityDisplayInfo } from './combat/abilities.js';
 
 function hpLine(entity) {
   const pct = Math.round((entity.hp / entity.maxHp) * 100);
@@ -205,8 +206,10 @@ export function render(state, dispatch) {
           <h2>Player</h2>
           <div class="kv">
             <div>HP</div><div><b>${hpLine(state.player)}</b></div>
+            <div>MP</div><div><b>${state.player.mp ?? 0} / ${state.player.maxMp ?? 0}</b></div>
             <div>ATK / DEF</div><div><b>${state.player.atk}</b> / <b>${state.player.def}</b></div>
             <div>Defending</div><div><b>${state.player.defending ? 'Yes' : 'No'}</b></div>
+            <div>Status</div><div><b>${(state.player.statusEffects ?? []).map(e => e.name).join(', ') || 'None'}</b></div>
             <div>Potions</div><div><b>${state.player.inventory.potion ?? 0}</b></div>
           </div>
         </div>
@@ -218,6 +221,7 @@ export function render(state, dispatch) {
             <div>HP</div><div><b>${hpLine(state.enemy)}</b></div>
             <div>ATK / DEF</div><div><b>${state.enemy.atk}</b> / <b>${state.enemy.def}</b></div>
             <div>Defending</div><div><b>${state.enemy.defending ? 'Yes' : 'No'}</b></div>
+            <div>Status</div><div><b>${(state.enemy.statusEffects ?? []).map(e => e.name).join(', ') || 'None'}</b></div>
           </div>
         </div>
 
@@ -233,17 +237,30 @@ export function render(state, dispatch) {
 
     const isPlayerTurn = state.phase === 'player-turn';
 
+    // Build ability buttons
+    const playerAbilities = state.player.abilities ?? [];
+    const abilityInfos = getAbilityDisplayInfo(playerAbilities, state.player.mp ?? 0);
+    const abilityBtns = abilityInfos.map(a =>
+      `<button class="ability-btn" data-ability="${esc(a.id)}" ${(!isPlayerTurn || !a.canUse) ? 'disabled' : ''} title="${esc(a.description)}">${esc(a.name)} (${a.mpCost} MP)</button>`
+    ).join('');
+
     actions.innerHTML = `
       <div class="buttons">
         <button id="btnAttack" ${!isPlayerTurn ? 'disabled' : ''}>Attack</button>
         <button id="btnDefend" ${!isPlayerTurn ? 'disabled' : ''}>Defend</button>
         <button id="btnPotion" ${!isPlayerTurn ? 'disabled' : ''}>Use Potion</button>
+        ${abilityBtns}
       </div>
     `;
 
     document.getElementById('btnAttack').onclick = () => dispatch({ type: 'PLAYER_ATTACK' });
     document.getElementById('btnDefend').onclick = () => dispatch({ type: 'PLAYER_DEFEND' });
     document.getElementById('btnPotion').onclick = () => dispatch({ type: 'PLAYER_POTION' });
+
+    // Wire ability buttons
+    actions.querySelectorAll('.ability-btn').forEach(btn => {
+      btn.onclick = () => dispatch({ type: 'PLAYER_ABILITY', abilityId: btn.dataset.ability });
+    });
 
     log.innerHTML = state.log
       .slice()

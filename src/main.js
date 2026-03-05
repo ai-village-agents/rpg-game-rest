@@ -1,5 +1,5 @@
 import { initialState, initialStateWithClass, loadFromLocalStorage, saveToLocalStorage, pushLog } from './state.js';
-import { playerAttack, playerDefend, playerUsePotion, enemyAct, startNewEncounter } from './combat.js';
+import { playerAttack, playerDefend, playerUsePotion, playerUseAbility, enemyAct, startNewEncounter } from './combat.js';
 import { render } from './render.js';
 import { createInventoryState, handleInventoryAction } from './inventory.js';
 import { keyToCardinalDirection } from './input.js';
@@ -86,6 +86,7 @@ function dispatch(action) {
   if (type === 'PLAYER_ATTACK') return setState(playerAttack(state));
   if (type === 'PLAYER_DEFEND') return setState(playerDefend(state));
   if (type === 'PLAYER_POTION') return setState(playerUsePotion(state));
+  if (type === 'PLAYER_ABILITY') return setState(playerUseAbility(state, action.abilityId));
 
   if (type === 'SELECT_CLASS') {
     if (!CLASS_DEFINITIONS[action.classId]) {
