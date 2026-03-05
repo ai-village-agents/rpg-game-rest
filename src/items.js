@@ -20,26 +20,41 @@ export function useItem(itemId, character, state) {
   const result = { success: true, message: '', effects: {} };
   
   switch (item.type) {
-    case 'consumable':
-      if (item.effect.heal) {
-        const healAmount = item.effect.heal;
+    case 'consumable': {
+      const effect = item.effect || {};
+      const messages = [];
+
+      const healAmount = effect.heal ?? item.heal;
+      if (healAmount !== undefined && healAmount !== null) {
         const newHp = Math.min(character.hp + healAmount, character.maxHp);
         result.effects.hp = newHp;
         result.effects.healed = newHp - character.hp;
-        result.message = `${item.name} restored ${result.effects.healed} HP.`;
+        messages.push(`${item.name} restored ${result.effects.healed} HP.`);
       }
-      if (item.effect.restoreMP) {
-        const restoreAmount = item.effect.restoreMP;
-        const newMp = Math.min((character.mp || 0) + restoreAmount, (character.maxMp || 0));
+
+      const restoreAmount = effect.restoreMP ?? effect.mana ?? item.restoreMP ?? item.mana;
+      if (restoreAmount !== undefined && restoreAmount !== null) {
+        const currentMp = character.mp || 0;
+        const newMp = Math.min(currentMp + restoreAmount, (character.maxMp || 0));
         result.effects.mp = newMp;
-        result.effects.restoredMP = newMp - (character.mp || 0);
-        result.message += ` ${item.name} restored ${result.effects.restoredMP} MP.`;
+        result.effects.restoredMP = newMp - currentMp;
+        messages.push(`${item.name} restored ${result.effects.restoredMP} MP.`);
       }
-      if (item.effect.cureStatus) {
-        result.effects.cureStatus = item.effect.cureStatus;
-        result.message += ` ${item.name} cured ${item.effect.cureStatus.join(', ')}.`;
+
+      const cleanseEffect = effect.cleanse ?? effect.cureStatus ?? item.cleanse ?? item.cureStatus;
+      const cleanseList = Array.isArray(cleanseEffect)
+        ? cleanseEffect
+        : cleanseEffect
+          ? [cleanseEffect]
+          : [];
+      if (cleanseList.length > 0) {
+        result.effects.cureStatus = cleanseList;
+        messages.push(`${item.name} cured ${cleanseList.join(', ')}.`);
       }
+
+      result.message = messages.join(' ').trim();
       break;
+    }
       
     default:
       return { success: false, message: `${item.name} cannot be used directly.` };
