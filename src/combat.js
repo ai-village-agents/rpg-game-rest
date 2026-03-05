@@ -16,6 +16,69 @@ function computeDamage({ attackerAtk, targetDef, targetDefending }) {
   return Math.max(1, raw);
 }
 
+function isStunned(entity) {
+  return (entity.statusEffects ?? []).some(
+    (effect) => effect.type === 'stun' && effect.duration >= 0
+  );
+}
+
+export function addStatusEffect(state, targetKey, effect) {
+  const target = state[targetKey];
+  if (!target) return state;
+  const statusEffects = target.statusEffects ?? [];
+  return {
+    ...state,
+    [targetKey]: { ...target, statusEffects: [...statusEffects, { ...effect }] },
+  };
+}
+
+function processTurnStart(state, actorKey) {
+  const actor = state[actorKey];
+  if (!actor) return state;
+
+  let nextState = state;
+  const actorName = actorKey === 'player' ? 'You' : state.enemy.name;
+  const actorPossessive = actorKey === 'player' ? 'Your' : `${state.enemy.name}'s`;
+  let hp = actor.hp;
+  const remainingEffects = [];
+
+  for (const effect of actor.statusEffects ?? []) {
+    const duration = effect.duration ?? 0;
+    if (duration <= 0) {
+      nextState = pushLog(nextState, `${actorPossessive} ${effect.type} wears off.`);
+      continue;
+    }
+
+    const verb = actorKey === 'player' ? 'take' : 'takes';
+    const healVerb = actorKey === 'player' ? 'regain' : 'regains';
+
+    if (effect.type === 'poison' || effect.type === 'burn') {
+      const damage = Math.max(0, effect.power ?? 0);
+      if (damage > 0) {
+        hp = clamp(hp - damage, 0, actor.maxHp);
+        const source = effect.type === 'poison' ? 'poison' : 'burn';
+        nextState = pushLog(nextState, `${actorName} ${verb} ${damage} ${source} damage.`);
+      }
+    } else if (effect.type === 'regen') {
+      const heal = Math.max(0, effect.power ?? 0);
+      if (heal > 0) {
+        hp = clamp(hp + heal, 0, actor.maxHp);
+        nextState = pushLog(nextState, `${actorName} ${healVerb} ${heal} HP.`);
+      }
+    }
+
+    const newDuration = duration - 1;
+    remainingEffects.push({ ...effect, duration: newDuration });
+  }
+
+  nextState = {
+    ...nextState,
+    [actorKey]: { ...actor, hp, statusEffects: remainingEffects },
+  };
+
+  return applyVictoryDefeat(nextState);
+}
+
 function applyVictoryDefeat(state) {
   if (state.enemy.hp <= 0) {
     const xpGained = state.enemy.xpReward ?? 0;
@@ -49,6 +112,7 @@ export function startNewEncounter(state, zoneLevel = 1) {
     hp: enemyBase.maxHp ?? enemyBase.hp,
     maxHp: enemyBase.maxHp ?? enemyBase.hp,
     defending: false,
+    statusEffects: [],
   };
 
   let next = {
@@ -56,7 +120,7 @@ export function startNewEncounter(state, zoneLevel = 1) {
     enemy,
     phase: 'player-turn',
     turn: 1,
-    player: { ...state.player, defending: false },
+    player: { ...state.player, defending: false, statusEffects: [] },
   };
 
   next = pushLog(next, `A wild ${enemy.name} appears.`);
@@ -66,6 +130,13 @@ export function startNewEncounter(state, zoneLevel = 1) {
 
 export function playerAttack(state) {
   if (state.phase !== 'player-turn') return state;
+
+  if (isStunned(state.player)) {
+    state = pushLog(state, 'Player is stunned!');
+    state = processTurnStart(state, 'enemy');
+    if (state.phase === 'victory' || state.phase === 'defeat') return state;
+    return { ...state, phase: 'enemy-turn' };
+  }
 
   const damage = computeDamage({
     attackerAtk: state.player.atk,
@@ -78,26 +149,43 @@ export function playerAttack(state) {
     ...state,
     enemy: { ...state.enemy, hp: enemyHp, defending: false },
     player: { ...state.player, defending: false },
-    phase: 'enemy-turn',
   };
 
   state = pushLog(state, `You strike for ${damage} damage.`);
-  return applyVictoryDefeat(state);
+  state = applyVictoryDefeat(state);
+  if (state.phase === 'victory' || state.phase === 'defeat') return state;
+  state = processTurnStart(state, 'enemy');
+  if (state.phase === 'victory' || state.phase === 'defeat') return state;
+  return { ...state, phase: 'enemy-turn' };
 }
 
 export function playerDefend(state) {
   if (state.phase !== 'player-turn') return state;
+  if (isStunned(state.player)) {
+    state = pushLog(state, 'Player is stunned!');
+    state = processTurnStart(state, 'enemy');
+    if (state.phase === 'victory' || state.phase === 'defeat') return state;
+    return { ...state, phase: 'enemy-turn' };
+  }
   state = {
     ...state,
     player: { ...state.player, defending: true },
-    phase: 'enemy-turn',
   };
   state = pushLog(state, `You brace for impact.`);
-  return state;
+  state = processTurnStart(state, 'enemy');
+  if (state.phase === 'victory' || state.phase === 'defeat') return state;
+  return { ...state, phase: 'enemy-turn' };
 }
 
 export function playerUsePotion(state) {
   if (state.phase !== 'player-turn') return state;
+
+  if (isStunned(state.player)) {
+    state = pushLog(state, 'Player is stunned!');
+    state = processTurnStart(state, 'enemy');
+    if (state.phase === 'victory' || state.phase === 'defeat') return state;
+    return { ...state, phase: 'enemy-turn' };
+  }
 
   const count = state.player.inventory.potion ?? 0;
   if (count <= 0) {
@@ -114,11 +202,12 @@ export function playerUsePotion(state) {
       defending: false,
       inventory: { ...state.player.inventory, potion: count - 1 },
     },
-    phase: 'enemy-turn',
   };
 
   state = pushLog(state, `You drink a potion and heal ${hp - (state.player.hp)} HP.`);
-  return state;
+  state = processTurnStart(state, 'enemy');
+  if (state.phase === 'victory' || state.phase === 'defeat') return state;
+  return { ...state, phase: 'enemy-turn' };
 }
 
 export function enemyAct(state) {
@@ -134,12 +223,13 @@ export function enemyAct(state) {
       ...state,
       enemy: { ...state.enemy, defending: true },
       player: { ...state.player, defending: false },
-      phase: 'player-turn',
       turn: state.turn + 1,
     };
     state = pushLog(state, `${state.enemy.name} wiggles defensively.`);
+    state = processTurnStart(state, 'player');
+    if (state.phase === 'victory' || state.phase === 'defeat') return state;
     state = pushLog(state, `Your turn.`);
-    return state;
+    return { ...state, phase: 'player-turn' };
   }
 
   const damage = computeDamage({
@@ -153,12 +243,14 @@ export function enemyAct(state) {
     ...state,
     player: { ...state.player, hp: playerHp, defending: false },
     enemy: { ...state.enemy, defending: false },
-    phase: 'player-turn',
     turn: state.turn + 1,
   };
 
   state = pushLog(state, `${state.enemy.name} slams you for ${damage} damage.`);
   state = applyVictoryDefeat(state);
-  if (state.phase === 'player-turn') state = pushLog(state, `Your turn.`);
-  return state;
+  if (state.phase === 'victory' || state.phase === 'defeat') return state;
+  state = processTurnStart(state, 'player');
+  if (state.phase === 'victory' || state.phase === 'defeat') return state;
+  state = pushLog(state, `Your turn.`);
+  return { ...state, phase: 'player-turn' };
 }
