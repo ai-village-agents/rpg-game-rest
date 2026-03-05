@@ -1,6 +1,7 @@
 import { saveToLocalStorage } from './state.js';
 import { CLASS_DEFINITIONS } from './characters/classes.js';
 import { DEFAULT_WORLD_DATA, getRoomExits } from './map.js';
+import { getCategorizedInventory, getEquipmentDisplay, getItemDetails, INVENTORY_SCREENS, EQUIPMENT_SLOTS } from './inventory.js';
 
 function hpLine(entity) {
   const pct = Math.round((entity.hp / entity.maxHp) * 100);
@@ -306,6 +307,102 @@ export function render(state, dispatch) {
       .reverse()
       .map((line) => `<div class="logLine">${esc(line)}</div>`)
       .join('');
+    return;
+  }
+
+  if (state.phase === 'inventory') {
+    const invState = state.inventoryState || { screen: 'main', selectedItem: null, message: null };
+    const player = state.player;
+    const equipment = player?.equipment || { weapon: null, armor: null, accessory: null };
+    const categorized = getCategorizedInventory(player?.inventory || {});
+    const eqDisplay = getEquipmentDisplay(equipment);
+
+    // Build equipment section HTML
+    const eqRows = Object.entries(EQUIPMENT_SLOTS).map(([slot, label]) => {
+      const itemId = equipment[slot];
+      const itemName = itemId ? (getItemDetails(itemId)?.name || itemId) : '—';
+      const unequipBtn = itemId ? `<button class="inv-btn" data-action="unequip" data-slot="${esc(slot)}">Unequip</button>` : '';
+      return `<div>${esc(label)}</div><div><b>${esc(itemName)}</b> ${unequipBtn}</div>`;
+    }).join('');
+
+    // Build inventory items list HTML
+    const allItems = [...categorized.consumables, ...categorized.weapons, ...categorized.armor, ...categorized.accessories, ...categorized.other];
+    const itemRows = allItems.length === 0 ? '<div class="kv"><div><i>Empty</i></div><div></div></div>' :
+      '<div class="kv">' + allItems.map(({ id, name, count, type, equippable, usable }) => {
+        const useBtn = usable ? `<button class="inv-btn" data-action="use" data-item="${esc(id)}">Use</button>` : '';
+        const eqBtn = equippable ? `<button class="inv-btn" data-action="equip" data-item="${esc(id)}">Equip</button>` : '';
+        const detBtn = `<button class="inv-btn" data-action="details" data-item="${esc(id)}">Info</button>`;
+        return `<div>${esc(name)} <small>(${esc(type)})</small></div><div><b>${count}</b> ${useBtn}${eqBtn}${detBtn}</div>`;
+      }).join('') + '</div>';
+
+    // Item details screen
+    let detailsHtml = '';
+    if (invState.screen === INVENTORY_SCREENS.DETAILS && invState.selectedItem) {
+      const detail = getItemDetails(invState.selectedItem);
+      if (detail) {
+        const statsHtml = Object.entries(detail.stats || {}).map(([k, v]) => `<div>${esc(k)}</div><div><b>${v > 0 ? '+' : ''}${v}</b></div>`).join('');
+        const effectHtml = Object.entries(detail.effect || {}).map(([k, v]) => `<div>${esc(k)}</div><div><b>${v}</b></div>`).join('');
+        detailsHtml = `
+          <div class="card">
+            <h2>${esc(detail.name)} <small class="good">${esc(detail.rarity || '')}</small></h2>
+            <div>${esc(detail.description || '')}</div>
+            <div class="kv">${statsHtml}${effectHtml}<div>Value</div><div><b>${detail.value}g</b></div></div>
+            <div class="buttons"><button id="btnInvBack">Back</button></div>
+          </div>
+        `;
+      }
+    }
+
+    const messageHtml = invState.message ? `<div class="card"><p class="good">${esc(invState.message)}</p></div>` : '';
+
+    hud.innerHTML = `
+      <div class="row">
+        <div class="card">
+          <h2>Equipment</h2>
+          <div class="kv">${eqRows}</div>
+        </div>
+        <div class="card">
+          <h2>${esc(player?.name || 'Player')} — Lv ${player?.level || 1}</h2>
+          <div class="kv">
+            <div>HP</div><div><b>${hpLine(player)}</b></div>
+            <div>Gold</div><div><b>${player?.gold ?? 0}</b></div>
+          </div>
+        </div>
+      </div>
+      ${detailsHtml || messageHtml}
+    `;
+
+    actions.innerHTML = `
+      <div class="card">
+        <h2>Items</h2>
+        ${itemRows}
+      </div>
+      <div class="buttons">
+        <button id="btnCloseInv">Close Inventory</button>
+      </div>
+    `;
+
+    // Wire close button
+    document.getElementById('btnCloseInv').onclick = () => dispatch({ type: 'CLOSE_INVENTORY' });
+
+    // Wire back button if details shown
+    const backBtn = document.getElementById('btnInvBack');
+    if (backBtn) backBtn.onclick = () => dispatch({ type: 'INVENTORY_BACK' });
+
+    // Wire item action buttons
+    actions.querySelectorAll('.inv-btn').forEach(btn => {
+      const action2 = btn.dataset.action;
+      const itemId = btn.dataset.item;
+      const slot = btn.dataset.slot;
+      btn.onclick = () => {
+        if (action2 === 'use') dispatch({ type: 'INVENTORY_USE', itemId });
+        else if (action2 === 'equip') dispatch({ type: 'INVENTORY_EQUIP', itemId });
+        else if (action2 === 'unequip') dispatch({ type: 'INVENTORY_UNEQUIP', slot });
+        else if (action2 === 'details') dispatch({ type: 'INVENTORY_VIEW_DETAILS', itemId });
+      };
+    });
+
+    log.innerHTML = state.log.slice().reverse().map(line => `<div class="logLine">${esc(line)}</div>`).join('');
     return;
   }
 

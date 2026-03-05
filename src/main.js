@@ -1,6 +1,7 @@
 import { initialState, initialStateWithClass, loadFromLocalStorage, saveToLocalStorage, pushLog } from './state.js';
 import { playerAttack, playerDefend, playerUsePotion, enemyAct, startNewEncounter } from './combat.js';
 import { render } from './render.js';
+import { createInventoryState, handleInventoryAction } from './inventory.js';
 import { keyToCardinalDirection } from './input.js';
 import { CLASS_DEFINITIONS } from './characters/classes.js';
 import { movePlayer, getCurrentRoom, getRoomExits } from './map.js';
@@ -146,15 +147,14 @@ function dispatch(action) {
 
   if (type === 'VIEW_INVENTORY') {
     if (state.phase === 'class-select') return;
-    const inv = state.player?.inventory || {};
-    const entries = Object.entries(inv)
-      .filter(([, count]) => count > 0)
-      .map(([item, count]) => `${item}: ${count}`);
-    const gold = state.player?.gold ?? 0;
-    const invMsg = entries.length > 0
-      ? `Inventory: ${entries.join(', ')}. Gold: ${gold}.`
-      : `Inventory is empty. Gold: ${gold}.`;
-    return setState(pushLog(state, invMsg));
+    return setState({ ...state, phase: 'inventory', inventoryState: createInventoryState(state.phase) });
+  }
+
+  if (state.phase === 'inventory') {
+    const inventoryActions = ['CLOSE_INVENTORY', 'INVENTORY_USE', 'INVENTORY_EQUIP', 'INVENTORY_UNEQUIP', 'INVENTORY_VIEW_DETAILS', 'INVENTORY_BACK'];
+    if (inventoryActions.includes(type)) {
+      return setState(handleInventoryAction(state, action));
+    }
   }
 
   if (type === 'TRY_AGAIN') {
