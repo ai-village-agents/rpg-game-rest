@@ -120,3 +120,38 @@ export function getInventoryDisplay(inventory) {
   });
   return display;
 }
+
+/**
+ * Get a safe copy of an inventory object.
+ * @param {object} inventory
+ * @returns {object}
+ */
+export function getInventory(inventory) {
+  if (!inventory) return {};
+  if (typeof inventory === 'object' && !Array.isArray(inventory)) {
+    return { ...inventory };
+  }
+  return normalizeInventory(inventory);
+}
+
+/**
+ * Add an item to an inventory (convenience alias).
+ * @param {object} inventory
+ * @param {string} itemId
+ * @param {number} quantity
+ * @returns {object}
+ */
+export function addItem(inventory, itemId, quantity = 1) {
+  return addItemToInventory(inventory, itemId, quantity);
+}
+
+/**
+ * Remove an item from an inventory (convenience alias).
+ * @param {object} inventory
+ * @param {string} itemId
+ * @param {number} quantity
+ * @returns {object}
+ */
+export function removeItem(inventory, itemId, quantity = 1) {
+  return removeItemFromInventory(inventory, itemId, quantity);
+}

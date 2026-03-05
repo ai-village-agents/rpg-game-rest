@@ -247,3 +247,47 @@ export function movePlayer(worldState, directionKey, worldData = DEFAULT_WORLD_D
   const result = world.move(directionKey);
   return { ...result, worldState: world.snapshot(), room: world.getCurrentRoom() };
 }
+
+/**
+ * Create a map wrapper object with world data and state.
+ * @param {object} worldData
+ * @param {object|null} persistedState
+ * @returns {{worldData: object, worldState: object}}
+ */
+export function createMap(worldData = DEFAULT_WORLD_DATA, persistedState = null) {
+  return {
+    worldData,
+    worldState: createWorldState(persistedState, worldData),
+  };
+}
+
+/**
+ * Get the current room from a map wrapper or world state.
+ * @param {object} mapState
+ * @param {object} worldData
+ * @returns {object|null}
+ */
+export function getCurrentRoom(mapState, worldData = DEFAULT_WORLD_DATA) {
+  const resolvedWorldData = mapState?.worldData ?? worldData;
+  const resolvedWorldState = mapState?.worldState ?? mapState;
+  const world = new WorldMap(resolvedWorldData, resolvedWorldState);
+  return world.getCurrentRoom();
+}
+
+/**
+ * Get the available exits from the current room.
+ * @param {object} mapState
+ * @param {object} worldData
+ * @returns {string[]}
+ */
+export function getRoomExits(mapState, worldData = DEFAULT_WORLD_DATA) {
+  const resolvedWorldData = mapState?.worldData ?? worldData;
+  const resolvedWorldState = mapState?.worldState ?? mapState;
+  const roomRow = resolvedWorldState?.roomRow ?? 0;
+  const roomCol = resolvedWorldState?.roomCol ?? 0;
+  const rooms = resolvedWorldData.rooms ?? [];
+
+  return Object.entries(DIRECTIONS)
+    .filter(([, dir]) => Boolean(rooms[roomRow + dir.roomRow]?.[roomCol + dir.roomCol]))
+    .map(([key]) => key);
+}
