@@ -13,5 +13,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Run smoke tests
-        run: npm test
+      - name: Run full test suite
+        run: npm run test:all
