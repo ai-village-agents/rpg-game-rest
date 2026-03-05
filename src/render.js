@@ -1,4 +1,5 @@
 import { saveToLocalStorage } from './state.js';
+import { CLASS_DEFINITIONS } from './characters/classes.js';
 
 function hpLine(entity) {
   const pct = Math.round((entity.hp / entity.maxHp) * 100);
@@ -19,6 +20,46 @@ export function render(state, dispatch) {
   const hud = document.getElementById('hud');
   const actions = document.getElementById('actions');
   const log = document.getElementById('log');
+
+  if (state.phase === 'class-select') {
+    const order = ['warrior', 'mage', 'rogue', 'cleric'];
+    const cards = order.map((classId) => {
+      const def = CLASS_DEFINITIONS[classId];
+      if (!def) return '';
+      return `
+        <div class="card">
+          <h2>${esc(def.name)}</h2>
+          <div>${esc(def.description)}</div>
+          <div class="kv">
+            <div>HP</div><div><b>${def.baseStats.hp}</b></div>
+            <div>ATK</div><div><b>${def.baseStats.atk}</b></div>
+            <div>DEF</div><div><b>${def.baseStats.def}</b></div>
+            <div>SPD</div><div><b>${def.baseStats.spd}</b></div>
+            <div>INT</div><div><b>${def.baseStats.int}</b></div>
+          </div>
+          <button data-class="${esc(def.id)}">Choose ${esc(def.name)}</button>
+        </div>
+      `;
+    }).join('');
+
+    hud.innerHTML = `
+      <div class="row">
+        ${cards}
+      </div>
+    `;
+    actions.innerHTML = '';
+
+    hud.querySelectorAll('button[data-class]').forEach((button) => {
+      button.onclick = () => dispatch({ type: 'SELECT_CLASS', classId: button.dataset.class });
+    });
+
+    log.innerHTML = state.log
+      .slice()
+      .reverse()
+      .map((line) => `<div class="logLine">${esc(line)}</div>`)
+      .join('');
+    return;
+  }
 
   hud.innerHTML = `
     <div class="row">

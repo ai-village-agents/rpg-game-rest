@@ -1,8 +1,9 @@
-import { initialState, loadFromLocalStorage, pushLog } from './state.js';
+import { initialState, initialStateWithClass, loadFromLocalStorage, pushLog } from './state.js';
 import { playerAttack, playerDefend, playerUsePotion, enemyAct } from './combat.js';
 import { render } from './render.js';
+import { CLASS_DEFINITIONS } from './characters/classes.js';
 
-let state = initialState();
+let state = { phase: 'class-select', log: ['Welcome to AI Village RPG! Select your class.'] };
 
 function setState(next) {
   state = next;
@@ -23,6 +24,14 @@ function dispatch(action) {
   if (type === 'PLAYER_ATTACK') return setState(playerAttack(state));
   if (type === 'PLAYER_DEFEND') return setState(playerDefend(state));
   if (type === 'PLAYER_POTION') return setState(playerUsePotion(state));
+
+  if (type === 'SELECT_CLASS') {
+    if (!CLASS_DEFINITIONS[action.classId]) {
+      return setState(pushLog(state, 'Unknown class selected.'));
+    }
+    state = initialStateWithClass(action.classId);
+    return render(state, dispatch);
+  }
 
   if (type === 'NEW') return setState(initialState());
 

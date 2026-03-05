@@ -1,5 +1,6 @@
 import { clamp, pushLog } from './state.js';
 import { items } from './data/items.js';
+import { getEnemy, getEncounter } from './data/enemies.js';
 
 // Minimal deterministic RNG (Park-Miller LCG)
 export function nextRng(seed) {
@@ -17,7 +18,19 @@ function computeDamage({ attackerAtk, targetDef, targetDefending }) {
 
 function applyVictoryDefeat(state) {
   if (state.enemy.hp <= 0) {
-    state = { ...state, phase: 'victory' };
+    const xpGained = state.enemy.xpReward ?? 0;
+    const goldGained = state.enemy.goldReward ?? 0;
+    state = {
+      ...state,
+      phase: 'victory',
+      xpGained,
+      goldGained,
+      player: {
+        ...state.player,
+        xp: (state.player.xp ?? 0) + xpGained,
+        gold: (state.player.gold ?? 0) + goldGained,
+      },
+    };
     state = pushLog(state, `Victory! The ${state.enemy.name} dissolves.`);
   }
   if (state.player.hp <= 0) {
@@ -25,6 +38,30 @@ function applyVictoryDefeat(state) {
     state = pushLog(state, `Defeat... You collapse.`);
   }
   return state;
+}
+
+export function startNewEncounter(state, zoneLevel = 1) {
+  const encounter = getEncounter(zoneLevel);
+  const enemyId = encounter[0];
+  const enemyBase = getEnemy(enemyId);
+  const enemy = {
+    ...enemyBase,
+    hp: enemyBase.maxHp ?? enemyBase.hp,
+    maxHp: enemyBase.maxHp ?? enemyBase.hp,
+    defending: false,
+  };
+
+  let next = {
+    ...state,
+    enemy,
+    phase: 'player-turn',
+    turn: 1,
+    player: { ...state.player, defending: false },
+  };
+
+  next = pushLog(next, `A wild ${enemy.name} appears.`);
+  next = pushLog(next, `Your turn.`);
+  return next;
 }
 
 export function playerAttack(state) {
