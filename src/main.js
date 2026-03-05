@@ -11,6 +11,7 @@ import { calcLevel } from './characters/stats.js';
 import { getNPCsInRoom, createDialogState, advanceDialog } from './npc-dialog.js';
 import { initQuestState, acceptQuest, onRoomEnter, getAvailableQuestsInRoom, getActiveQuestsSummary } from './quest-integration.js';
 import { createBattleSummary } from './battle-summary.js';
+import { initVisitedRooms, markRoomVisited } from './minimap.js';
 
 const ENCOUNTER_RATE = 0.3; // 30% chance per move
 const ROOM_ID_MAP = [['nw', 'n', 'ne'], ['w', 'center', 'e'], ['sw', 's', 'se']];
@@ -109,6 +110,7 @@ function dispatch(action) {
         `You have chosen the path of the ${action.classId[0].toUpperCase() + action.classId.slice(1)}.`,
         `${getRoomDescription(state.world)} You may explore in any direction.`,
       ],
+      visitedRooms: initVisitedRooms(1, 1),
     };
     return render(state, dispatch);
   }
@@ -124,6 +126,16 @@ function dispatch(action) {
     }
 
     let next = { ...state, world: result.worldState };
+    if (result.transitioned) {
+      next = {
+        ...next,
+        visitedRooms: markRoomVisited(
+          next.visitedRooms || [],
+          result.worldState.roomRow,
+          result.worldState.roomCol
+        ),
+      };
+    }
     // Update quest state on room enter
     const ROOM_ID_MAP = [['nw', 'n', 'ne'], ['w', 'center', 'e'], ['sw', 's', 'se']];
     const roomId = result.worldState?.roomRow !== undefined && result.worldState?.roomCol !== undefined
@@ -178,6 +190,16 @@ function dispatch(action) {
       ? `You move ${direction} into ${result.room.name}.`
       : `You move ${direction}.`;
     let next = pushLog({ ...state, world: result.worldState }, msg);
+    if (result.transitioned) {
+      next = {
+        ...next,
+        visitedRooms: markRoomVisited(
+          next.visitedRooms || [],
+          result.worldState.roomRow,
+          result.worldState.roomCol
+        ),
+      };
+    }
     // Update quest state on room enter
     const ROOM_ID_MAP_MOVE = [['nw', 'n', 'ne'], ['w', 'center', 'e'], ['sw', 's', 'se']];
     const moveRoomId = result.worldState?.roomRow !== undefined && result.worldState?.roomCol !== undefined

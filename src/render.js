@@ -9,6 +9,7 @@ import { getActiveQuestsSummary, getAvailableQuestsInRoom } from './quest-integr
 import { getAbilityDisplayInfo } from './combat/abilities.js';
 import { items as itemsData } from './data/items.js';
 import { renderStatusEffectsRow, getStatusEffectStyles } from './status-effect-ui.js';
+import { getMinimapStyles, renderMinimap } from './minimap.js';
 
 function hpLine(entity) {
   const pct = Math.round((entity.hp / entity.maxHp) * 100);
@@ -95,6 +96,13 @@ export function render(state, dispatch) {
     document.head.appendChild(styleEl);
   }
 
+  if (!document.getElementById('minimap-styles')) {
+    const minimapStyleEl = document.createElement('style');
+    minimapStyleEl.id = 'minimap-styles';
+    minimapStyleEl.textContent = getMinimapStyles();
+    document.head.appendChild(minimapStyleEl);
+  }
+
   // --- Class Select Phase ---
   if (state.phase === 'class-select') {
     const order = ['warrior', 'mage', 'rogue', 'cleric'];
@@ -160,6 +168,8 @@ export function render(state, dispatch) {
         </div>
 
         ${mapHtml}
+
+        ${renderMinimap(state.world, state.visitedRooms || [])}
 
         <div class="card">
           <h2>People Here</h2>
