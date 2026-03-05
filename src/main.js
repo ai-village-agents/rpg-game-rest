@@ -12,6 +12,7 @@ import { getNPCsInRoom, createDialogState, advanceDialog } from './npc-dialog.js
 import { initQuestState, acceptQuest, onRoomEnter, getAvailableQuestsInRoom, getActiveQuestsSummary } from './quest-integration.js';
 import { createBattleSummary } from './battle-summary.js';
 import { initVisitedRooms, markRoomVisited } from './minimap.js';
+import { createGameStats, recordEnemyDefeated, recordDamageDealt, recordDamageReceived, recordItemUsed, recordAbilityUsed, recordGoldEarned, recordXPEarned, recordBattleWon, recordBattleFled, recordTurnPlayed } from './game-stats.js';
 
 const ENCOUNTER_RATE = 0.3; // 30% chance per move
 const ROOM_ID_MAP = [['nw', 'n', 'ne'], ['w', 'center', 'e'], ['sw', 's', 'se']];
@@ -66,7 +67,12 @@ function setState(next) {
   // If it became enemy turn, resolve after a short pause.
   if (state.phase === 'enemy-turn') {
     window.setTimeout(() => {
+      const hpBefore = state.player?.hp ?? 0;
       state = enemyAct(state);
+      const dmgReceived = Math.max(0, hpBefore - (state.player?.hp ?? hpBefore));
+      if (dmgReceived > 0) {
+        state = { ...state, gameStats: recordDamageReceived(state.gameStats ?? createGameStats(), dmgReceived) };
+      }
       render(state, dispatch);
     }, 450);
   }
@@ -90,11 +96,40 @@ function getRoomId(worldState) {
 function dispatch(action) {
   const type = action?.type;
 
-  if (type === 'PLAYER_ATTACK') return setState(playerAttack(state));
+  if (type === 'PLAYER_ATTACK') {
+    const enemyHpBefore = state.enemy?.hp ?? 0;
+    const next = playerAttack(state);
+    const dmgDealt = Math.max(0, enemyHpBefore - (next.enemy?.hp ?? 0));
+    let gs = next.gameStats ?? createGameStats();
+    if (dmgDealt > 0) gs = recordDamageDealt(gs, dmgDealt);
+    gs = recordTurnPlayed(gs);
+    return setState({ ...next, gameStats: gs });
+  }
   if (type === 'PLAYER_DEFEND') return setState(playerDefend(state));
-  if (type === 'PLAYER_POTION') return setState(playerUsePotion(state));
-  if (type === 'PLAYER_ABILITY') return setState(playerUseAbility(state, action.abilityId));
-  if (type === 'PLAYER_ITEM') return setState(playerUseItem(state, action.itemId));
+  if (type === 'PLAYER_POTION') {
+    const next = playerUsePotion(state);
+    let gs = next.gameStats ?? createGameStats();
+    gs = recordItemUsed(gs, 'potion');
+    gs = recordTurnPlayed(gs);
+    return setState({ ...next, gameStats: gs });
+  }
+  if (type === 'PLAYER_ABILITY') {
+    const enemyHpBefore = state.enemy?.hp ?? 0;
+    const next = playerUseAbility(state, action.abilityId);
+    const dmgDealt = Math.max(0, enemyHpBefore - (next.enemy?.hp ?? 0));
+    let gs = next.gameStats ?? createGameStats();
+    gs = recordAbilityUsed(gs, action.abilityId);
+    if (dmgDealt > 0) gs = recordDamageDealt(gs, dmgDealt);
+    gs = recordTurnPlayed(gs);
+    return setState({ ...next, gameStats: gs });
+  }
+  if (type === 'PLAYER_ITEM') {
+    const next = playerUseItem(state, action.itemId);
+    let gs = next.gameStats ?? createGameStats();
+    gs = recordItemUsed(gs, action.itemId);
+    gs = recordTurnPlayed(gs);
+    return setState({ ...next, gameStats: gs });
+  }
 
   if (type === 'SELECT_CLASS') {
     if (!CLASS_DEFINITIONS[action.classId]) {
@@ -111,6 +146,7 @@ function dispatch(action) {
         `${getRoomDescription(state.world)} You may explore in any direction.`,
       ],
       visitedRooms: initVisitedRooms(1, 1),
+      gameStats: createGameStats(),
     };
     return render(state, dispatch);
   }
@@ -255,12 +291,18 @@ function dispatch(action) {
     }
     // Otherwise go straight to exploration
     const exits = getAvailableExits(state.world);
+    let gs = state.gameStats ?? createGameStats();
+    gs = recordBattleWon(gs);
+    if (state.enemy?.name) gs = recordEnemyDefeated(gs, state.enemy.name);
+    if ((state.xpGained ?? 0) > 0) gs = recordXPEarned(gs, state.xpGained);
+    if ((state.goldGained ?? 0) > 0) gs = recordGoldEarned(gs, state.goldGained);
     let next = {
       ...state,
       phase: 'exploration',
       player: { ...state.player, defending: false },
       battleSummary: undefined,
       pendingLevelUps: undefined,
+      gameStats: gs,
     };
     next = pushLog(next, 'You gather yourself and continue your journey.');
     next = pushLog(next, `${getRoomDescription(state.world)} Exits: ${exits.join(', ') || 'none'}.`);
@@ -362,12 +404,15 @@ function dispatch(action) {
   }
 
   if (type === 'TRY_AGAIN') {
-    // After defeat, go back to class select
+    // After defeat, record the loss before resetting
+    let gs = state.gameStats ?? createGameStats();
+    gs = recordBattleFled(gs);
+    // Go back to class select
     state = { phase: 'class-select', log: ['The adventure ends... but another awaits. Select your class.'] };
     return render(state, dispatch);
   }
 
-  if (type === 'NEW') return setState(initialState());
+  if (type === 'NEW') return setState({ ...initialState(), gameStats: createGameStats() });
 
   if (type === 'LOAD') {
     const loaded = loadFromLocalStorage();
