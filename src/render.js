@@ -17,6 +17,7 @@ import { renderQuestRewardScreen, renderQuestRewardActions, attachQuestRewardHan
 import { renderShopPanel, getShopStyles, attachShopHandlers } from './shop-ui.js';
 import { renderCraftingPanel, getCraftingStyles, attachCraftingHandlers } from './crafting-ui.js';
 import { renderTalentTree, getTalentTreeStyles, attachTalentHandlers } from './talents-ui.js';
+import { renderHelpModal, getHelpStyles, attachHelpHandlers } from './help-ui.js';
 import { hasShop } from './shop.js';
 
 function hpLine(entity) {
@@ -132,6 +133,20 @@ export function render(state, dispatch) {
     document.head.appendChild(talentStyleEl);
   }
 
+  if (!document.getElementById('help-styles')) {
+    const s = document.createElement('style');
+    s.id = 'help-styles';
+    s.textContent = getHelpStyles();
+    document.head.appendChild(s);
+  }
+
+  const finalizeRender = () => {
+    if (state.showHelp) {
+      hud.innerHTML += renderHelpModal();
+      attachHelpHandlers(dispatch);
+    }
+  };
+
   // --- Class Select Phase ---
   if (state.phase === 'class-select') {
     const order = ['warrior', 'mage', 'rogue', 'cleric'];
@@ -166,6 +181,7 @@ export function render(state, dispatch) {
       .reverse()
       .map((line) => `<div class="logLine">${esc(line)}</div>`)
       .join('');
+    finalizeRender();
     return;
   }
 
@@ -225,6 +241,7 @@ export function render(state, dispatch) {
         <button id="btnSaveSlots">Save/Load 💾</button>
         <button id="btnSettings">Settings ⚙️</button>
         <button id="btnCrafting">Crafting 🔨</button>
+        <button id="btnHelp">Help ❓</button>
       </div>
     `;
 
@@ -239,6 +256,7 @@ export function render(state, dispatch) {
     document.getElementById('btnSaveSlots').onclick = () => dispatch({ type: 'SAVE_SLOTS' });
     document.getElementById('btnSettings').onclick = () => dispatch({ type: 'VIEW_SETTINGS' });
     document.getElementById('btnCrafting').onclick = () => dispatch({ type: 'VIEW_CRAFTING' });
+    document.getElementById('btnHelp').onclick = () => dispatch({ type: 'TOGGLE_HELP' });
 
     hud.querySelectorAll('.npc-talk-btn').forEach((btn) => {
       btn.onclick = () => dispatch({ type: 'TALK_TO_NPC', npcId: btn.dataset.npcid });
@@ -249,6 +267,7 @@ export function render(state, dispatch) {
       .reverse()
       .map((line) => `<div class="logLine">${esc(line)}</div>`)
       .join('');
+    finalizeRender();
     return;
   }
 
@@ -342,6 +361,7 @@ export function render(state, dispatch) {
       .reverse()
       .map((line) => `<div class="logLine">${esc(line)}</div>`)
       .join('');
+    finalizeRender();
     return;
   }
 
@@ -391,6 +411,7 @@ export function render(state, dispatch) {
         .reverse()
         .map(line => '<div class="logLine">' + esc(line) + '</div>')
         .join('');
+      finalizeRender();
       return;
     }
   }
@@ -432,6 +453,7 @@ export function render(state, dispatch) {
     actions.innerHTML = '<div class="buttons"><button id="btnContinueAfterBattle">Continue →</button></div>';
     document.getElementById('btnContinueAfterBattle').onclick = () => dispatch({ type: 'CONTINUE_AFTER_BATTLE' });
     log.innerHTML = state.log.slice().reverse().map(line => '<div class="logLine">' + esc(line) + '</div>').join('');
+    finalizeRender();
     return;
   }
 
@@ -487,6 +509,7 @@ export function render(state, dispatch) {
       .reverse()
       .map((line) => `<div class="logLine">${esc(line)}</div>`)
       .join('');
+    finalizeRender();
     return;
   }
 
@@ -520,6 +543,7 @@ export function render(state, dispatch) {
       .reverse()
       .map((line) => `<div class="logLine">${esc(line)}</div>`)
       .join('');
+    finalizeRender();
     return;
   }
 
@@ -533,6 +557,7 @@ export function render(state, dispatch) {
     actions.innerHTML = '<div class="buttons"><button id="btnCloseStats">Close 📊</button></div>';
     document.getElementById('btnCloseStats').onclick = () => dispatch({ type: 'CLOSE_STATS' });
     log.innerHTML = state.log.slice().reverse().map(line => '<div class="logLine">' + esc(line) + '</div>').join('');
+    finalizeRender();
     return;
   }
 
@@ -554,6 +579,7 @@ export function render(state, dispatch) {
 
     attachQuestRewardHandlers(dispatch);
     log.innerHTML = state.log.slice().reverse().map(line => '<div class="logLine">' + esc(line) + '</div>').join('');
+    finalizeRender();
     return;
   }
 
@@ -583,6 +609,7 @@ export function render(state, dispatch) {
     if (btnClose) btnClose.onclick = () => dispatch({ type: 'CLOSE_SETTINGS' });
     
     log.innerHTML = state.log.slice().reverse().map(line => '<div class="logLine">' + esc(line) + '</div>').join('');
+    finalizeRender();
     return;
   }
   if (state.phase === 'save-slots') {
@@ -623,6 +650,7 @@ export function render(state, dispatch) {
     });
 
     log.innerHTML = state.log.slice().reverse().map(line => '<div class="logLine">' + esc(line) + '</div>').join('');
+    finalizeRender();
     return;
   }
 
@@ -692,6 +720,7 @@ export function render(state, dispatch) {
     });
 
     log.innerHTML = state.log.slice().reverse().map(line => `<div class="logLine">${esc(line)}</div>`).join('');
+    finalizeRender();
     return;
   }
 
@@ -827,6 +856,7 @@ export function render(state, dispatch) {
     });
 
     log.innerHTML = state.log.slice().reverse().map(line => `<div class="logLine">${esc(line)}</div>`).join('');
+    finalizeRender();
     return;
   }
 
@@ -837,6 +867,7 @@ export function render(state, dispatch) {
     attachTalentHandlers(hud, dispatch);
     document.getElementById('btnCloseTalents').onclick = () => dispatch({ type: 'CLOSE_TALENTS' });
     log.innerHTML = state.log.slice().reverse().map(line => '<div class="logLine">' + esc(line) + '</div>').join('');
+    finalizeRender();
     return;
   }
 
@@ -859,6 +890,7 @@ export function render(state, dispatch) {
       .reverse()
       .map((line) => `<div class="logLine">${esc(line)}</div>`)
       .join('');
+    finalizeRender();
     return;
   }
 
@@ -881,6 +913,7 @@ export function render(state, dispatch) {
       .reverse()
       .map((line) => `<div class="logLine">${esc(line)}</div>`)
       .join('');
+    finalizeRender();
     return;
   }
 
@@ -923,6 +956,7 @@ export function render(state, dispatch) {
       .reverse()
       .map((line) => `<div class="logLine">${esc(line)}</div>`)
       .join('');
+    finalizeRender();
     return;
   }
 
@@ -942,4 +976,5 @@ export function render(state, dispatch) {
     .reverse()
     .map((line) => `<div class="logLine">${esc(line)}</div>`)
     .join('');
+  finalizeRender();
 }

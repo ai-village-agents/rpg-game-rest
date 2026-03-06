@@ -70,7 +70,14 @@ window.addEventListener('keydown', (event) => {
   const tag = target?.tagName;
   if (tag === 'INPUT' || tag === 'TEXTAREA' || target?.isContentEditable) return;
 
-  const direction = keyToCardinalDirection(event.key);
+  const key = event.key;
+  if (key === '?' || key?.toLowerCase() === 'h') {
+    event.preventDefault();
+    dispatch({ type: 'TOGGLE_HELP' });
+    return;
+  }
+
+  const direction = keyToCardinalDirection(key);
   if (!direction) return;
 
   event.preventDefault();
