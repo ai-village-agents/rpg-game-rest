@@ -471,3 +471,22 @@ export function getTalentTreeStyles() {
     }
   `;
 }
+
+export function attachTalentHandlers(container, dispatch) {
+  container.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    if (action === 'ALLOCATE_TALENT') {
+      const talentId = btn.dataset.talent;
+      if (talentId) dispatch({ type: 'ALLOCATE_TALENT', talentId });
+    } else if (action === 'DEALLOCATE_TALENT') {
+      const talentId = btn.dataset.talent;
+      if (talentId) dispatch({ type: 'DEALLOCATE_TALENT', talentId });
+    } else if (action === 'RESET_TALENTS') {
+      dispatch({ type: 'RESET_TALENTS' });
+    } else if (action === 'CLOSE_TALENTS') {
+      dispatch({ type: 'CLOSE_TALENTS' });
+    }
+  });
+}

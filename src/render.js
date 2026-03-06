@@ -16,6 +16,7 @@ import { renderSettingsPanel, getSettingsStyles, attachSettingsHandlers } from '
 import { renderQuestRewardScreen, renderQuestRewardActions, attachQuestRewardHandlers, getQuestRewardStyles } from './quest-rewards-ui.js';
 import { renderShopPanel, getShopStyles, attachShopHandlers } from './shop-ui.js';
 import { renderCraftingPanel, getCraftingStyles, attachCraftingHandlers } from './crafting-ui.js';
+import { renderTalentTree, getTalentTreeStyles, attachTalentHandlers } from './talents-ui.js';
 import { hasShop } from './shop.js';
 
 function hpLine(entity) {
@@ -122,6 +123,13 @@ export function render(state, dispatch) {
     craftingStyleEl.id = 'crafting-styles';
     craftingStyleEl.textContent = getCraftingStyles();
     document.head.appendChild(craftingStyleEl);
+  }
+
+  if (!document.getElementById('talent-tree-styles')) {
+    const talentStyleEl = document.createElement('style');
+    talentStyleEl.id = 'talent-tree-styles';
+    talentStyleEl.textContent = getTalentTreeStyles();
+    document.head.appendChild(talentStyleEl);
   }
 
   // --- Class Select Phase ---
@@ -819,6 +827,16 @@ export function render(state, dispatch) {
     });
 
     log.innerHTML = state.log.slice().reverse().map(line => `<div class="logLine">${esc(line)}</div>`).join('');
+    return;
+  }
+
+  if (state.phase === 'talents') {
+    const talentHtml = renderTalentTree(state);
+    hud.innerHTML = talentHtml;
+    actions.innerHTML = '<div class="buttons"><button id="btnCloseTalents">Close Talents</button></div>';
+    attachTalentHandlers(hud, dispatch);
+    document.getElementById('btnCloseTalents').onclick = () => dispatch({ type: 'CLOSE_TALENTS' });
+    log.innerHTML = state.log.slice().reverse().map(line => '<div class="logLine">' + esc(line) + '</div>').join('');
     return;
   }
 
