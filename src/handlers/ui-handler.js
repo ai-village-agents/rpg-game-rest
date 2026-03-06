@@ -10,6 +10,7 @@ import { advanceDialog } from '../npc-dialog.js';
 import { loadSettings, updateSetting, resetSettings, saveSettings } from '../settings.js';
 import { createShopState, buyItem, sellItem } from '../shop.js';
 import { createCraftingState, craftItem } from '../crafting.js';
+import { createTalentState, allocateTalent, deallocateTalent, resetAllTalents } from '../talents.js';
 
 function getRoomDescription(worldState) {
   const room = getCurrentRoom(worldState);
@@ -280,6 +281,45 @@ export function handleUIAction(state, action) {
       ...state,
       craftingUI: { ...state.craftingUI, message: result.message },
     };
+  }
+
+  // Talents
+  if (type === 'VIEW_TALENTS') {
+    if (state.phase === 'class-select') return null;
+    if (!state.talentState) {
+      state = { ...state, talentState: createTalentState() };
+    }
+    return { ...state, phase: 'talents', previousPhase: state.phase };
+  }
+
+  if (type === 'ALLOCATE_TALENT') {
+    if (state.phase !== 'talents' || !action.talentId || !state.talentState) return null;
+    const result = allocateTalent(state.talentState, action.talentId);
+    if (result.success) {
+      return pushLog({ ...state, talentState: result.newState }, 'Allocated talent point.');
+    }
+    return pushLog(state, result.error || 'Unable to allocate talent.');
+  }
+
+  if (type === 'DEALLOCATE_TALENT') {
+    if (state.phase !== 'talents' || !action.talentId || !state.talentState) return null;
+    const result = deallocateTalent(state.talentState, action.talentId);
+    if (result.success) {
+      return pushLog({ ...state, talentState: result.newState }, 'Deallocated talent point.');
+    }
+    return pushLog(state, result.error || 'Unable to deallocate talent.');
+  }
+
+  if (type === 'RESET_TALENTS') {
+    if (state.phase !== 'talents' || !state.talentState) return null;
+    const talentState = resetAllTalents(state.talentState);
+    return pushLog({ ...state, talentState }, 'All talents have been reset.');
+  }
+
+  if (type === 'CLOSE_TALENTS') {
+    if (state.phase !== 'talents') return null;
+    const returnPhase = state.previousPhase || 'exploration';
+    return { ...state, phase: returnPhase };
   }
 
   return null;
