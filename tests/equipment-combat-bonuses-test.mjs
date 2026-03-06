@@ -123,10 +123,15 @@ describe('getEffectiveCombatStats', () => {
     // ironSword: attack=12, critChance=2
     // chainmail: defense=12, speed=-1
     // ringOfFortune: critChance=5
-    assert.equal(stats.atk, 22, 'ATK: base 10 + ironSword 12 = 22');
-    assert.equal(stats.def, 20, 'DEF: base 8 + chainmail 12 = 20');
+    // iron set bonus: attack=6, defense=8, critChance=2
+    assert.equal(stats.atk, 28, 'ATK: base 10 + ironSword 12 + iron set 6 = 28');
+    assert.equal(stats.def, 28, 'DEF: base 8 + chainmail 12 + iron set 8 = 28');
     assert.equal(stats.spd, 4, 'SPD: base 5 + chainmail -1 = 4');
-    assert.equal(stats.critChance, 7, 'CritChance: base 0 + ironSword 2 + ring 5 = 7');
+    assert.equal(
+      stats.critChance,
+      9,
+      'CritChance: base 0 + ironSword 2 + ring 5 + iron set 2 = 9'
+    );
   });
 
   it('handles arcaneStaff magic bonus', () => {
@@ -323,9 +328,9 @@ describe('Combat Integration: playerAttack with equipment', () => {
       { hp: 100, maxHp: 100, def: 10, defending: false }
     );
     const result = playerAttack(state);
-    // effective ATK = 10 + 12 (ironSword) = 22, enemy DEF = 10, damage = 12
+    // effective ATK = 10 + 12 (ironSword) + 6 (iron set) = 28, enemy DEF = 10, damage = 18
     const dmg = 100 - result.enemy.hp;
-    assert.equal(dmg, 12, 'Should deal 12 damage (ATK 22 - DEF 10)');
+    assert.equal(dmg, 18, 'Should deal 18 damage (ATK 28 - DEF 10, includes Iron Set bonus)');
   });
 });
 
@@ -494,9 +499,9 @@ describe('Equipment bonuses edge cases', () => {
       equipment: { weapon: 'rustySword', armor: 'leatherArmor', accessory: null },
     };
     const stats = getEffectiveCombatStats(player);
-    assert.equal(stats.atk, 5);
-    assert.equal(stats.def, 6);
-    assert.equal(stats.spd, 1);
+    assert.equal(stats.atk, 8);
+    assert.equal(stats.def, 8);
+    assert.equal(stats.spd, 2);
   });
 
   it('does not mutate the original player object', () => {
