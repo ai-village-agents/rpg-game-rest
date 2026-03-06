@@ -34,7 +34,10 @@ export function handleCombatAction(state, action) {
   }
 
   if (type === 'PLAYER_FLEE') {
-    return playerFlee(state);
+    const next = playerFlee(state);
+    let gs = next.gameStats || createGameStats();
+    gs = recordTurnPlayed(gs);
+    return { ...next, gameStats: gs };
   }
 
   if (type === 'PLAYER_POTION') {

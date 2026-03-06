@@ -58,6 +58,7 @@ console.log('--- Combat Flee Tests ---');
   const result = handleCombatAction(successState, { type: 'PLAYER_FLEE' });
   assert(result !== null, 'PLAYER_FLEE handled during player-turn');
   assert(result.phase === 'fled', 'flee success sets phase to fled');
+  assert(result.gameStats?.turnsPlayed === 1, 'turn recorded on flee success');
 }
 
 // Test: flee can fail
@@ -66,6 +67,7 @@ console.log('--- Combat Flee Tests ---');
   const result = handleCombatAction(failState, { type: 'PLAYER_FLEE' });
   assert(result !== null, 'PLAYER_FLEE handled during player-turn');
   assert(result.phase === 'enemy-turn', 'flee failure moves to enemy-turn');
+  assert(result.gameStats?.turnsPlayed === 1, 'turn recorded on flee failure');
 }
 
 console.log('========================================');

@@ -3,7 +3,7 @@ import { createInventoryState, handleInventoryAction } from '../inventory.js';
 import { createLevelUpState, advanceLevelUp } from '../level-up.js';
 import { acceptQuest } from '../quest-integration.js';
 import { claimAllQuestRewards, hasPendingRewards } from '../quest-rewards.js';
-import { createGameStats, recordBattleWon, recordEnemyDefeated, recordXPEarned, recordGoldEarned } from '../game-stats.js';
+import { createGameStats, recordBattleFled, recordBattleWon, recordEnemyDefeated, recordXPEarned, recordGoldEarned } from '../game-stats.js';
 import { pushLog } from '../state.js';
 import { getCurrentRoom, getRoomExits } from '../map.js';
 import { advanceDialog } from '../npc-dialog.js';
@@ -153,6 +153,25 @@ export function handleUIAction(state, action) {
       gameStats: gs,
     };
     next = pushLog(next, 'You gather yourself and continue your journey.');
+    next = pushLog(next, `${getRoomDescription(state.world)} Exits: ${exits.join(', ') || 'none'}.`);
+    return next;
+  }
+
+  if (type === 'CONTINUE_AFTER_FLEE') {
+    if (state.phase !== 'fled') return null;
+    const exits = getRoomExits(state.world);
+    let gs = state.gameStats || createGameStats();
+    gs = recordBattleFled(gs);
+    let next = {
+      ...state,
+      phase: 'exploration',
+      player: { ...state.player, defending: false },
+      enemy: undefined,
+      battleSummary: undefined,
+      pendingLevelUps: undefined,
+      gameStats: gs,
+    };
+    next = pushLog(next, 'You slip away and return to safety.');
     next = pushLog(next, `${getRoomDescription(state.world)} Exits: ${exits.join(', ') || 'none'}.`);
     return next;
   }

@@ -973,6 +973,22 @@ export function render(state, dispatch) {
     return;
   }
 
+  if (state.phase === 'fled') {
+    hud.innerHTML = `
+      <div class="row">
+        <div class="card">
+          <h2>Escaped!</h2>
+          <div>You successfully fled the battle.</div>
+        </div>
+      </div>
+    `;
+    actions.innerHTML = '<div class="buttons"><button id="btnContinueAfterFlee">Continue Exploring</button></div>';
+    document.getElementById('btnContinueAfterFlee').onclick = () => dispatch({ type: 'CONTINUE_AFTER_FLEE' });
+    log.innerHTML = state.log.slice().reverse().map((line) => `<div class="logLine">${esc(line)}</div>`).join('');
+    finalizeRender();
+    return;
+  }
+
   // --- Fallback (unknown phase) ---
   hud.innerHTML = `<div class="card"><h2>Unknown Phase: ${esc(state.phase)}</h2></div>`;
   actions.innerHTML = `
