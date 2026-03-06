@@ -5,8 +5,16 @@ import { onRoomEnter } from '../quest-integration.js';
 import { buildPendingRewards, hasPendingRewards } from '../quest-rewards.js';
 import { getNPCsInRoom, createDialogState } from '../npc-dialog.js';
 import { pushLog } from '../state.js';
+import {
+  tryTriggerWorldEvent,
+  tickWorldEvent,
+  applyImmediateEffect,
+  applyPerMoveEffect,
+  getEffectiveEncounterRate,
+  hasActiveWorldEvent,
+  getWorldEventBanner,
+} from '../world-events.js';
 
-const ENCOUNTER_RATE = 0.3;
 const ROOM_ID_MAP = [['nw', 'n', 'ne'], ['w', 'center', 'e'], ['sw', 's', 'se']];
 
 function getRoomId(worldState) {
@@ -73,12 +81,30 @@ export function handleExplorationAction(state, action) {
       next = pushLog(next, `You move ${direction}.`);
     }
 
+    let newWorldEvent = tickWorldEvent(state.worldEvent);
+    if (state.worldEvent && !newWorldEvent) {
+      next = pushLog(next, 'The world event has ended.');
+    }
+
+    if (!hasActiveWorldEvent(newWorldEvent)) {
+      const triggeredEvent = tryTriggerWorldEvent(next.rngSeed, newWorldEvent);
+      if (triggeredEvent) {
+        newWorldEvent = triggeredEvent;
+        next = applyImmediateEffect(next, newWorldEvent);
+        const banner = getWorldEventBanner(newWorldEvent);
+        if (banner) next = pushLog(next, banner);
+      }
+    }
+
+    next = { ...next, worldEvent: newWorldEvent };
+    next = applyPerMoveEffect(next, next.worldEvent);
+
     // Random Encounter
     if (result.transitioned) {
       const rng = nextRng(next.rngSeed || Date.now());
       next = { ...next, rngSeed: rng.seed };
 
-      if (rng.value < ENCOUNTER_RATE) {
+      if (rng.value < getEffectiveEncounterRate(0.3, next.worldEvent)) {
         return startNewEncounter(next, 1);
       }
     }
@@ -161,6 +187,11 @@ export function handleExplorationAction(state, action) {
       dialogState,
       preDialogPhase: 'exploration',
     };
+  }
+
+  if (type === 'DISMISS_WORLD_EVENT') {
+    const next = pushLog({ ...state, worldEvent: null }, 'You dismiss the world event notification.');
+    return next;
   }
 
   return null;
