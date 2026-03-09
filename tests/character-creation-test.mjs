@@ -1,5 +1,5 @@
-import { createCharacter } from '../src/character-creation.js';
 import { test, assert } from './utils.js';
+import { createCharacter } from '../src/character-creation.js';
 test('createCharacter creates a warrior with correct stats', () => {
   const warrior = createCharacter('Conan', 'warrior');
   assert(warrior.name === 'Conan', 'Character name is incorrect');
@@ -23,4 +23,3 @@ test('createCharacter creates a rogue with correct stats', () => {
     assert(rogue.level === 1, 'Character level should be 1');
     assert(rogue.stats.dexterity === 15, 'Rogue dexterity is incorrect');
 });
-

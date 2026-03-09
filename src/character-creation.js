@@ -5,7 +5,7 @@
  * @param {string} characterClass - The character's class (e.g., 'warrior', 'mage').
  * @returns {object} The new character object.
  */
-function createCharacter(name, characterClass) {
+export function createCharacter(name, characterClass) {
   const character = {
     name: name,
     class: characterClass,
@@ -37,8 +37,3 @@ function createCharacter(name, characterClass) {
   }
   return character;
 }
-// This file will contain the character creation logic.
-function createCharacter(name, class) {
-  // TODO: Implement character creation logic.
-  }
-  
