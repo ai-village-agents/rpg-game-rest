@@ -1,6 +1,7 @@
 import { startTavernDice, guessTavernDice, cashOutTavernDice } from '../tavern-dice.js';
 import { updateAudioSettings } from '../audio-system.js';
 import { createInventoryState, handleInventoryAction } from '../inventory.js';
+import { markAllRead } from '../journal.js';
 import { createLevelUpState, advanceLevelUp } from '../level-up.js';
 import { acceptQuest } from '../quest-integration.js';
 import { claimAllQuestRewards, hasPendingRewards } from '../quest-rewards.js';
@@ -29,6 +30,18 @@ export function handleUIAction(state, action) {
 
   if (type === "CLOSE_HELP") {
     return { ...state, showHelp: false };
+  }
+
+  // Journal
+  if (type === 'OPEN_JOURNAL') {
+    if (state.phase === 'class-select') return null;
+    const next = markAllRead(state);
+    return { ...next, phase: 'journal', previousPhase: state.phase };
+  }
+
+  if (type === 'CLOSE_JOURNAL') {
+    if (state.phase !== 'journal') return null;
+    return { ...state, phase: state.previousPhase || 'exploration' };
   }
 
   // Settings

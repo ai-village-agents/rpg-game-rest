@@ -253,6 +253,7 @@ export function render(state, dispatch) {
         <button id="btnHelp">Help ❓</button>
         <button id="btnTalents">Talents ⭐</button>
         <button id="btnTavern">Tavern 🍺</button>
+        <button id="btnJournal">Journal 📔${renderJournalBadge(state)}</button>
       </div>
     `;
 
@@ -270,6 +271,7 @@ export function render(state, dispatch) {
     document.getElementById('btnTalents').onclick = () => dispatch({ type: 'VIEW_TALENTS' });
     document.getElementById('btnHelp').onclick = () => dispatch({ type: 'TOGGLE_HELP' });
     document.getElementById('btnTavern').onclick = () => dispatch({ type: 'VIEW_TAVERN' });
+    document.getElementById('btnJournal').onclick = () => dispatch({ type: 'OPEN_JOURNAL' });
 
     hud.querySelectorAll('.npc-talk-btn').forEach((btn) => {
       btn.onclick = () => dispatch({ type: 'TALK_TO_NPC', npcId: btn.dataset.npcid });
