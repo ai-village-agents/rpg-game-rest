@@ -7,6 +7,7 @@ import { createWorldState } from './map.js';
 import { createWeatherState } from './weather.js';
 import { createBestiaryState } from './bestiary.js';
 import { createCompanionState } from './companions.js';
+import { createNPCRelationshipManager } from './npc-relationships.js';
 
 export function initialState() {
   const playerBase = characters.player;
@@ -43,6 +44,7 @@ export function initialState() {
     bestiary: createBestiaryState(),
     tavernDice: createTavernDiceState(),
     ...createCompanionState(),
+    npcRelationshipManager: createNPCRelationshipManager(),
   };
 }
 
@@ -101,6 +103,7 @@ export function initialStateWithClass(classId) {
     bestiary: createBestiaryState(),
     tavernDice: createTavernDiceState(),
     ...createCompanionState(),
+    npcRelationshipManager: createNPCRelationshipManager(),
   };
 }
 
