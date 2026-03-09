@@ -2,6 +2,7 @@ import { calcLevel } from './characters/stats.js';
 import { checkLevelUps } from './level-up.js';
 import { createBattleSummary } from './battle-summary.js';
 import { pushLog } from './state.js';
+import { logLevelUp } from './journal.js';
 import { addSkillPoints, createTalentState } from './talents.js';
 
 const SKILL_POINTS_PER_LEVEL = 1;
@@ -53,6 +54,7 @@ export function handleStateTransitions(prevState, nextState) {
           };
           next = pushLog(next, `${player.name} reached level ${lu.newLevel}!`);
           next = pushLog(next, `Gained ${pointsToAdd} skill point(s)!`);
+          next = logLevelUp(next, lu.newLevel);
         }
       }
     }

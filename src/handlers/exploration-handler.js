@@ -6,6 +6,7 @@ import { buildPendingRewards, hasPendingRewards } from '../quest-rewards.js';
 import { getNPCsInRoom, createDialogState } from '../npc-dialog.js';
 import { pushLog } from '../state.js';
 import { advanceTime, tryChangeWeather, hasWeatherSystem } from '../weather.js';
+import { logLocationDiscovery } from '../journal.js';
 import {
   tryTriggerWorldEvent,
   tickWorldEvent,
@@ -88,6 +89,7 @@ export function handleExplorationAction(state, action) {
 
     if (result.transitioned) {
       next = pushLog(next, `You travel ${direction} and arrive at ${roomName}.`);
+      next = logLocationDiscovery(next, roomName);
     } else {
       next = pushLog(next, `You move ${direction}.`);
     }

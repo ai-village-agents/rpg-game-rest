@@ -10,6 +10,7 @@ import { getEffectiveCombatStats } from './combat/equipment-bonuses.js';
 import { getGoldMultiplier, getMpCostMultiplier } from './world-events.js';
 import { recordEncounter, recordDefeat } from './bestiary.js';
 import { rollLootDrop, applyLootToState } from './loot-tables.js';
+import { logCombatVictory, logBossDefeat } from './journal.js';
 
 // Minimal deterministic RNG (Park-Miller LCG)
 export function nextRng(seed) {
@@ -116,6 +117,11 @@ function applyVictoryDefeat(state) {
       }
     }
     state = pushLog(state, `Victory! The ${state.enemy.name} dissolves.`);
+    // Log to journal
+    state = logCombatVictory(state, state.enemy.name, goldGained, xpGained);
+    if (state.enemy.isBoss) {
+      state = logBossDefeat(state, state.enemy.name);
+    }
   }
   if (state.player.hp <= 0) {
     state = { ...state, phase: 'defeat' };
