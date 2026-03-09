@@ -110,6 +110,7 @@ export function executeEnemyAbility(state, abilityId) {
       targetElement: null,
       rngValue,
       abilityPower: ability.power,
+      worldEvent: nextState.worldEvent || null,
     });
 
     const newPlayerHp = clamp(

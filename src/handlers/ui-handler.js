@@ -268,7 +268,7 @@ export function handleUIAction(state, action) {
 
   if (type === 'BUY_ITEM') {
     if (state.phase !== 'shop' || !state.shopState) return null;
-    const result = buyItem(state.player, state.shopState, action.itemId, action.quantity || 1);
+    const result = buyItem(state.player, state.shopState, action.itemId, action.quantity || 1, state.worldEvent || null);
     return { ...state, player: result.player, shopState: result.shopState };
   }
 

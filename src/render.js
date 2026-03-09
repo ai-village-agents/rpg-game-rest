@@ -933,7 +933,7 @@ if (state.phase === 'achievements') {
   }
 
   if (state.phase === 'shop' && state.shopState) {
-    const shopHtml = renderShopPanel(state.shopState, state.player);
+    const shopHtml = renderShopPanel(state.shopState, state.player, state.worldEvent || null);
 
     hud.innerHTML = shopHtml;
 

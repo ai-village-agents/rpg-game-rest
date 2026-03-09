@@ -3,6 +3,7 @@
 
 import { items as itemsData, rarityColors } from './data/items.js';
 import { getBuyPrice, getSellPrice, getSellableItems } from './shop.js';
+import { getShopDiscount } from './world-events.js';
 
 function esc(s) {
   return String(s)
@@ -19,7 +20,7 @@ function esc(s) {
  * @param {object} player - Player state
  * @returns {string} HTML string
  */
-export function renderShopPanel(shopState, player) {
+export function renderShopPanel(shopState, player, worldEvent = null) {
   const gold = player?.gold ?? 0;
 
   const tabBuyClass = shopState.tab === 'buy' ? 'shop-tab active' : 'shop-tab';
@@ -27,7 +28,7 @@ export function renderShopPanel(shopState, player) {
 
   let itemsHtml = '';
   if (shopState.tab === 'buy') {
-    itemsHtml = renderBuyTab(shopState, gold);
+    itemsHtml = renderBuyTab(shopState, gold, worldEvent);
   } else {
     itemsHtml = renderSellTab(player);
   }
@@ -53,7 +54,7 @@ export function renderShopPanel(shopState, player) {
   `;
 }
 
-function renderBuyTab(shopState, playerGold) {
+function renderBuyTab(shopState, playerGold, worldEvent) {
   const availableStock = shopState.stock.filter(s => s.quantity > 0);
   if (availableStock.length === 0) {
     return '<div class="shop-empty">Nothing left in stock!</div>';
@@ -62,8 +63,12 @@ function renderBuyTab(shopState, playerGold) {
   return availableStock.map(entry => {
     const item = itemsData[entry.itemId];
     if (!item) return '';
-    const price = getBuyPrice(entry.itemId);
-    const canAfford = playerGold >= price;
+    const basePrice = getBuyPrice(entry.itemId);
+    const discount = getShopDiscount(worldEvent);
+    const discountedPrice = Math.max(1, Math.floor(basePrice * (1 - discount)));
+    const discountPct = Math.round(discount * 100);
+    const discountLabel = discountPct > 0 ? ` (-${discountPct}%)` : '';
+    const canAfford = playerGold >= discountedPrice;
     const rarityColor = rarityColors[item.rarity] || '#999';
     const typeIcon = getTypeIcon(item.type);
     const statsText = getStatsText(item);
@@ -78,7 +83,7 @@ function renderBuyTab(shopState, playerGold) {
         ${statsText ? `<div class="shop-item-stats">${statsText}</div>` : ''}
         <div class="shop-item-footer">
           <span class="shop-item-stock">Stock: ${entry.quantity}</span>
-          <span class="shop-item-price">💰 ${price}</span>
+          <span class="shop-item-price">💰 ${discountedPrice}${discountLabel}</span>
           <button class="shop-buy-btn" data-item-id="${esc(entry.itemId)}" ${canAfford ? '' : 'disabled'}>Buy</button>
         </div>
       </div>

@@ -7,7 +7,7 @@ import { calculateDamage, calculateHeal, getElementMultiplier } from './combat/d
 import { StatusEffect } from './combat/status-effects.js';
 import { selectEnemyAction, executeEnemyAbility } from './enemy-abilities.js';
 import { getEffectiveCombatStats } from './combat/equipment-bonuses.js';
-import { getGoldMultiplier, getMpCostMultiplier } from './world-events.js';
+import { getGoldMultiplier, getMpCostMultiplier, getDamageMultiplier } from './world-events.js';
 import { recordEncounter, recordDefeat } from './bestiary.js';
 import { rollLootDrop, applyLootToState } from './loot-tables.js';
 import { logCombatVictory, logBossDefeat } from './journal.js';
@@ -20,10 +20,12 @@ export function nextRng(seed) {
   return { seed: next, value: next / m };
 }
 
-function computeDamage({ attackerAtk, targetDef, targetDefending }) {
+function computeDamage({ attackerAtk, targetDef, targetDefending, worldEvent }) {
   const defendBonus = targetDefending ? 3 : 0;
   const raw = attackerAtk - (targetDef + defendBonus);
-  return Math.max(1, raw);
+  const baseDamage = Math.max(1, raw);
+  const mult = getDamageMultiplier(worldEvent);
+  return Math.max(1, Math.floor(baseDamage * mult));
 }
 
 function isStunned(entity) {
@@ -172,6 +174,7 @@ export function playerAttack(state) {
     attackerAtk: playerStats.atk,
     targetDef: state.enemy.def,
     targetDefending: state.enemy.defending,
+    worldEvent: state.worldEvent || null,
   });
 
   const enemyHp = clamp(state.enemy.hp - damage, 0, state.enemy.maxHp);
@@ -321,6 +324,7 @@ export function playerUseAbility(state, abilityId) {
         targetElement: state.enemy.element ?? null,
         rngValue,
         abilityPower: ability.power,
+        worldEvent: state.worldEvent || null,
       });
 
       const enemyHp = clamp(state.enemy.hp - damage, 0, state.enemy.maxHp);
@@ -514,6 +518,7 @@ export function enemyAct(state) {
       attackerAtk: state.enemy.atk,
       targetDef: defenderStats.def,
       targetDefending: state.player.defending,
+      worldEvent: state.worldEvent || null,
     });
 
     const playerHp = clamp(state.player.hp - damage, 0, state.player.maxHp);
