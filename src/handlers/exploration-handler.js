@@ -7,6 +7,7 @@ import { getNPCsInRoom, createDialogState } from '../npc-dialog.js';
 import { pushLog } from '../state.js';
 import { advanceTime, tryChangeWeather, hasWeatherSystem } from '../weather.js';
 import { logLocationDiscovery } from '../journal.js';
+import { createNPCRelationshipManager, ReputationEvent, RelationshipLevel } from '../npc-relationships.js';
 import {
   tryTriggerWorldEvent,
   tickWorldEvent,
@@ -193,12 +194,20 @@ export function handleExplorationAction(state, action) {
     if (!npc) {
       return pushLog(state, 'That person is not here.');
     }
-    const dialogState = createDialogState(npc);
+    const npcRelationshipManager = state.npcRelationshipManager ?? createNPCRelationshipManager();
+    npcRelationshipManager.modifyReputation(
+      npc.id,
+      ReputationEvent.DIALOGUE_POSITIVE.value,
+      ReputationEvent.DIALOGUE_POSITIVE
+    );
+    const relationshipLevel = npcRelationshipManager.getRelationshipLevel(npc.id) || RelationshipLevel.NEUTRAL;
+    const dialogState = createDialogState(npc, relationshipLevel);
     return {
       ...state,
       phase: 'dialog',
       dialogState,
       preDialogPhase: 'exploration',
+      npcRelationshipManager,
     };
   }
 
