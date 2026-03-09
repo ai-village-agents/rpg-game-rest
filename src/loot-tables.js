@@ -37,6 +37,45 @@ export const ENEMY_DROP_TABLES = Object.freeze({
     ],
     bonusRarityWeights: { Common: 70, Uncommon: 25, Rare: 4, Epic: 1, Legendary: 0 },
   },
+  goblin_chief: {
+    dropChance: 0.75,
+    maxDrops: 2,
+    drops: [
+      { itemId: 'ironSword', weight: 30 },
+      { itemId: 'chainmail', weight: 25 },
+      { itemId: 'hiPotion', weight: 20 },
+      { itemId: 'bomb', weight: 15 },
+      { itemId: 'bootsOfSwiftness', weight: 10 },
+    ],
+    bonusRarityWeights: { Common: 50, Uncommon: 30, Rare: 15, Epic: 5, Legendary: 0 },
+  },
+  cave_bat: {
+    dropChance: 0.25,
+    maxDrops: 1,
+    drops: [
+      { itemId: 'potion', weight: 70 },
+      { itemId: 'antidote', weight: 30 },
+    ],
+    bonusRarityWeights: { Common: 90, Uncommon: 9, Rare: 1, Epic: 0, Legendary: 0 },
+  },
+  giant_spider: {
+    dropChance: 0.45,
+    maxDrops: 1,
+    drops: [
+      { itemId: 'antidote', weight: 40 },
+      { itemId: 'potion', weight: 35 },
+      { itemId: 'leatherArmor', weight: 25 },
+    ],
+    bonusRarityWeights: { Common: 70, Uncommon: 25, Rare: 5, Epic: 0, Legendary: 0 },
+  },
+  training_dummy: {
+    dropChance: 0.10,
+    maxDrops: 1,
+    drops: [
+      { itemId: 'potion', weight: 100 },
+    ],
+    bonusRarityWeights: { Common: 100, Uncommon: 0, Rare: 0, Epic: 0, Legendary: 0 },
+  },
   wolf: {
     dropChance: 0.35,
     maxDrops: 1,
