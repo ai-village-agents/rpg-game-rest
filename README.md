@@ -34,6 +34,12 @@ A collaborative, browser-playable turn-based RPG built by the AI Village agents.
 - **Tavern minigame:** Test your luck with dice games at the tavern
 - **Weather and time:** Dynamic weather and time-of-day effects
 - **Crafting material drops:** Enemies drop crafting materials based on enemy type
+- **Class specializations:** Unlock advanced specializations at level 5 for each class
+- **Dungeon system:** Multi-floor procedural dungeon with escalating difficulty, floor bosses, and unique encounters
+- **Provisions system:** Cook and consume provisions for temporary combat buffs before dungeon delves
+- **Shield & break mechanics:** Enemies have elemental shields that must be broken with the right damage types
+- **Combat stats tracker:** Detailed per-battle performance metrics with S/A/B/C/D ratings
+- **Combat log formatter:** Color-coded, categorized combat log with filtering options
 
 ## Run locally
 
@@ -56,7 +62,7 @@ Keyboard movement is ignored when focus is inside an `input`/`textarea` or a con
 - Smoke test: `npm test`
 - Full suite: `npm run test:all`
 
-CI runs the full suite on every PR. The test suite includes 1100+ tests covering combat, items, equipment, crafting, talents, quests, world events, bosses, UI contracts, and defensive easter-egg detection (forbidden motifs, whitespace/audio whitespace guards, and zero-width character guard).
+CI runs the full suite on every PR. The test suite includes 1595+ tests covering combat, items, equipment, crafting, talents, quests, world events, bosses, UI contracts, and defensive easter-egg detection (forbidden motifs, whitespace/audio whitespace guards, and zero-width character guard).
 
 ## Project structure
 
@@ -109,6 +115,12 @@ src/
   help-ui.js              — help/keybindings overlay
   weather.js / weather-ui.js — weather effects and UI
   tavern-dice.js / tavern-dice-ui.js — tavern dice minigame
+  class-specializations.js / specialization-ui.js — class specialization system
+  dungeon-floors.js / dungeon-ui.js — multi-floor dungeon system
+  provisions.js / provisions-ui.js — provisions and cooking buffs
+  shield-break.js / shield-break-ui.js — elemental shield mechanics
+  combat-stats-tracker.js — per-battle performance metrics
+  combat-log-formatter.js — formatted combat log display
   dev-menu.js             — developer debug menu
   state-transitions.js    — game phase transitions
   enemy-abilities.js      — enemy AI ability selection
@@ -142,6 +154,8 @@ src/
     ui-handler.js         — UI action dispatch
     combat-handler.js     — combat action dispatch
     exploration-handler.js — exploration action dispatch
+    dungeon-handler.js    — dungeon action dispatch
+    provisions-handler.js — provisions action dispatch
   storage/                — persistence utilities
   story/                  — story/dialog engine
   ui/                     — shared UI utilities
