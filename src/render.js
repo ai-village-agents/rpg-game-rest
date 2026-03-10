@@ -29,6 +29,7 @@ import { renderJournalPanel, renderJournalBadge } from './journal-ui.js';
 import { renderCompanionPanel, renderCompanionHUD, renderCompanionBadge } from './companions-ui.js';
 import { renderDungeonPanel, renderDungeonActions, attachDungeonHandlers, getDungeonStyles, shouldShowDungeonEntrance } from './dungeon-ui.js';
 import { renderProvisionsPanel, renderProvisionBuffs, attachProvisionsHandlers, getProvisionsStyles } from './provisions-ui.js';
+import { renderShieldBreakHUD } from './shield-break-ui.js';
 
 function hpLine(entity) {
   const pct = Math.round((entity.hp / entity.maxHp) * 100);
@@ -155,6 +156,19 @@ export function render(state, dispatch) {
     s.id = 'help-styles';
     s.textContent = getHelpStyles();
     document.head.appendChild(s);
+  }
+
+  if (!document.getElementById('shield-break-styles')) {
+    const styleEl = document.createElement('style');
+    styleEl.id = 'shield-break-styles';
+    styleEl.textContent = `
+      .shield-break-hud { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; padding: 4px 0; }
+      .shield-display { font-size: 1.1em; letter-spacing: 2px; }
+      .weakness-icon { font-size: 1em; }
+      .break-state-display { color: #ff4444; font-weight: bold; font-size: 0.9em; padding: 2px 6px; border: 1px solid #ff4444; border-radius: 3px; }
+      .break-active { background: rgba(255,68,68,0.15); }
+    `;
+    document.head.appendChild(styleEl);
   }
 
   const finalizeRender = () => {
@@ -335,6 +349,7 @@ export function render(state, dispatch) {
             <div>ATK / DEF</div><div><b>${state.enemy.atk}</b> / <b>${state.enemy.def}</b></div>
             <div>Defending</div><div><b>${state.enemy.defending ? 'Yes' : 'No'}</b></div>
             ${renderStatusEffectsRow(state.enemy.statusEffects ?? [])}
+            ${state.enemy?.maxShields > 0 ? `<div style="grid-column: 1 / -1">${renderShieldBreakHUD(state.enemy)}</div>` : ''}
           </div>
         </div>
 
