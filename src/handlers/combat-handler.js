@@ -4,6 +4,7 @@ import { getCraftingMaterialDrops, lookupItem } from '../crafting.js';
 import { addItemToInventory } from '../items.js';
 import { trackAchievements } from '../achievements.js';
 import { companionAutoAct, getCompanionBonuses } from '../companions.js';
+import { createCombatStats, recordPlayerAttack, recordPlayerDefend, recordAbilityUse, recordItemUse, recordPotionUse, recordDamageReceived as csRecordDamageReceived, recordFleeAttempt, recordCompanionAction, recordTurn, finalizeCombatStats, formatCombatStatsDisplay, recordShieldDestroyed, recordEnemyBroken, recordBreakDamage } from '../combat-stats-tracker.js';
 
 /**
  * Handles combat-related actions dispatched during 'player-turn'.
@@ -16,6 +17,11 @@ export function handleCombatAction(state, action) {
   // Only handle actions if it's player's turn
   if (state.phase !== 'player-turn') return null;
 
+  let cs = state.combatStats || null;
+  if (!cs && state.enemy) {
+    cs = createCombatStats(state.enemy?.name || 'Unknown Enemy', state.enemy?.isBoss || false);
+  }
+
   const type = action.type;
 
   if (type === 'PLAYER_ATTACK') {
@@ -27,20 +33,37 @@ export function handleCombatAction(state, action) {
     if (dmgDealt > 0) gs = recordDamageDealt(gs, dmgDealt);
     gs = recordTurnPlayed(gs);
     applyCraftingMaterialDrops(next);
+
+    if (cs) {
+      recordPlayerAttack(cs, dmgDealt);
+      recordTurn(cs, 'player');
+    }
     
-    return finalizeCombatState(next, { gameStats: gs });
+    return finalizeCombatState(next, { gameStats: gs, combatStats: cs });
   }
 
   if (type === 'PLAYER_DEFEND') {
     const next = playerDefend(state);
-    return finalizeCombatState(next);
+    if (cs) {
+      recordPlayerDefend(cs);
+      recordTurn(cs, 'player');
+    }
+    return finalizeCombatState(next, { combatStats: cs });
   }
 
   if (type === 'PLAYER_FLEE') {
     const next = playerFlee(state);
     let gs = next.gameStats || createGameStats();
     gs = recordTurnPlayed(gs);
-    return finalizeCombatState(next, { gameStats: gs });
+    if (cs) {
+      recordFleeAttempt(cs);
+      recordTurn(cs, 'player');
+      if (next.phase === 'fled') {
+        finalizeCombatStats(cs, 'fled', next.player?.hp ?? 0, next.player?.maxHp ?? 100);
+      }
+    }
+    const combatStatsSummary = cs && next.phase === 'fled' ? formatCombatStatsDisplay(cs) : undefined;
+    return finalizeCombatState(next, { gameStats: gs, combatStats: cs, combatStatsSummary });
   }
 
   if (type === 'PLAYER_POTION') {
@@ -49,7 +72,12 @@ export function handleCombatAction(state, action) {
     gs = recordItemUsed(gs, 'potion');
     gs = recordTurnPlayed(gs);
     applyCraftingMaterialDrops(next);
-    return finalizeCombatState(next, { gameStats: gs });
+    const healingDone = (next.player?.hp ?? 0) - (state.player?.hp ?? 0);
+    if (cs) {
+      recordPotionUse(cs, Math.max(0, healingDone));
+      recordTurn(cs, 'player');
+    }
+    return finalizeCombatState(next, { gameStats: gs, combatStats: cs });
   }
 
   if (type === 'PLAYER_ABILITY') {
@@ -62,8 +90,14 @@ export function handleCombatAction(state, action) {
     if (dmgDealt > 0) gs = recordDamageDealt(gs, dmgDealt);
     gs = recordTurnPlayed(gs);
     applyCraftingMaterialDrops(next);
+
+    const healingDone = Math.max(0, (next.player?.hp ?? 0) - (state.player?.hp ?? 0));
+    if (cs) {
+      recordAbilityUse(cs, action.abilityId, dmgDealt, healingDone);
+      recordTurn(cs, 'player');
+    }
     
-    return finalizeCombatState(next, { gameStats: gs });
+    return finalizeCombatState(next, { gameStats: gs, combatStats: cs });
   }
 
   if (type === 'PLAYER_ITEM') {
@@ -72,7 +106,12 @@ export function handleCombatAction(state, action) {
     gs = recordItemUsed(gs, action.itemId);
     gs = recordTurnPlayed(gs);
     applyCraftingMaterialDrops(next);
-    return finalizeCombatState(next, { gameStats: gs });
+    const healingDone = Math.max(0, (next.player?.hp ?? 0) - (state.player?.hp ?? 0));
+    if (cs) {
+      recordItemUse(cs, action.itemId, healingDone);
+      recordTurn(cs, 'player');
+    }
+    return finalizeCombatState(next, { gameStats: gs, combatStats: cs });
   }
 
   return null;
@@ -85,27 +124,69 @@ export function handleCombatAction(state, action) {
  * @returns {Object} New state after enemy action
  */
 export function handleEnemyTurnLogic(state) {
+    let cs = state.combatStats || null;
     const hpBefore = state.player?.hp ?? 0;
     const next = enemyAct(state);
     const dmgReceived = Math.max(0, hpBefore - (next.player?.hp ?? hpBefore));
     applyCraftingMaterialDrops(next);
+
+    if (cs) {
+      csRecordDamageReceived(cs, dmgReceived);
+      recordTurn(cs, 'enemy');
+    }
     
     if (dmgReceived > 0) {
-      let withGs = { ...next, gameStats: recordDamageReceived(next.gameStats || createGameStats(), dmgReceived) };
+      let withGs = { ...next, gameStats: recordDamageReceived(next.gameStats || createGameStats(), dmgReceived), combatStats: cs };
       // Companions auto-act after enemy turn (if still in combat)
       if (withGs.phase === 'player-turn' || withGs.phase === 'enemy-turn') {
+        const enemyHpBeforeCompanion = withGs.enemy?.hp ?? 0;
+        const playerHpBeforeCompanion = withGs.player?.hp ?? 0;
         const autoResult = companionAutoAct(withGs);
-        withGs = autoResult.state;
+        withGs = { ...autoResult.state, combatStats: cs };
+        if (cs) {
+          const enemyHpAfterCompanion = withGs.enemy?.hp ?? enemyHpBeforeCompanion;
+          const playerHpAfterCompanion = withGs.player?.hp ?? playerHpBeforeCompanion;
+          const companionDmg = Math.max(0, enemyHpBeforeCompanion - enemyHpAfterCompanion);
+          const companionHeal = Math.max(0, playerHpAfterCompanion - playerHpBeforeCompanion);
+          if (companionDmg > 0 || companionHeal > 0) {
+            recordCompanionAction(cs, companionDmg, companionHeal);
+          }
+        }
+      }
+      if (cs && (withGs.phase === 'victory' || withGs.phase === 'defeat')) {
+        finalizeCombatStats(cs, withGs.phase, withGs.player?.hp ?? 0, withGs.player?.maxHp ?? 100);
+        withGs = { ...withGs, combatStatsSummary: formatCombatStatsDisplay(cs) };
       }
       return withGs;
     }
     
     // Companions auto-act after enemy turn (if still in combat)
     if (next.phase === 'player-turn' || next.phase === 'enemy-turn') {
+      const enemyHpBeforeCompanion = next.enemy?.hp ?? 0;
+      const playerHpBeforeCompanion = next.player?.hp ?? 0;
       const autoResult = companionAutoAct(next);
-      return autoResult.state;
+      let withCompanion = autoResult.state;
+      if (cs) {
+        const enemyHpAfterCompanion = withCompanion.enemy?.hp ?? enemyHpBeforeCompanion;
+        const playerHpAfterCompanion = withCompanion.player?.hp ?? playerHpBeforeCompanion;
+        const companionDmg = Math.max(0, enemyHpBeforeCompanion - enemyHpAfterCompanion);
+        const companionHeal = Math.max(0, playerHpAfterCompanion - playerHpBeforeCompanion);
+        if (companionDmg > 0 || companionHeal > 0) {
+          recordCompanionAction(cs, companionDmg, companionHeal);
+        }
+      }
+      if (cs && (withCompanion.phase === 'victory' || withCompanion.phase === 'defeat')) {
+        finalizeCombatStats(cs, withCompanion.phase, withCompanion.player?.hp ?? 0, withCompanion.player?.maxHp ?? 100);
+        withCompanion = { ...withCompanion, combatStatsSummary: formatCombatStatsDisplay(cs) };
+      }
+      return { ...withCompanion, combatStats: cs };
     }
-    return next;
+    let finalized = next;
+    if (cs && (finalized.phase === 'victory' || finalized.phase === 'defeat')) {
+      finalizeCombatStats(cs, finalized.phase, finalized.player?.hp ?? 0, finalized.player?.maxHp ?? 100);
+      finalized = { ...finalized, combatStatsSummary: formatCombatStatsDisplay(cs) };
+    }
+    return { ...finalized, combatStats: cs };
 }
 
 function finalizeCombatState(next, overrides = {}) {
