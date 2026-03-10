@@ -348,6 +348,7 @@ export function render(state, dispatch) {
 
         ${renderCompanionHUD(state)}
       </div>
+      ${provisionBuffBar}
     `;
 
     const isPlayerTurn = state.phase === 'player-turn';
