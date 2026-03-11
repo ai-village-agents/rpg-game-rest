@@ -29,6 +29,7 @@ function getRoomDescription(worldState) {
 
 export function handleUIAction(state, action) {
   const type = action.type;
+  const isPreAdventure = state.phase === 'class-select' || state.phase === 'background-select';
 
   if (type === "TOGGLE_HELP") {
     return { ...state, showHelp: !state.showHelp };
@@ -40,7 +41,7 @@ export function handleUIAction(state, action) {
 
   // Journal
   if (type === 'OPEN_JOURNAL') {
-    if (state.phase === 'class-select') return null;
+    if (isPreAdventure) return null;
     const next = markAllRead(state);
     return { ...next, phase: 'journal', previousPhase: state.phase };
   }
@@ -52,7 +53,7 @@ export function handleUIAction(state, action) {
 
   // Settings
   if (type === 'VIEW_SETTINGS') {
-    if (state.phase === 'class-select') return null;
+    if (isPreAdventure) return null;
     return { ...state, phase: 'settings', previousPhase: state.phase, settings: loadSettings() };
   }
 
@@ -63,7 +64,7 @@ export function handleUIAction(state, action) {
 
   // Achievements
   if (type === 'VIEW_ACHIEVEMENTS') {
-    if (state.phase === 'class-select') return null;
+    if (isPreAdventure) return null;
     return { ...state, phase: 'achievements', previousPhase: state.phase };
   }
 
@@ -92,7 +93,7 @@ export function handleUIAction(state, action) {
 
   // Inventory
   if (type === 'VIEW_INVENTORY') {
-    if (state.phase === 'class-select') return null;
+    if (isPreAdventure) return null;
     return { ...state, phase: 'inventory', inventoryState: createInventoryState(state.phase) };
   }
 
@@ -103,12 +104,12 @@ export function handleUIAction(state, action) {
 
   // Quests / Quest Log
   if (type === 'VIEW_QUESTS' || type === 'VIEW_QUEST_LOG') {
-    if (state.phase === 'class-select') return null;
+    if (isPreAdventure) return null;
     return { ...state, phase: 'quests', previousPhase: state.phase };
   }
 
   if (type === 'VIEW_STATS') {
-    if (state.phase === 'class-select') return null;
+    if (isPreAdventure) return null;
     return { ...state, phase: 'stats', previousPhase: state.phase };
   }
 
@@ -349,7 +350,7 @@ export function handleUIAction(state, action) {
 
   // Crafting Actions
   if (type === 'VIEW_CRAFTING') {
-    if (state.phase === 'class-select') return null;
+    if (isPreAdventure) return null;
     if (!state.crafting) {
       state = { ...state, crafting: createCraftingState() };
     }
@@ -394,7 +395,7 @@ export function handleUIAction(state, action) {
 
   // Talents
   if (type === 'VIEW_TALENTS') {
-    if (state.phase === 'class-select') return null;
+    if (isPreAdventure) return null;
     if (!state.talentState) {
       state = { ...state, talentState: createTalentState() };
     }
@@ -433,7 +434,7 @@ export function handleUIAction(state, action) {
 
   // Companions
   if (type === 'OPEN_COMPANIONS') {
-    if (state.phase === 'class-select') return null;
+    if (isPreAdventure) return null;
     return { ...state, phase: 'companions', previousPhase: state.phase };
   }
 
@@ -456,7 +457,7 @@ export function handleUIAction(state, action) {
 
   // Bestiary
   if (type === 'VIEW_BESTIARY') {
-    if (state.phase === 'class-select') return null;
+    if (isPreAdventure) return null;
     return { ...state, phase: 'bestiary', previousPhase: state.phase };
   }
   if (type === 'CLOSE_BESTIARY') {
@@ -485,7 +486,7 @@ export function handleUIAction(state, action) {
   }
   
   if (type === 'VIEW_TAVERN') {
-    if (state.phase === 'class-select') return null;
+    if (isPreAdventure) return null;
     return { ...state, phase: 'tavern-dice', previousPhase: state.phase };
   }
   if (type === 'CLOSE_TAVERN') {

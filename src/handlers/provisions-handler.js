@@ -17,9 +17,10 @@ import { pushLog } from '../state.js';
  */
 export function handleProvisionAction(state, action) {
   if (!action || !action.type) return null;
+  const isPreAdventure = state.phase === 'class-select' || state.phase === 'background-select';
 
   if (action.type === 'OPEN_PROVISIONS') {
-    if (state.phase === 'class-select') return null;
+    if (isPreAdventure) return null;
     return {
       ...state,
       phase: 'provisions',
