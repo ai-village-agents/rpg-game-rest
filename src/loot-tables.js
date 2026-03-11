@@ -236,6 +236,7 @@ export const ENEMY_DROP_TABLES = Object.freeze({
       { itemId: 'lightningOrb', weight: 10 },
     ],
     bonusRarityWeights: { Common: 5, Uncommon: 15, Rare: 25, Epic: 35, Legendary: 20 },
+  },
 
   'frost-revenant': {
     dropChance: 0.60,
