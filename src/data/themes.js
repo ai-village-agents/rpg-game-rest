@@ -78,6 +78,7 @@ export const DEFAULT_THEME = 'midnight';
  * @param {string} themeId - Theme ID to apply
  */
 export function applyTheme(themeId) {
+  if (typeof document === 'undefined') return;
   const theme = THEMES[themeId] || THEMES[DEFAULT_THEME];
   const root = document.documentElement;
   
