@@ -29,7 +29,7 @@ import {
   autoReviveCompanionsAfterCombat,
 } from './companion-combat.js';
 import { getEnemyShieldData, checkWeakness, applyShieldDamage, processBreakState, BREAK_DAMAGE_MULTIPLIER } from './shield-break.js';
-import { initCombatBattleLog, logPlayerAttack, logDamageReceived, logHealing, logItemUsed, logStatusApplied, logTurnStart, logVictory, logDefeat } from './combat-battle-log-integration.js';
+import { initCombatBattleLog, logPlayerAttack, logPlayerAbility, logDamageDealt, logDamageReceived, logHealing, logItemUsed, logStatusApplied, logStatusExpired, logTurnStart, logTurnEnd, logVictory, logDefeat } from './combat-battle-log-integration.js';
 
 // Minimal deterministic RNG (Park-Miller LCG)
 export function nextRng(seed) {
@@ -121,6 +121,7 @@ function processTurnStart(state, actorKey) {
     const duration = effect.duration ?? 0;
     if (duration <= 0) {
       nextState = pushLog(nextState, `${actorPossessive} ${effect.type} wears off.`);
+      logStatusExpired(effect.type, actorKey === 'player' ? 'Player' : state.enemy.name);
       continue;
     }
 
@@ -476,12 +477,14 @@ export function playerUseAbility(state, abilityId) {
       let msg = `${state.enemy.name} takes ${damage} ${abilityElement} damage!`;
       if (critical) msg += ' Critical hit!';
       state = pushLog(state, msg);
+      logPlayerAbility(ability.name, damage, abilityElement, state.enemy.name);
     }
 
     // Apply status effect to enemy
     if (ability.statusEffect) {
       state = addStatusEffect(state, 'enemy', ability.statusEffect);
       state = pushLog(state, `${state.enemy.name} is afflicted with ${ability.statusEffect.name}!`);
+      logStatusApplied(ability.statusEffect.name, state.enemy.name, ability.statusEffect.duration ?? 3);
     }
   } else if (ability.targetType === 'single-ally' || ability.targetType === 'all-allies' || ability.targetType === 'self') {
     // Healing ability targeting player
@@ -494,12 +497,14 @@ export function playerUseAbility(state, abilityId) {
         player: { ...state.player, hp: newHp },
       };
       state = pushLog(state, `You are healed for ${newHp - oldHp} HP!`);
+      logHealing(newHp - oldHp, ability.name);
     }
 
     // Apply buff/status to player
     if (ability.statusEffect) {
       state = addStatusEffect(state, 'player', ability.statusEffect);
       state = pushLog(state, `You gain ${ability.statusEffect.name}!`);
+      logStatusApplied(ability.statusEffect.name, 'Player', ability.statusEffect.duration ?? 3);
     }
 
     // Handle purify special: remove negative status effects
@@ -568,6 +573,7 @@ export function playerUseItem(state, itemId) {
       player: { ...state.player, hp: newHp },
     };
     state = pushLog(state, `You use ${item.name} and restore ${actualHeal} HP.`);
+    logItemUsed(item.name, `Restored ${actualHeal} HP`);
   }
 
   // Handle mana restoration (ether)
@@ -582,6 +588,7 @@ export function playerUseItem(state, itemId) {
       player: { ...state.player, mp: newMp },
     };
     state = pushLog(state, `You use ${item.name} and restore ${actualRestore} MP.`);
+    logItemUsed(item.name, `Restored ${actualRestore} MP`);
   }
 
   // Handle damage items (bomb)
@@ -594,6 +601,7 @@ export function playerUseItem(state, itemId) {
       enemy: { ...state.enemy, hp: enemyHp },
     };
     state = pushLog(state, `You throw ${item.name} for ${damage} ${element} damage!`);
+    logItemUsed(item.name, `Dealt ${damage} ${element} damage to ${state.enemy.name}`);
     state = applyVictoryDefeat(state);
     if (state.phase === 'victory' || state.phase === 'defeat') return state;
   }
@@ -609,6 +617,7 @@ export function playerUseItem(state, itemId) {
     };
     if (removed > 0) {
       state = pushLog(state, `You use ${item.name} and cure ${effect.cleanse.join(', ')}!`);
+      logItemUsed(item.name, `Cured ${effect.cleanse.join(', ')}`);
     } else {
       state = pushLog(state, `You use ${item.name}, but there was nothing to cure.`);
     }
