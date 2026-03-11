@@ -36,6 +36,7 @@ import { triggerFloatingTextFromLog, getFloatingTextStyles } from './floating-te
 import { renderBattleLogPanel, getBattleLogStyles } from './battle-log-ui.js';
 import { getBattleLogEntries } from './combat-battle-log-integration.js';
 import { filterAndSortItems, renderSortFilterControls, SORT_MODES, FILTER_MODES } from './inventory-sort-filter.js';
+import { BACKGROUND_ORDER, BACKGROUNDS } from './data/backgrounds.js';
 
 /** Track previous log for floating text diff */
 let _previousLog = [];
@@ -87,6 +88,37 @@ function inventorySummary(player) {
     .join('');
   const gold = player?.gold ?? 0;
   return entries + `<div>Gold</div><div><b>${gold}</b></div>`;
+}
+
+function summarizeBonuses(bonuses) {
+  if (!bonuses) return 'No bonuses';
+  const parts = [];
+  const add = (label, value) => {
+    if (typeof value === 'number' && value !== 0) {
+      const sign = value > 0 ? '+' : '';
+      parts.push(`${sign}${value} ${label}`);
+    }
+  };
+
+  add('HP', bonuses.hp);
+  add('Max HP', bonuses.maxHp);
+  add('MP', bonuses.mp);
+  add('Max MP', bonuses.maxMp);
+  add('ATK', bonuses.atk);
+  add('DEF', bonuses.def);
+  add('SPD', bonuses.spd);
+  add('gold', bonuses.gold);
+
+  if (bonuses.inventory && typeof bonuses.inventory === 'object') {
+    for (const [item, count] of Object.entries(bonuses.inventory)) {
+      if (typeof count === 'number' && count !== 0) {
+        const sign = count > 0 ? '+' : '';
+        parts.push(`${sign}${count} ${item}`);
+      }
+    }
+  }
+
+  return parts.length ? parts.join(', ') : 'No bonuses';
 }
 
 function renderMapPanel(state, dispatch) {
@@ -315,6 +347,38 @@ export function render(state, dispatch) {
         classId: button.dataset.class,
         name: nameInput?.value ?? '',
       });
+    });
+
+    log.innerHTML = state.log
+      .slice()
+      .reverse()
+      .map((line) => formatLogEntryHtml(line))
+      .join('');
+    finalizeRender();
+    return;
+  }
+
+  // --- Background Select Phase ---
+  if (state.phase === 'background-select') {
+    const cards = BACKGROUND_ORDER.map((backgroundId) => {
+      const bg = BACKGROUNDS[backgroundId];
+      if (!bg) return '';
+      const bonusSummary = summarizeBonuses(bg.bonuses);
+      return `
+        <div class="card">
+          <h2>${esc(bg.name)}</h2>
+          <div>${esc(bg.description)}</div>
+          <div class="bonus-summary"><b>Bonuses:</b> ${esc(bonusSummary)}</div>
+          <button data-background="${esc(bg.id)}">Choose ${esc(bg.name)}</button>
+        </div>
+      `;
+    }).join('');
+
+    hud.innerHTML = `<div class="row">${cards}</div>`;
+    actions.innerHTML = '';
+
+    hud.querySelectorAll('button[data-background]').forEach((button) => {
+      button.onclick = () => dispatch({ type: 'SELECT_BACKGROUND', backgroundId: button.dataset.background });
     });
 
     log.innerHTML = state.log

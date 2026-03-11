@@ -1,4 +1,5 @@
 import { CLASS_DEFINITIONS } from '../characters/classes.js';
+import { BACKGROUNDS } from '../data/backgrounds.js';
 import { initialState, initialStateWithClass, pushLog, loadFromLocalStorage, saveToLocalStorage } from '../state.js';
 import { initQuestState } from '../quest-integration.js';
 import { createGameStats, recordBattleFled } from '../game-stats.js';
@@ -22,22 +23,81 @@ export function handleSystemAction(state, action) {
     }
 
     const selectedName = typeof action.name === 'string' ? action.name.trim() : '';
-    
+
     // Initialize state with selected class
-    let next = initialStateWithClass(action.classId, selectedName);
-    
-    // Add exploration, quests, stats
-    next = {
+    const baseState = initialStateWithClass(action.classId, selectedName);
+    const className = action.classId[0].toUpperCase() + action.classId.slice(1);
+
+    return {
+      ...baseState,
+      phase: 'background-select',
+      log: [
+        `You have chosen the path of the ${className}.`,
+        'Choose your background.',
+      ],
+    };
+  }
+
+  if (type === 'SELECT_BACKGROUND') {
+    const background = BACKGROUNDS[action.backgroundId];
+    if (!background) {
+      return pushLog(state, 'Unknown background selected.');
+    }
+
+    const bonuses = background.bonuses || {};
+    const player = { ...(state.player || {}), backgroundId: background.id };
+
+    const applyFlat = (key) => {
+      if (typeof bonuses[key] === 'number') {
+        player[key] = (player[key] ?? 0) + bonuses[key];
+      }
+    };
+
+    applyFlat('hp');
+    applyFlat('maxHp');
+    applyFlat('mp');
+    applyFlat('maxMp');
+    applyFlat('atk');
+    applyFlat('def');
+    applyFlat('spd');
+    applyFlat('gold');
+
+    if (bonuses.inventory && typeof bonuses.inventory === 'object') {
+      const inventory = { ...(player.inventory || {}) };
+      for (const [itemId, count] of Object.entries(bonuses.inventory)) {
+        if (typeof count === 'number') {
+          inventory[itemId] = (inventory[itemId] ?? 0) + count;
+        }
+      }
+      player.inventory = inventory;
+    }
+
+    if (typeof player.maxHp === 'number' && typeof player.hp === 'number') {
+      player.hp = Math.min(player.hp, player.maxHp);
+    }
+    if (typeof player.maxMp === 'number' && typeof player.mp === 'number') {
+      player.mp = Math.min(player.mp, player.maxMp);
+    }
+
+    const classId = state.player?.classId;
+    const className = typeof classId === 'string' && classId
+      ? classId[0].toUpperCase() + classId.slice(1)
+      : 'Adventurer';
+
+    const next = {
       questState: initQuestState(),
-      ...next,
+      ...state,
+      player,
       phase: 'exploration',
       log: [
-        `You have chosen the path of the ${action.classId[0].toUpperCase() + action.classId.slice(1)}.`,
-        `${getRoomDescription(next.world)} You may explore in any direction.`,
+        `You have chosen the path of the ${className}.`,
+        `You carry the experience of a ${background.name}.`,
+        `${getRoomDescription(state.world)} You may explore in any direction.`,
       ],
       visitedRooms: initVisitedRooms(1, 1),
       gameStats: createGameStats(),
     };
+
     return next;
   }
 
@@ -64,13 +124,13 @@ export function handleSystemAction(state, action) {
     // let gs = state.gameStats ?? createGameStats();
     // gs = recordBattleFled(gs);
     // state = { phase: 'class-select', ... }
-    
+
     // We can't really save the stats if we reset the state unless we persist them globally or to a high score list.
     // For now, we just reset to class selection.
-    
-    return { 
-      phase: 'class-select', 
-      log: ['The adventure ends... but another awaits. Select your class.'] 
+
+    return {
+      phase: 'class-select',
+      log: ['The adventure ends... but another awaits. Select your class.'],
     };
   }
 
