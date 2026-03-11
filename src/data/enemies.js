@@ -1,3 +1,41 @@
+const ADJECTIVES = [
+  'Vicious',
+  'Ancient',
+  'Cunning',
+  'Savage',
+  'Shadowed',
+  'Glorious',
+  'Corrupted',
+  'Furious',
+  'Wicked',
+  'Mystic',
+];
+
+const TITLES = [
+  'of Doom',
+  'the Swift',
+  'from Beyond',
+  'of the Night',
+  'the Unbound',
+  'of Ruin',
+  'the Relentless',
+  'of the Depths',
+  'the Eternal',
+  'of Legends',
+];
+
+export function generateRandomName(baseName) {
+  const name = typeof baseName === 'string' ? baseName.trim() : '';
+  if (!name) {
+    return 'Mysterious Foe';
+  }
+  const adjective = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+  const title = TITLES[Math.floor(Math.random() * TITLES.length)];
+  return `${adjective} ${name} ${title}`;
+}
+
+export const generateProceduralName = generateRandomName;
+
 export const ENEMIES = {
   slime: {
     id: 'slime',
@@ -707,7 +745,11 @@ const ENCOUNTER_TABLE = {
 export function getEnemy(id) {
   const enemy = ENEMIES[id];
   if (!enemy) return null;
-  return JSON.parse(JSON.stringify(enemy));
+  const copy = JSON.parse(JSON.stringify(enemy));
+  return {
+    ...copy,
+    displayName: generateProceduralName(copy.name),
+  };
 }
 
 /**
