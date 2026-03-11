@@ -7,6 +7,7 @@
 import { items } from './data/items.js';
 import { getEquipmentSetBonuses } from './equipment-sets.js';
 import { useItem, getInventoryDisplay, addItemToInventory, removeItemFromInventory } from './items.js';
+import { SORT_MODES, FILTER_MODES } from './inventory-sort-filter.js';
 
 // Equipment slot definitions
 export const EQUIPMENT_SLOTS = {
@@ -351,6 +352,8 @@ export function createInventoryState(returnPhase) {
     returnPhase: returnPhase || 'exploration',
     selectedItem: null,
     message: null,
+    sortBy: SORT_MODES.TYPE,
+    filterBy: FILTER_MODES.ALL,
   };
 }
 
@@ -430,6 +433,20 @@ export function handleInventoryAction(gameState, action) {
     return {
       ...gameState,
       inventoryState: { ...invState, screen: INVENTORY_SCREENS.MAIN, selectedItem: null, message: null },
+    };
+  }
+
+  if (type === 'INVENTORY_SET_SORT') {
+    return {
+      ...gameState,
+      inventoryState: { ...invState, sortBy: action.sortBy || SORT_MODES.TYPE },
+    };
+  }
+
+  if (type === 'INVENTORY_SET_FILTER') {
+    return {
+      ...gameState,
+      inventoryState: { ...invState, filterBy: action.filterBy || FILTER_MODES.ALL },
     };
   }
 

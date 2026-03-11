@@ -33,6 +33,7 @@ import { renderShieldBreakHUD } from './shield-break-ui.js';
 import { renderCombatStatsHtml } from './battle-summary.js';
 import { formatLogEntryHtml, getLogStyles } from './combat-log-formatter.js';
 import { triggerFloatingTextFromLog, getFloatingTextStyles } from './floating-text.js';
+import { filterAndSortItems, renderSortFilterControls, SORT_MODES, FILTER_MODES } from './inventory-sort-filter.js';
 
 /** Track previous log for floating text diff */
 let _previousLog = [];
@@ -1023,10 +1024,16 @@ if (state.phase === 'achievements') {
           .join('')
       : '<div><i>No bonuses</i></div><div></div>';
 
-    // Build inventory items list HTML
-    const allItems = [...categorized.consumables, ...categorized.weapons, ...categorized.armors, ...categorized.accessories, ...categorized.unknown];
-    const itemRows = allItems.length === 0 ? '<div class="kv"><div><i>Empty</i></div><div></div></div>' :
-      '<div class="kv">' + allItems.map(({ id, name, count, type, equippable, usable, rarity }) => {
+    // Build inventory items list HTML with sort & filter
+    const allItemsRaw = [...categorized.consumables, ...categorized.weapons, ...categorized.armors, ...categorized.accessories, ...categorized.unknown];
+    const currentSort = invState.sortBy || SORT_MODES.TYPE;
+    const currentFilter = invState.filterBy || FILTER_MODES.ALL;
+    const allItems = filterAndSortItems(allItemsRaw, currentFilter, currentSort);
+    const sortFilterHtml = renderSortFilterControls(currentSort, currentFilter, allItemsRaw.length, allItems.length);
+    const itemRows = allItems.length === 0 ? '<div class="kv"><div><i>No items match filter</i></div><div></div></div>' :
+      '<div class="kv">' + allItems.map(({ id, name, count, type, rarity }) => {
+        const usable = type === 'consumable';
+        const equippable = type === 'weapon' || type === 'armor' || type === 'accessory';
         const useBtn = usable ? `<button class="inv-btn" data-action="use" data-item="${esc(id)}">Use</button>` : '';
         let eqBtn = '';
         let comparisonHtml = '';
@@ -1145,6 +1152,7 @@ if (state.phase === 'achievements') {
     actions.innerHTML = `
       <div class="card">
         <h2>Items</h2>
+        ${sortFilterHtml}
         ${itemRows}
       </div>
       <div class="buttons">
@@ -1158,6 +1166,17 @@ if (state.phase === 'achievements') {
     // Wire back button if details shown
     const backBtn = document.getElementById('btnInvBack');
     if (backBtn) backBtn.onclick = () => dispatch({ type: 'INVENTORY_BACK' });
+
+    // Wire sort select
+    const sortSelect = document.getElementById('invSortSelect');
+    if (sortSelect) {
+      sortSelect.onchange = () => dispatch({ type: 'INVENTORY_SET_SORT', sortBy: sortSelect.value });
+    }
+
+    // Wire filter buttons
+    actions.querySelectorAll('.inv-filter-btn').forEach(btn => {
+      btn.onclick = () => dispatch({ type: 'INVENTORY_SET_FILTER', filterBy: btn.dataset.filter });
+    });
 
     // Wire item action buttons
     actions.querySelectorAll('.inv-btn').forEach(btn => {
