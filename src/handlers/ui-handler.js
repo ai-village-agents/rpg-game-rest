@@ -400,7 +400,34 @@ export function handleUIAction(state, action) {
     if (!state.talentState) {
       state = { ...state, talentState: createTalentState() };
     }
-    return { ...state, phase: 'talents', previousPhase: state.phase };
+    return {
+      ...state,
+      phase: 'talents',
+      previousPhase: state.phase,
+      talentUiState: state.talentUiState || { sortMethod: 'tier', filterText: '' },
+    };
+  }
+
+  if (type === 'SET_TALENT_SORT_METHOD') {
+    if (state.phase !== 'talents') return null;
+    return {
+      ...state,
+      talentUiState: {
+        ...(state.talentUiState || {}),
+        sortMethod: action.sortMethod || 'tier',
+      },
+    };
+  }
+
+  if (type === 'SET_TALENT_FILTER_TEXT') {
+    if (state.phase !== 'talents') return null;
+    return {
+      ...state,
+      talentUiState: {
+        ...(state.talentUiState || {}),
+        filterText: action.filterText || '',
+      },
+    };
   }
 
   if (type === 'ALLOCATE_TALENT') {

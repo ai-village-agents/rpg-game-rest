@@ -228,6 +228,37 @@ export function sortTalents(talents, sort, talentState) {
 // ============ COMBINED SORT & FILTER ============
 
 /**
+ * Apply text filtering and sorting to a provided talent list.
+ * @param {Array} talents - Talent subset to process (for example, one category)
+ * @param {Object} options - Sort/filter options
+ * @param {string} options.sortMethod - UI sort method
+ * @param {string} options.filterText - Free-text filter
+ * @param {Object} options.talentState - Player's talent state
+ * @returns {Array} Filtered/sorted talents
+ */
+export function applyTalentSortFilter(talents, { sortMethod = 'tier', filterText = '', talentState } = {}) {
+  if (!Array.isArray(talents)) return [];
+
+  const normalizedFilter = String(filterText || '').trim().toLowerCase();
+  const normalizedSort = sortMethod === 'points' ? 'allocated' : sortMethod;
+
+  let result = [...talents];
+
+  if (normalizedFilter) {
+    result = result.filter((talent) => {
+      const name = String(talent?.name || '').toLowerCase();
+      const id = String(talent?.id || '').toLowerCase();
+      const description = String(talent?.description || '').toLowerCase();
+      return name.includes(normalizedFilter)
+        || id.includes(normalizedFilter)
+        || description.includes(normalizedFilter);
+    });
+  }
+
+  return sortTalents(result, normalizedSort, talentState);
+}
+
+/**
  * Apply both filter and sort to get final talent list
  * @param {Object} options - Configuration object
  * @param {string} options.filter - Filter value

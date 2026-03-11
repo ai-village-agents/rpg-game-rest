@@ -4,11 +4,12 @@
 
 import { TALENTS, TALENT_CATEGORIES, TIER_REQUIREMENTS, getTalentValue, getTalentDescription, getTalentsByCategory } from './data/talents.js';
 import { getTalentRank, canAllocateTalent, canDeallocateTalent, isTierUnlocked, arePrerequisitesMet } from './talents.js';
+import { applyTalentSortFilter } from './talents-sort-filter.js';
 
 /**
  * Render the talent tree screen
  */
-export function renderTalentTree(state) {
+export function renderTalentTree(state, sortMethod = 'tier', filterText = '') {
   const talentState = state.player?.talents;
   if (!talentState) {
     return `<div class="talent-tree-container">
@@ -20,6 +21,8 @@ export function renderTalentTree(state) {
     </div>`;
   }
 
+  const activeSortMethod = state.talentUiState?.sortMethod ?? sortMethod ?? 'tier';
+  const activeFilterText = state.talentUiState?.filterText ?? filterText ?? '';
   const categories = Object.values(TALENT_CATEGORIES);
   
   let html = `<div class="talent-tree-container">
@@ -32,11 +35,11 @@ export function renderTalentTree(state) {
     </div>
     <div class="talent-controls">
       <select class="talent-sort">
-        <option value="name">Name</option>
-        <option value="tier">Tier</option>
-        <option value="points">Points Invested</option>
+        <option value="name"${activeSortMethod === 'name' ? ' selected' : ''}>Name</option>
+        <option value="tier"${activeSortMethod === 'tier' ? ' selected' : ''}>Tier</option>
+        <option value="points"${activeSortMethod === 'points' ? ' selected' : ''}>Points Invested</option>
       </select>
-      <input type="text" class="talent-filter" placeholder="Filter by name..." />
+      <input type="text" class="talent-filter" placeholder="Filter by name..." value="${escapeAttribute(activeFilterText)}" />
       <button class="talent-filter-apply">Apply Filter</button>
       <button class="talent-filter-clear">Clear Filter</button>
     </div>
@@ -44,7 +47,7 @@ export function renderTalentTree(state) {
     <div class="talent-categories">`;
 
   for (const category of categories) {
-    html += renderCategory(category, talentState);
+    html += renderCategory(category, talentState, activeSortMethod, activeFilterText);
   }
 
   html += `</div>
@@ -61,15 +64,20 @@ export function renderTalentTree(state) {
 /**
  * Render a single talent category
  */
-function renderCategory(category, talentState) {
+function renderCategory(category, talentState, sortMethod, filterText) {
   const talents = getTalentsByCategory(category.id);
+  const sortedFilteredTalents = applyTalentSortFilter(talents, {
+    sortMethod,
+    filterText,
+    talentState
+  });
   const pointsInCategory = talentState.categoryPoints[category.id] || 0;
   
   // Group talents by tier
   const tiers = {
-    1: talents.filter(t => t.tier === 1),
-    2: talents.filter(t => t.tier === 2),
-    3: talents.filter(t => t.tier === 3)
+    1: sortedFilteredTalents.filter(t => t.tier === 1),
+    2: sortedFilteredTalents.filter(t => t.tier === 2),
+    3: sortedFilteredTalents.filter(t => t.tier === 3)
   };
 
   let html = `<div class="talent-category" style="border-color: ${category.color}">
@@ -100,6 +108,14 @@ function renderCategory(category, talentState) {
 
   html += `</div>`;
   return html;
+}
+
+function escapeAttribute(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
 }
 
 /**
@@ -527,6 +543,20 @@ export function getTalentTreeStyles() {
 }
 
 export function attachTalentHandlers(container, dispatch) {
+  const sortSelect = container.querySelector('.talent-sort');
+  if (sortSelect) {
+    sortSelect.addEventListener('change', () => {
+      dispatch({ type: 'SET_TALENT_SORT_METHOD', sortMethod: sortSelect.value });
+    });
+  }
+
+  const filterInput = container.querySelector('.talent-filter');
+  if (filterInput) {
+    filterInput.addEventListener('input', () => {
+      dispatch({ type: 'SET_TALENT_FILTER_TEXT', filterText: filterInput.value });
+    });
+  }
+
   container.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
@@ -543,4 +573,19 @@ export function attachTalentHandlers(container, dispatch) {
       dispatch({ type: 'CLOSE_TALENTS' });
     }
   });
+
+  const applyFilterButton = container.querySelector('.talent-filter-apply');
+  if (applyFilterButton && filterInput) {
+    applyFilterButton.addEventListener('click', () => {
+      dispatch({ type: 'SET_TALENT_FILTER_TEXT', filterText: filterInput.value });
+    });
+  }
+
+  const clearFilterButton = container.querySelector('.talent-filter-clear');
+  if (clearFilterButton && filterInput) {
+    clearFilterButton.addEventListener('click', () => {
+      filterInput.value = '';
+      dispatch({ type: 'SET_TALENT_FILTER_TEXT', filterText: '' });
+    });
+  }
 }
