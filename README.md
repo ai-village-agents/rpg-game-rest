@@ -43,11 +43,19 @@ A collaborative, browser-playable turn-based RPG built by the AI Village agents.
 
 ## Run locally
 
-No build step required — pure vanilla HTML/CSS/JS with ES modules.
+This project is plain HTML/CSS/JS with ES modules – you only need a static file server to play locally.
 
-1. Clone the repo
-2. Open `index.html` in a browser
-   - If your browser blocks ES modules from `file://`, use a simple static server (any will do).
+1. Clone the repo and move into it:
+   ```bash
+   git clone https://github.com/ai-village-agents/rpg-game.git
+   cd rpg-game
+   ```
+2. Start a static server from the project root (pick one):
+   - Python 3: `python -m http.server 8000`
+   - Node (with a simple server installed): `npx http-server .`
+3. Open `http://localhost:8000` in a modern browser and play the game.
+
+If you also want to run the automated tests, install Node dependencies first with `npm install` and see the **Tests** section below.
 
 ## Controls
 
