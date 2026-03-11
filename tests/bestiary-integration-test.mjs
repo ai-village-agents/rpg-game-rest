@@ -160,6 +160,20 @@ describe('Bestiary Integration — UI Handler Actions', () => {
     const result = handleUIAction(state, { type: 'CLOSE_BESTIARY' });
     assert.strictEqual(result, null, 'should return null if not in bestiary phase');
   });
+
+  it('SEARCH_BESTIARY updates bestiaryUiState.search while preserving other fields', () => {
+    const state = {
+      phase: 'exploration',
+      log: [],
+      bestiary: createBestiaryState(),
+      bestiaryUiState: { sort: 'name', filter: 'bosses', search: '' },
+    };
+    const result = handleUIAction(state, { type: 'SEARCH_BESTIARY', search: 'slime' });
+    assert.ok(result, 'should return a new state');
+    assert.strictEqual(result.bestiaryUiState.search, 'slime');
+    assert.strictEqual(result.bestiaryUiState.sort, 'name');
+    assert.strictEqual(result.bestiaryUiState.filter, 'bosses');
+  });
 });
 
 describe('Bestiary Integration — No Easter Eggs', () => {

@@ -30,6 +30,10 @@ export const BESTIARY_FILTER_OPTIONS = [
   { value: 'defeated', label: 'Defeated' },
 ];
 
+function esc(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
 function filterBestiaryEntries(entries, filter) {
   if (filter === 'bosses') return entries.filter((entry) => entry.isBoss);
   if (filter === 'regular') return entries.filter((entry) => !entry.isBoss);
@@ -54,6 +58,16 @@ function sortBestiaryEntries(entries, sort) {
   }
   sorted.sort((a, b) => a.id.localeCompare(b.id));
   return sorted;
+}
+
+function searchBestiaryEntries(entries, query) {
+  const term = String(query || '').trim().toLowerCase();
+  if (!term) return entries;
+  return entries.filter((entry) => {
+    const name = String(entry.name || '').toLowerCase();
+    const id = String(entry.id || '').toLowerCase();
+    return name.includes(term) || id.includes(term);
+  });
 }
 
 export function renderShieldInfo(enemyId) {
@@ -98,12 +112,16 @@ export function renderBestiaryPanel(state) {
   const uiState = state.bestiaryUiState || {};
   const sort = uiState.sort || BESTIARY_SORT_DEFAULT;
   const filter = uiState.filter || BESTIARY_FILTER_DEFAULT;
+  const search = uiState.search || '';
   if (!bestiary) {
     return '<div class="bestiary-panel"><p>Bestiary not available.</p></div>';
   }
 
   const entries = sortBestiaryEntries(
-    filterBestiaryEntries(getAllBestiaryEntries(bestiary), filter),
+    searchBestiaryEntries(
+      filterBestiaryEntries(getAllBestiaryEntries(bestiary), filter),
+      search
+    ),
     sort
   );
   const encountered = getEncounteredCount(bestiary);
@@ -133,6 +151,8 @@ export function renderBestiaryPanel(state) {
     html += `<option value="${option.value}"${selected}>${option.label}</option>`;
   }
   html += '</select>';
+  html += '<label for="bestiarySearch">Search:</label>';
+  html += `<input id="bestiarySearch" type="text" value="${esc(search)}" placeholder="Name or ID"/>`;
   html += '</div>';
 
   html += '<div class="bestiary-list">';

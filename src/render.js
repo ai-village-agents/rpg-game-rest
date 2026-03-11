@@ -1567,6 +1567,10 @@ if (state.phase === 'achievements') {
     if (bestiaryFilter) {
       bestiaryFilter.onchange = () => dispatch({ type: 'FILTER_BESTIARY', filter: bestiaryFilter.value });
     }
+    const bestiarySearch = document.getElementById('bestiarySearch');
+    if (bestiarySearch) {
+      bestiarySearch.oninput = () => dispatch({ type: 'SEARCH_BESTIARY', search: bestiarySearch.value });
+    }
     log.innerHTML = state.log.slice().reverse().map(line => formatLogEntryHtml(line)).join('');
     finalizeRender();
     return;

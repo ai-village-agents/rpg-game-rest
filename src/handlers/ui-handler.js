@@ -521,6 +521,16 @@ export function handleUIAction(state, action) {
       },
     };
   }
+  if (type === 'SEARCH_BESTIARY') {
+    const search = action.search ?? '';
+    return {
+      ...state,
+      bestiaryUiState: {
+        ...(state.bestiaryUiState || {}),
+        search,
+      },
+    };
+  }
   
   if (type === 'VIEW_TAVERN') {
     if (isPreAdventure) return null;
