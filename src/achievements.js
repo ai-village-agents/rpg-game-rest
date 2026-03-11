@@ -40,7 +40,10 @@ function extractAchievementData(state) {
     lastBattleMaxHit: state.combatStats?.maxSingleHit || 0,
     shieldsBroken: state.gameStats?.shieldsBroken ?? 0,
     weaknessHits: state.gameStats?.weaknessHits ?? 0,
-    defeatedWhileBroken: state.gameStats?.defeatedWhileBroken ?? 0
+    defeatedWhileBroken: state.gameStats?.defeatedWhileBroken ?? 0,
+    deepestFloor: state.dungeonState?.deepestFloor ?? 0,
+    floorsCleared: state.dungeonState?.floorsCleared ?? [],
+    floorsCompletedCount: (state.dungeonState?.floorsCleared ?? []).length
   };
 }
 
@@ -354,6 +357,82 @@ const ACHIEVEMENTS = [
     category: 'collection',
     condition: (data) => data.tavernBusts >= 1,
     getProgress: (data) => data.tavernBusts
+  },
+
+  // Additional boss achievements
+  {
+    id: 'boss_hunter',
+    name: 'Boss Hunter',
+    description: 'Defeat 3 dungeon bosses',
+    category: 'combat',
+    condition: (data) => data.bossesDefeated >= 3,
+    getProgress: (data) => data.bossesDefeated
+  },
+  {
+    id: 'boss_bane',
+    name: 'Boss Bane',
+    description: 'Defeat 5 dungeon bosses',
+    category: 'combat',
+    condition: (data) => data.bossesDefeated >= 5,
+    getProgress: (data) => data.bossesDefeated
+  },
+
+  // Dungeon floor progression achievements
+  {
+    id: 'dungeon_initiate',
+    name: 'Dungeon Initiate',
+    description: 'Enter the dungeon for the first time',
+    category: 'dungeon',
+    condition: (data) => data.deepestFloor >= 1,
+    getProgress: (data) => Math.min(data.deepestFloor, 1)
+  },
+  {
+    id: 'floor_crawler',
+    name: 'Floor Crawler',
+    description: 'Reach floor 3 of the dungeon',
+    category: 'dungeon',
+    condition: (data) => data.deepestFloor >= 3,
+    getProgress: (data) => Math.min(data.deepestFloor, 3)
+  },
+  {
+    id: 'dungeon_explorer',
+    name: 'Dungeon Explorer',
+    description: 'Reach floor 5 of the dungeon',
+    category: 'dungeon',
+    condition: (data) => data.deepestFloor >= 5,
+    getProgress: (data) => Math.min(data.deepestFloor, 5)
+  },
+  {
+    id: 'deep_diver',
+    name: 'Deep Diver',
+    description: 'Reach floor 7 of the dungeon',
+    category: 'dungeon',
+    condition: (data) => data.deepestFloor >= 7,
+    getProgress: (data) => Math.min(data.deepestFloor, 7)
+  },
+  {
+    id: 'abyss_conqueror',
+    name: 'Abyss Conqueror',
+    description: 'Reach floor 10 — the Abyssal Throne',
+    category: 'dungeon',
+    condition: (data) => data.deepestFloor >= 10,
+    getProgress: (data) => Math.min(data.deepestFloor, 10)
+  },
+  {
+    id: 'floor_clearer',
+    name: 'Floor Clearer',
+    description: 'Clear all enemies on 3 dungeon floors',
+    category: 'dungeon',
+    condition: (data) => data.floorsCompletedCount >= 3,
+    getProgress: (data) => data.floorsCompletedCount
+  },
+  {
+    id: 'dungeon_master',
+    name: 'Dungeon Master',
+    description: 'Clear all 10 dungeon floors',
+    category: 'dungeon',
+    condition: (data) => data.floorsCompletedCount >= 10,
+    getProgress: (data) => data.floorsCompletedCount
   }
 ];
 
