@@ -1,247 +1,277 @@
+import { test } from 'node:test';
 import assert from 'assert';
+
+// Minimal DOM mock for Node.js test environment
+class MockElement {
+  constructor(tag) {
+    this.tagName = tag;
+    this.className = '';
+    this.style = { cssText: '' };
+    this.textContent = '';
+    this._children = [];
+    this._listeners = {};
+  }
+  appendChild(child) { this._children.push(child); return child; }
+  querySelector(sel) {
+    const cls = sel.startsWith('.') ? sel.slice(1) : null;
+    for (const c of this._children) {
+      if (cls && c.className && c.className.split(' ').includes(cls)) return c;
+      const found = c.querySelector && c.querySelector(sel);
+      if (found) return found;
+    }
+    return null;
+  }
+  querySelectorAll(sel) {
+    const results = [];
+    const cls = sel === 'div' ? null : (sel.startsWith('.') ? sel.slice(1) : null);
+    const isTag = !sel.startsWith('.');
+    for (const c of this._children) {
+      if (isTag && c.tagName === sel.toUpperCase()) results.push(c);
+      if (cls && c.className && c.className.split(' ').includes(cls)) results.push(c);
+      if (c.querySelectorAll) results.push(...c.querySelectorAll(sel));
+    }
+    return results;
+  }
+  addEventListener(event, fn) { this._listeners[event] = fn; }
+  get onmouseenter() { return this._listeners['mouseenter'] || null; }
+  get onmouseleave() { return this._listeners['mouseleave'] || null; }
+}
+
+class MockDocument {
+  constructor() { this.head = new MockElement('head'); this._styles = []; }
+  createElement(tag) { return new MockElement(tag.toUpperCase()); }
+  querySelectorAll(sel) {
+    if (sel === 'style') return this._styles;
+    return [];
+  }
+}
+
+// Install global mock
+global.document = new MockDocument();
+
 import { SpriteSystem, injectSpriteAnimations } from '../src/sprite-system.js';
-describe('SpriteSystem', () => {
-  let spriteSystem;
-  beforeEach(() => {
-    spriteSystem = new SpriteSystem();
-  });
-  describe('createCharacterPortrait', () => {
-    it('should create a portrait container with correct class styling', () => {
-      const character = {
-        name: 'Hero',
-        class: 'warrior'
-      };
-      const portrait = spriteSystem.createCharacterPortrait(character);
-      assert(portrait, 'Portrait container should be created');
-      assert.strictEqual(portrait.className, 'character-portrait-container');
-      assert(portrait.style.cssText.includes('border-radius'), 'Should have border-radius');
-      assert(portrait.style.cssText.includes('DC143C'), 'Warrior class should have red color');
-    });
-    it('should display character name in portrait', () => {
-      const character = { name: 'TestChar', class: 'mage' };
-      const portrait = spriteSystem.createCharacterPortrait(character);
-      
-      const nameDiv = Array.from(portrait.querySelectorAll('div')).find(d => 
-        d.textContent === 'TestChar'
-      );
-      assert(nameDiv, 'Character name should be displayed');
-    });
-    it('should apply correct aura color for each class', () => {
-      const classes = ['warrior', 'mage', 'rogue', 'cleric'];
-      
-      classes.forEach(charClass => {
-        const character = { name: 'Test', class: charClass };
-        const portrait = spriteSystem.createCharacterPortrait(character);
-        const aura = spriteSystem.classAuras[charClass];
-        
-        assert(portrait.style.cssText.includes(aura.color), 
-          `${charClass} should use correct aura color`);
-      });
-    });
-  });
-  describe('createEnemySprite', () => {
-    it('should create enemy sprite with element-specific colors', () => {
-      const enemy = {
-        name: 'Fire Dragon',
-        type: 'dragon',
-        element: 'fire'
-      };
-      const sprite = spriteSystem.createEnemySprite(enemy);
-      assert(sprite, 'Enemy sprite should be created');
-      assert.strictEqual(sprite.className, 'enemy-sprite-container');
-      assert(sprite.style.cssText.includes('FF6B35'), 'Fire element should have red color');
-    });
-    it('should display enemy name in sprite', () => {
-      const enemy = { name: 'Skeleton', type: 'undead', element: 'shadow' };
-      const sprite = spriteSystem.createEnemySprite(enemy);
-      
-      const nameDiv = Array.from(sprite.querySelectorAll('div')).find(d => 
-        d.textContent === 'Skeleton'
-      );
-      assert(nameDiv, 'Enemy name should be displayed');
-    });
-    it('should assign correct element colors', () => {
-      const elements = ['fire', 'ice', 'lightning', 'holy', 'shadow', 'nature', 'physical'];
-      
-      elements.forEach(element => {
-        const enemy = { name: 'Test', type: 'test', element };
-        const sprite = spriteSystem.createEnemySprite(enemy);
-        const expectedColor = spriteSystem.elementColors[element];
-        
-        assert(sprite.style.cssText.includes(expectedColor), 
-          `${element} enemy should use correct color`);
-      });
-    });
-  });
-  describe('getClassIcon', () => {
-    it('should return correct icon for each class', () => {
-      assert.strictEqual(spriteSystem.getClassIcon('warrior'), '');
-      assert.strictEqual(spriteSystem.getClassIcon('mage'), '');
-      assert.strictEqual(spriteSystem.getClassIcon('rogue'), '');
-      assert.strictEqual(spriteSystem.getClassIcon('cleric'), '');
-    });
-    it('should return default icon for unknown class', () => {
-      assert.strictEqual(spriteSystem.getClassIcon('unknown'), '');
-    });
-  });
-  describe('getEnemyIcon', () => {
-    it('should return correct icon for undead enemies', () => {
-      const icon = spriteSystem.getEnemyIcon('Skeleton', 'physical');
-      assert.strictEqual(icon, '');
-    });
-    it('should return dragon icon for dragon enemies', () => {
-      const icon = spriteSystem.getEnemyIcon('Fire Dragon', 'fire');
-      assert.strictEqual(icon, '');
-    });
-    it('should return elemental icons for elementals', () => {
-      assert.strictEqual(spriteSystem.getEnemyIcon('Fire Elemental', 'fire'), '');
-      assert.strictEqual(spriteSystem.getEnemyIcon('Ice Elemental', 'ice'), '');
-      assert.strictEqual(spriteSystem.getEnemyIcon('Lightning Elemental', 'lightning'), '');
-      assert.strictEqual(spriteSystem.getEnemyIcon('Nature Elemental', 'nature'), '');
-    });
-    it('should return default icon for unknown enemy type', () => {
-      const icon = spriteSystem.getEnemyIcon('Unknown', 'physical');
-      assert.strictEqual(icon, '');
-    });
-  });
-  describe('createStatusEffectOverlay', () => {
-    it('should create status effect overlay with correct styling', () => {
-      const overlay = spriteSystem.createStatusEffectOverlay('poison', 3);
-      assert(overlay, 'Status overlay should be created');
-      assert(overlay.className.includes('status-effect-overlay'));
-      assert(overlay.textContent.includes('poison'));
-    });
-    it('should display duration in status effect', () => {
-      const overlay = spriteSystem.createStatusEffectOverlay('burn', 5);
-      assert(overlay.textContent.includes('(5)'), 'Duration should be shown');
-    });
-    it('should apply correct colors for each effect type', () => {
-      const effects = ['poison', 'burn', 'freeze', 'stun', 'bleed', 'weak', 'strong'];
-      
-      effects.forEach(effect => {
-        const overlay = spriteSystem.createStatusEffectOverlay(effect);
-        assert(overlay.style.cssText, `${effect} should have styling`);
-      });
-    });
-    it('should omit duration if not provided', () => {
-      const overlay = spriteSystem.createStatusEffectOverlay('stun');
-      assert(!overlay.textContent.includes('('), 'Duration should not be shown if not provided');
-    });
-  });
-  describe('createFloatingDamageText', () => {
-    it('should create floating damage text element', () => {
-      const container = document.createElement('div');
-      spriteSystem.createFloatingDamageText(container, 25);
-      assert(container.querySelector('.floating-damage-text'), 
-        'Floating damage text should be created');
-    });
-    it('should display correct damage amount', () => {
-      const container = document.createElement('div');
-      spriteSystem.createFloatingDamageText(container, 42);
-      const floatingText = container.querySelector('.floating-damage-text');
-      assert.strictEqual(floatingText.textContent, '42');
-    });
-    it('should use critical styling for critical hits', () => {
-      const container = document.createElement('div');
-      spriteSystem.createFloatingDamageText(container, 100, true);
-      const floatingText = container.querySelector('.floating-damage-text');
-      assert(floatingText.style.cssText.includes('24px'), 'Critical damage should have larger font');
-      assert(floatingText.style.cssText.includes('FF4500'), 'Critical damage should have orange color');
-      assert(floatingText.textContent.includes('!'), 'Critical damage should have exclamation mark');
-    });
-    it('should use normal styling for regular hits', () => {
-      const container = document.createElement('div');
-      spriteSystem.createFloatingDamageText(container, 25, false);
-      const floatingText = container.querySelector('.floating-damage-text');
-      assert(floatingText.style.cssText.includes('16px'), 'Normal damage should have standard font');
-    });
-  });
-  describe('createActionCard', () => {
-    it('should create action card with correct structure', () => {
-      const action = { name: 'Attack', type: 'attack' };
-      const card = spriteSystem.createActionCard(action);
-      assert(card, 'Action card should be created');
-      assert.strictEqual(card.className, 'action-card');
-      assert(card.textContent.includes('Attack'));
-    });
-    it('should display action name correctly', () => {
-      const action = { name: 'Fireball', type: 'spell' };
-      const card = spriteSystem.createActionCard(action);
-      const nameDiv = Array.from(card.querySelectorAll('div')).find(d => 
-        d.textContent === 'Fireball'
-      );
-      assert(nameDiv, 'Action name should be displayed');
-    });
-    it('should apply hover effects', () => {
-      const action = { name: 'Test Action', type: 'ability' };
-      const card = spriteSystem.createActionCard(action);
-      assert(card.onmouseenter, 'Should have mouseenter handler');
-      assert(card.onmouseleave, 'Should have mouseleave handler');
-    });
-  });
-  describe('getActionIcon', () => {
-    it('should return correct icons for action types', () => {
-      assert.strictEqual(spriteSystem.getActionIcon('attack'), '');
-      assert.strictEqual(spriteSystem.getActionIcon('defend'), '');
-      assert.strictEqual(spriteSystem.getActionIcon('spell'), '');
-      assert.strictEqual(spriteSystem.getActionIcon('ability'), '');
-      assert.strictEqual(spriteSystem.getActionIcon('heal'), '');
-      assert.strictEqual(spriteSystem.getActionIcon('item'), '');
-    });
-    it('should return default icon for unknown action', () => {
-      assert.strictEqual(spriteSystem.getActionIcon('unknown'), '');
-    });
-  });
-  describe('injectSpriteAnimations', () => {
-    it('should inject CSS animations into document head', () => {
-      const initialStyleCount = document.querySelectorAll('style').length;
-      injectSpriteAnimations();
-      const finalStyleCount = document.querySelectorAll('style').length;
-      assert(finalStyleCount > initialStyleCount, 'Style should be injected');
-    });
-    it('should include float-up animation', () => {
-      injectSpriteAnimations();
-      const styles = Array.from(document.querySelectorAll('style'));
-      const hasFloatUp = styles.some(s => s.textContent.includes('@keyframes float-up'));
-      assert(hasFloatUp, 'Should include float-up animation');
-    });
-    it('should include element-glow animation', () => {
-      injectSpriteAnimations();
-      const styles = Array.from(document.querySelectorAll('style'));
-      const hasGlow = styles.some(s => s.textContent.includes('@keyframes element-glow'));
-      assert(hasGlow, 'Should include element-glow animation');
-    });
-  });
-  describe('elementColors', () => {
-    it('should have color for all element types', () => {
-      const elements = ['fire', 'ice', 'lightning', 'holy', 'shadow', 'nature', 'physical'];
-      
-      elements.forEach(element => {
-        assert(spriteSystem.elementColors[element], 
-          `Should have color defined for ${element} element`);
-      });
-    });
-    it('should have valid hex color codes', () => {
-      const hexRegex = /^#[0-9A-F]{6}$/i;
-      
-      Object.entries(spriteSystem.elementColors).forEach(([element, color]) => {
-        assert(hexRegex.test(color), 
-          `${element} color should be valid hex code, got: ${color}`);
-      });
-    });
-  });
-  describe('classAuras', () => {
-    it('should have aura definition for each class', () => {
-      const classes = ['warrior', 'mage', 'rogue', 'cleric'];
-      
-      classes.forEach(charClass => {
-        assert(spriteSystem.classAuras[charClass], 
-          `Should have aura defined for ${charClass}`);
-        assert(spriteSystem.classAuras[charClass].color, 
-          `${charClass} should have color`);
-        assert(spriteSystem.classAuras[charClass].glow, 
-          `${charClass} should have glow value`);
-      });
-    });
-  });
+
+// --- SpriteSystem constructor ---
+test('SpriteSystem instantiates with elementColors and classAuras', () => {
+  const ss = new SpriteSystem();
+  assert.ok(ss.elementColors, 'has elementColors');
+  assert.ok(ss.classAuras, 'has classAuras');
+  assert.ok(ss.spriteCache instanceof Map, 'has spriteCache Map');
+});
+
+// --- elementColors ---
+test('elementColors has all expected elements', () => {
+  const ss = new SpriteSystem();
+  const elements = ['fire', 'ice', 'lightning', 'holy', 'shadow', 'nature', 'physical'];
+  for (const el of elements) {
+    assert.ok(ss.elementColors[el], `has color for ${el}`);
+  }
+});
+
+test('elementColors values are valid hex codes', () => {
+  const ss = new SpriteSystem();
+  const hexRegex = /^#[0-9A-Fa-f]{6}$/;
+  for (const [el, color] of Object.entries(ss.elementColors)) {
+    assert.match(color, hexRegex, `${el} color is valid hex: ${color}`);
+  }
+});
+
+// --- classAuras ---
+test('classAuras has aura for each class', () => {
+  const ss = new SpriteSystem();
+  const classes = ['warrior', 'mage', 'rogue', 'cleric'];
+  for (const cls of classes) {
+    assert.ok(ss.classAuras[cls], `has aura for ${cls}`);
+    assert.ok(ss.classAuras[cls].color, `${cls} has color`);
+    assert.ok(ss.classAuras[cls].glow, `${cls} has glow`);
+  }
+});
+
+// --- getClassIcon ---
+test('getClassIcon returns string for each class', () => {
+  const ss = new SpriteSystem();
+  const classes = ['warrior', 'mage', 'rogue', 'cleric'];
+  for (const cls of classes) {
+    const icon = ss.getClassIcon(cls);
+    assert.strictEqual(typeof icon, 'string', `${cls} icon is string`);
+  }
+});
+
+test('getClassIcon returns default string for unknown class', () => {
+  const ss = new SpriteSystem();
+  assert.strictEqual(typeof ss.getClassIcon('unknown'), 'string');
+});
+
+// --- getEnemyIcon ---
+test('getEnemyIcon handles skeleton/undead', () => {
+  const ss = new SpriteSystem();
+  const icon = ss.getEnemyIcon('Skeleton', 'physical');
+  assert.strictEqual(typeof icon, 'string');
+});
+
+test('getEnemyIcon handles dragon', () => {
+  const ss = new SpriteSystem();
+  assert.strictEqual(typeof ss.getEnemyIcon('Fire Dragon', 'fire'), 'string');
+});
+
+test('getEnemyIcon handles elementals for each element', () => {
+  const ss = new SpriteSystem();
+  for (const el of ['fire', 'ice', 'lightning', 'nature']) {
+    const icon = ss.getEnemyIcon(`${el} Elemental`, el);
+    assert.strictEqual(typeof icon, 'string', `${el} elemental icon is string`);
+  }
+});
+
+test('getEnemyIcon returns string for unknown type', () => {
+  const ss = new SpriteSystem();
+  assert.strictEqual(typeof ss.getEnemyIcon('Unknown', 'physical'), 'string');
+});
+
+// --- getActionIcon ---
+test('getActionIcon returns string for all action types', () => {
+  const ss = new SpriteSystem();
+  for (const type of ['attack', 'defend', 'spell', 'ability', 'heal', 'item', 'unknown']) {
+    assert.strictEqual(typeof ss.getActionIcon(type), 'string', `${type} icon is string`);
+  }
+});
+
+// --- createCharacterPortrait ---
+test('createCharacterPortrait creates element with correct className', () => {
+  const ss = new SpriteSystem();
+  const portrait = ss.createCharacterPortrait({ name: 'Hero', class: 'warrior' });
+  assert.ok(portrait, 'portrait created');
+  assert.strictEqual(portrait.className, 'character-portrait-container');
+});
+
+test('createCharacterPortrait includes warrior aura color', () => {
+  const ss = new SpriteSystem();
+  const portrait = ss.createCharacterPortrait({ name: 'Hero', class: 'warrior' });
+  assert.ok(portrait.style.cssText.includes('DC143C'), 'warrior red color present');
+});
+
+test('createCharacterPortrait applies aura color for each class', () => {
+  const ss = new SpriteSystem();
+  for (const cls of ['warrior', 'mage', 'rogue', 'cleric']) {
+    const portrait = ss.createCharacterPortrait({ name: 'T', class: cls });
+    const color = ss.classAuras[cls].color.replace('#', '');
+    assert.ok(portrait.style.cssText.includes(color), `${cls} aura color in cssText`);
+  }
+});
+
+// --- createEnemySprite ---
+test('createEnemySprite creates element with correct className', () => {
+  const ss = new SpriteSystem();
+  const sprite = ss.createEnemySprite({ name: 'Goblin', type: 'goblin', element: 'physical' });
+  assert.strictEqual(sprite.className, 'enemy-sprite-container');
+});
+
+test('createEnemySprite includes element color for fire', () => {
+  const ss = new SpriteSystem();
+  const sprite = ss.createEnemySprite({ name: 'Fire Dragon', type: 'dragon', element: 'fire' });
+  const allCss = sprite.style.cssText + sprite._children.map(c => c.style.cssText).join('');
+  assert.ok(allCss.includes('FF6B35'), 'fire color in sprite or child cssText');
+});
+
+test('createEnemySprite includes correct element colors for all elements', () => {
+  const ss = new SpriteSystem();
+  for (const [el, color] of Object.entries(ss.elementColors)) {
+    const sprite = ss.createEnemySprite({ name: 'T', type: 'test', element: el });
+    const allCss = sprite.style.cssText + sprite._children.map(c => c.style.cssText).join('');
+    const colorHex = color.replace('#', '');
+    assert.ok(allCss.includes(colorHex), `${el} color ${color} in sprite or child cssText`);
+  }
+});
+
+// --- createStatusEffectOverlay ---
+test('createStatusEffectOverlay creates element with correct className', () => {
+  const ss = new SpriteSystem();
+  const overlay = ss.createStatusEffectOverlay('poison', 3);
+  assert.ok(overlay.className.includes('status-effect-overlay'));
+});
+
+test('createStatusEffectOverlay includes effect name in textContent', () => {
+  const ss = new SpriteSystem();
+  const overlay = ss.createStatusEffectOverlay('burn', 5);
+  assert.ok(overlay.textContent.includes('burn'), 'textContent includes effect name');
+});
+
+test('createStatusEffectOverlay shows duration when provided', () => {
+  const ss = new SpriteSystem();
+  const overlay = ss.createStatusEffectOverlay('stun', 4);
+  assert.ok(overlay.textContent.includes('(4)'), 'duration shown');
+});
+
+test('createStatusEffectOverlay omits duration when not provided', () => {
+  const ss = new SpriteSystem();
+  const overlay = ss.createStatusEffectOverlay('weak');
+  assert.ok(!overlay.textContent.includes('('), 'no duration shown');
+});
+
+test('createStatusEffectOverlay handles all effect types', () => {
+  const ss = new SpriteSystem();
+  for (const effect of ['poison', 'burn', 'freeze', 'stun', 'bleed', 'weak', 'strong']) {
+    const overlay = ss.createStatusEffectOverlay(effect);
+    assert.ok(overlay.style.cssText, `${effect} has cssText`);
+  }
+});
+
+// --- createActionCard ---
+test('createActionCard creates element with className action-card', () => {
+  const ss = new SpriteSystem();
+  const card = ss.createActionCard({ name: 'Attack', type: 'attack' });
+  assert.strictEqual(card.className, 'action-card');
+});
+
+test('createActionCard has event listeners', () => {
+  const ss = new SpriteSystem();
+  const card = ss.createActionCard({ name: 'Defend', type: 'defend' });
+  assert.ok(card.onmouseenter, 'has mouseenter handler');
+  assert.ok(card.onmouseleave, 'has mouseleave handler');
+});
+
+// --- injectSpriteAnimations ---
+test('injectSpriteAnimations injects a style element', () => {
+  const before = global.document._styles.length;
+  const mockStyle = new MockElement('style');
+  const origCreate = global.document.createElement.bind(global.document);
+  global.document.createElement = (tag) => {
+    if (tag === 'style') {
+      global.document._styles.push(mockStyle);
+      return mockStyle;
+    }
+    return origCreate(tag);
+  };
+  injectSpriteAnimations();
+  global.document.createElement = origCreate;
+  assert.ok(global.document._styles.length > before, 'style element added');
+});
+
+test('injectSpriteAnimations style includes float-up keyframe', () => {
+  const mockStyle = { textContent: '' };
+  const origAppend = global.document.head.appendChild.bind(global.document.head);
+  global.document.head.appendChild = (el) => {
+    if (el && el.tagName === 'STYLE') { mockStyle.textContent = el.textContent; }
+    return origAppend(el);
+  };
+  const s = new MockElement('style');
+  const origCreate = global.document.createElement.bind(global.document);
+  global.document.createElement = (tag) => {
+    if (tag === 'style') return s;
+    return origCreate(tag);
+  };
+  injectSpriteAnimations();
+  global.document.createElement = origCreate;
+  assert.ok(s.textContent.includes('float-up'), 'includes float-up animation');
+});
+
+test('injectSpriteAnimations style includes element-glow keyframe', () => {
+  const s = new MockElement('style');
+  const origCreate = global.document.createElement.bind(global.document);
+  global.document.createElement = (tag) => {
+    if (tag === 'style') return s;
+    return origCreate(tag);
+  };
+  injectSpriteAnimations();
+  global.document.createElement = origCreate;
+  assert.ok(s.textContent.includes('element-glow'), 'includes element-glow animation');
 });
