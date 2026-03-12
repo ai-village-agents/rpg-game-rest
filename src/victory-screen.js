@@ -29,39 +29,61 @@ export const CREDITS = [
  * Returns { grade, title } where grade is S/A/B/C/D and title is a fun descriptor.
  */
 export function calculateRating(gameStats, player) {
-  if (!gameStats || !player) return { grade: 'C', title: 'Adventurer' };
-
-  let score = 0;
-
-  // Enemies defeated bonus
-  score += Math.min(gameStats.enemiesDefeated * 2, 100);
+  if (!gameStats || !player) {
+    return { grade: 'C', title: 'Adventurer', score: 0, breakdown: [] };
+  }
 
   // Damage ratio bonus (dealt vs received)
   const ratio = gameStats.totalDamageReceived > 0
     ? gameStats.totalDamageDealt / gameStats.totalDamageReceived
     : gameStats.totalDamageDealt > 0 ? 10 : 0;
-  score += Math.min(Math.floor(ratio * 10), 50);
-
-  // Level bonus
-  score += Math.min((player.level || 1) * 3, 60);
 
   // Battles won without fleeing
   const fleeRatio = gameStats.battlesWon > 0
     ? gameStats.battlesFled / gameStats.battlesWon
     : 1;
-  score += fleeRatio < 0.1 ? 30 : fleeRatio < 0.25 ? 20 : fleeRatio < 0.5 ? 10 : 0;
+  const fleeBonus = fleeRatio < 0.1 ? 30 : fleeRatio < 0.25 ? 20 : fleeRatio < 0.5 ? 10 : 0;
 
-  // Weakness exploitation bonus
-  score += Math.min(gameStats.weaknessHits * 2, 40);
+  const breakdown = [
+    {
+      label: 'Enemies Defeated',
+      earned: Math.min(gameStats.enemiesDefeated * 2, 100),
+      max: 100,
+    },
+    {
+      label: 'Damage Efficiency',
+      earned: Math.min(Math.floor(ratio * 10), 50),
+      max: 50,
+    },
+    {
+      label: 'Level Reached',
+      earned: Math.min((player.level || 1) * 3, 60),
+      max: 60,
+    },
+    {
+      label: 'Battle Discipline',
+      earned: fleeBonus,
+      max: 30,
+    },
+    {
+      label: 'Weakness Mastery',
+      earned: Math.min(gameStats.weaknessHits * 2, 40),
+      max: 40,
+    },
+    {
+      label: 'Shield Breaking',
+      earned: Math.min(gameStats.shieldsBroken * 3, 30),
+      max: 30,
+    },
+  ];
 
-  // Shield break bonus
-  score += Math.min(gameStats.shieldsBroken * 3, 30);
+  const score = breakdown.reduce((sum, item) => sum + item.earned, 0);
 
-  if (score >= 250) return { grade: 'S', title: 'Legendary Champion' };
-  if (score >= 200) return { grade: 'A', title: 'Master Slayer' };
-  if (score >= 140) return { grade: 'B', title: 'Seasoned Warrior' };
-  if (score >= 80)  return { grade: 'C', title: 'Adventurer' };
-  return { grade: 'D', title: 'Survivor' };
+  if (score >= 250) return { grade: 'S', title: 'Legendary Champion', score, breakdown };
+  if (score >= 200) return { grade: 'A', title: 'Master Slayer', score, breakdown };
+  if (score >= 140) return { grade: 'B', title: 'Seasoned Warrior', score, breakdown };
+  if (score >= 80)  return { grade: 'C', title: 'Adventurer', score, breakdown };
+  return { grade: 'D', title: 'Survivor', score, breakdown };
 }
 
 /**
@@ -97,6 +119,35 @@ export function renderVictoryScreen(state) {
     return `<div class="victory-credit-entry"><span class="victory-credit-name">${esc(c.name)}</span></div>`;
   }).join('');
 
+  const breakdownRows = (rating.breakdown || []).map(item => {
+    const pct = item.max > 0 ? Math.min((item.earned / item.max) * 100, 100) : 0;
+    return `
+      <div class="victory-breakdown-row">
+        <div class="victory-breakdown-label">${esc(item.label)}</div>
+        <div class="victory-breakdown-bar-wrap">
+          <div class="victory-breakdown-bar-fill" style="width: ${pct.toFixed(1)}%"></div>
+        </div>
+        <div class="victory-breakdown-score">${item.earned} / ${item.max}</div>
+      </div>
+    `;
+  }).join('');
+
+  const gradeScale = [
+    { grade: 'S', req: '≥ 250', cls: 'victory-grade-badge-s' },
+    { grade: 'A', req: '≥ 200', cls: 'victory-grade-badge-a' },
+    { grade: 'B', req: '≥ 140', cls: 'victory-grade-badge-b' },
+    { grade: 'C', req: '≥ 80', cls: 'victory-grade-badge-c' },
+    { grade: 'D', req: '< 80', cls: 'victory-grade-badge-d' },
+  ].map(item => {
+    const currentClass = rating.grade === item.grade ? ' current-grade' : '';
+    return `
+      <div class="victory-grade-badge ${item.cls}${currentClass}">
+        <div class="victory-grade-badge-letter">${item.grade}</div>
+        <div class="victory-grade-badge-req">${item.req}</div>
+      </div>
+    `;
+  }).join('');
+
   return `
     <div class="victory-screen" id="victoryScreen">
       <div class="victory-fanfare" id="victoryFanfare">
@@ -113,6 +164,16 @@ export function renderVictoryScreen(state) {
       <div class="victory-rating">
         <div class="victory-grade victory-grade-${rating.grade.toLowerCase()}">${esc(rating.grade)}</div>
         <div class="victory-rating-title">${esc(rating.title)}</div>
+      </div>
+
+      <div class="victory-rating-breakdown">
+        <div class="victory-breakdown-header">Score Breakdown</div>
+        ${breakdownRows}
+        <div class="victory-total-score">Total Score: ${rating.score} / 310</div>
+        <div class="victory-grade-scale-header">Grade Scale</div>
+        <div class="victory-grade-scale">
+          ${gradeScale}
+        </div>
       </div>
 
       <div class="victory-hero-summary">
@@ -304,6 +365,100 @@ export function getVictoryScreenStyles() {
       color: #ddd;
       font-weight: bold;
     }
+    .victory-rating-breakdown {
+      margin: 0.8rem 0 1rem;
+      padding: 0.75rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      text-align: left;
+    }
+    .victory-breakdown-header {
+      color: #ddd;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.5rem;
+    }
+    .victory-breakdown-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.4rem;
+    }
+    .victory-breakdown-label {
+      flex: 1;
+      font-size: 0.8rem;
+      color: #aaa;
+    }
+    .victory-breakdown-bar-wrap {
+      width: 100px;
+      height: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .victory-breakdown-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #4af, #7fd);
+    }
+    .victory-breakdown-score {
+      font-size: 0.8rem;
+      color: #ccc;
+      width: 50px;
+      text-align: right;
+    }
+    .victory-total-score {
+      text-align: right;
+      font-size: 0.85rem;
+      color: #ddd;
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .victory-grade-scale {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.8rem;
+    }
+    .victory-grade-scale-header {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 0.6rem;
+      margin-bottom: 0.4rem;
+    }
+    .victory-grade-badge {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      border: 1px solid;
+      font-size: 0.8rem;
+    }
+    .victory-grade-badge.current-grade {
+      border-width: 2px;
+      transform: scale(1.1);
+      box-shadow: 0 0 8px currentColor;
+    }
+    .victory-grade-badge-letter {
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+    .victory-grade-badge-req {
+      font-size: 0.65rem;
+      color: inherit;
+      opacity: 0.8;
+    }
+    .victory-grade-badge-s { color: gold; border-color: gold; }
+    .victory-grade-badge-a { color: #7fff7f; border-color: #7fff7f; }
+    .victory-grade-badge-b { color: #7fd4ff; border-color: #7fd4ff; }
+    .victory-grade-badge-c { color: #ccc; border-color: #ccc; }
+    .victory-grade-badge-d { color: #ff9966; border-color: #ff9966; }
     .victory-hero-summary {
       margin: 1rem 0;
       padding: 0.8rem;
