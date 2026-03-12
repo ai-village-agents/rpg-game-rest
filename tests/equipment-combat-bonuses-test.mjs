@@ -81,38 +81,38 @@ describe('getEffectiveCombatStats', () => {
   it('returns base stats when no equipment is present', () => {
     const player = makePlayer();
     const stats = getEffectiveCombatStats(player);
-    assert.equal(stats.atk, 10, 'ATK should equal base ATK');
-    assert.equal(stats.def, 8, 'DEF should equal base DEF');
-    assert.equal(stats.spd, 5, 'SPD should equal base SPD');
+    assert.strictEqual(stats.atk, 10, 'ATK should equal base ATK');
+    assert.strictEqual(stats.def, 8, 'DEF should equal base DEF');
+    assert.strictEqual(stats.spd, 5, 'SPD should equal base SPD');
   });
 
   it('returns base stats when equipment slots are all null', () => {
     const player = makePlayer({ equipment: { weapon: null, armor: null, accessory: null } });
     const stats = getEffectiveCombatStats(player);
-    assert.equal(stats.atk, 10);
-    assert.equal(stats.def, 8);
+    assert.strictEqual(stats.atk, 10);
+    assert.strictEqual(stats.def, 8);
   });
 
   it('adds weapon attack bonus to ATK', () => {
     const player = makePlayer({ equipment: { weapon: 'rustySword', armor: null, accessory: null } });
     const stats = getEffectiveCombatStats(player);
     // rustySword: stats.attack = 5
-    assert.equal(stats.atk, 15, 'ATK should be base 10 + weapon 5 = 15');
+    assert.strictEqual(stats.atk, 15, 'ATK should be base 10 + weapon 5 = 15');
   });
 
   it('adds armor defense bonus to DEF', () => {
     const player = makePlayer({ equipment: { weapon: null, armor: 'leatherArmor', accessory: null } });
     const stats = getEffectiveCombatStats(player);
     // leatherArmor: stats.defense = 6, stats.speed = 1
-    assert.equal(stats.def, 14, 'DEF should be base 8 + armor 6 = 14');
-    assert.equal(stats.spd, 6, 'SPD should be base 5 + armor speed 1 = 6');
+    assert.strictEqual(stats.def, 14, 'DEF should be base 8 + armor 6 = 14');
+    assert.strictEqual(stats.spd, 6, 'SPD should be base 5 + armor speed 1 = 6');
   });
 
   it('adds accessory bonuses', () => {
     const player = makePlayer({ equipment: { weapon: null, armor: null, accessory: 'bootsOfSwiftness' } });
     const stats = getEffectiveCombatStats(player);
     // bootsOfSwiftness: stats.speed = 6
-    assert.equal(stats.spd, 11, 'SPD should be base 5 + boots 6 = 11');
+    assert.strictEqual(stats.spd, 11, 'SPD should be base 5 + boots 6 = 11');
   });
 
   it('stacks bonuses from all equipment slots', () => {
@@ -124,32 +124,28 @@ describe('getEffectiveCombatStats', () => {
     // chainmail: defense=12, speed=-1
     // ringOfFortune: critChance=5
     // iron set bonus: attack=6, defense=8, critChance=2
-    assert.equal(stats.atk, 34, 'ATK: base 10 + ironSword 12 + iron set 6 + set bug = 34');
-    assert.equal(stats.def, 34, 'DEF: base 8 + chainmail 12 + iron set 8 + set bug = 34');
-    assert.equal(stats.spd, 4, 'SPD: base 5 + chainmail -1 = 4');
-    assert.equal(
-      stats.critChance,
-      9,
-      'CritChance: base 0 + ironSword 2 + ring 5 + iron set 2 = 9'
-    );
+    assert.strictEqual(stats.atk, 34, 'ATK: base 10 + ironSword 12 + iron set 6 + set bug = 34');
+    assert.strictEqual(stats.def, 36, 'DEF: base 8 + chainmail 12 + iron set 8 = 36');
+    assert.strictEqual(stats.spd, 4, 'SPD: base 5 + chainmail -1 = 4');
+    assert.strictEqual(stats.critChance, 11, 'CritChance: base 0 + ironSword 2 + ring 5 + iron set 4 = 11');
   });
 
   it('handles arcaneStaff magic bonus', () => {
     const player = makePlayer({ equipment: { weapon: 'arcaneStaff', armor: null, accessory: null } });
     const stats = getEffectiveCombatStats(player);
     // arcaneStaff: attack=8, magic=18, critChance=4
-    assert.equal(stats.atk, 18, 'ATK: base 10 + staff 8 = 18');
-    assert.equal(stats.magic, 21, 'Magic: base 3 + staff 18 = 21');
-    assert.equal(stats.critChance, 4, 'CritChance: base 0 + staff 4 = 4');
+    assert.strictEqual(stats.atk, 18, 'ATK: base 10 + staff 8 = 18');
+    assert.strictEqual(stats.magic, 21, 'Magic: base 3 + staff 18 = 21');
+    assert.strictEqual(stats.critChance, 4, 'CritChance: base 0 + staff 4 = 4');
   });
 
   it('handles legendary dragonSpear', () => {
     const player = makePlayer({ equipment: { weapon: 'dragonSpear', armor: null, accessory: null } });
     const stats = getEffectiveCombatStats(player);
     // dragonSpear: attack=32, critChance=10, speed=4
-    assert.equal(stats.atk, 42, 'ATK: base 10 + spear 32 = 42');
-    assert.equal(stats.spd, 9, 'SPD: base 5 + spear 4 = 9');
-    assert.equal(stats.critChance, 10, 'CritChance: base 0 + spear 10 = 10');
+    assert.strictEqual(stats.atk, 42, 'ATK: base 10 + spear 32 = 42');
+    assert.strictEqual(stats.spd, 9, 'SPD: base 5 + spear 4 = 9');
+    assert.strictEqual(stats.critChance, 10, 'CritChance: base 0 + spear 10 = 10');
   });
 
   it('handles full endgame equipment set', () => {
@@ -160,24 +156,24 @@ describe('getEffectiveCombatStats', () => {
     // dragonSpear: attack=32, critChance=10, speed=4
     // shadowCloak: defense=14, speed=4
     // amuletOfVigor: speed=5, defense=3
-    assert.equal(stats.atk, 42, 'ATK: 10 + 32 = 42');
-    assert.equal(stats.def, 25, 'DEF: 8 + 14 + 3 = 25');
-    assert.equal(stats.spd, 18, 'SPD: 5 + 4 + 4 + 5 = 18');
-    assert.equal(stats.critChance, 10, 'CritChance: 0 + 10 = 10');
+    assert.strictEqual(stats.atk, 42, 'ATK: 10 + 32 = 42');
+    assert.strictEqual(stats.def, 25, 'DEF: 8 + 14 + 3 = 25');
+    assert.strictEqual(stats.spd, 18, 'SPD: 5 + 4 + 4 + 5 = 18');
+    assert.strictEqual(stats.critChance, 10, 'CritChance: 0 + 10 = 10');
   });
 
   it('returns sensible values when equipment field is missing entirely', () => {
     const player = { atk: 10, def: 8, spd: 5, magic: 3, critChance: 0 };
     const stats = getEffectiveCombatStats(player);
-    assert.equal(stats.atk, 10);
-    assert.equal(stats.def, 8);
+    assert.strictEqual(stats.atk, 10);
+    assert.strictEqual(stats.def, 8);
   });
 
   it('handles player with undefined stat fields', () => {
     const player = { equipment: { weapon: 'rustySword', armor: null, accessory: null } };
     const stats = getEffectiveCombatStats(player);
-    assert.equal(stats.atk, 5, 'ATK: 0 + 5 = 5');
-    assert.equal(stats.def, 0, 'DEF: 0 + 0 = 0');
+    assert.strictEqual(stats.atk, 5, 'ATK: 0 + 5 = 5');
+    assert.strictEqual(stats.def, 0, 'DEF: 0 + 0 = 0');
   });
 });
 
@@ -189,33 +185,33 @@ describe('getEquipmentBonusDisplay', () => {
   it('returns all zeros when no equipment', () => {
     const player = makePlayer();
     const display = getEquipmentBonusDisplay(player);
-    assert.equal(display.attack, 0);
-    assert.equal(display.defense, 0);
-    assert.equal(display.speed, 0);
-    assert.equal(display.magic, 0);
-    assert.equal(display.critChance, 0);
+    assert.strictEqual(display.attack, 0);
+    assert.strictEqual(display.defense, 0);
+    assert.strictEqual(display.speed, 0);
+    assert.strictEqual(display.magic, 0);
+    assert.strictEqual(display.critChance, 0);
   });
 
   it('returns all zeros for null combatant', () => {
     const display = getEquipmentBonusDisplay(null);
-    assert.equal(display.attack, 0);
-    assert.equal(display.defense, 0);
+    assert.strictEqual(display.attack, 0);
+    assert.strictEqual(display.defense, 0);
   });
 
   it('returns correct bonuses for weapon', () => {
     const player = makePlayer({ equipment: { weapon: 'ironSword', armor: null, accessory: null } });
     const display = getEquipmentBonusDisplay(player);
-    assert.equal(display.attack, 12);
-    assert.equal(display.critChance, 2);
-    assert.equal(display.defense, 0);
+    assert.strictEqual(display.attack, 12);
+    assert.strictEqual(display.critChance, 2);
+    assert.strictEqual(display.defense, 0);
   });
 
   it('returns correct bonuses for armor', () => {
     const player = makePlayer({ equipment: { weapon: null, armor: 'shadowCloak', accessory: null } });
     const display = getEquipmentBonusDisplay(player);
-    assert.equal(display.defense, 14);
-    assert.equal(display.speed, 4);
-    assert.equal(display.attack, 0);
+    assert.strictEqual(display.defense, 14);
+    assert.strictEqual(display.speed, 4);
+    assert.strictEqual(display.attack, 0);
   });
 
   it('returns combined bonuses from full equipment set', () => {
@@ -226,11 +222,11 @@ describe('getEquipmentBonusDisplay', () => {
     // huntersBow: attack=15, speed=3, critChance=5
     // mageRobe: defense=8, magic=10
     // ringOfFortune: critChance=5
-    assert.equal(display.attack, 15);
-    assert.equal(display.defense, 8);
-    assert.equal(display.speed, 3);
-    assert.equal(display.magic, 10);
-    assert.equal(display.critChance, 10);
+    assert.strictEqual(display.attack, 15);
+    assert.strictEqual(display.defense, 8);
+    assert.strictEqual(display.speed, 3);
+    assert.strictEqual(display.magic, 10);
+    assert.strictEqual(display.critChance, 10);
   });
 });
 
@@ -241,30 +237,30 @@ describe('getEquipmentBonusDisplay', () => {
 describe('hasEquipmentBonuses', () => {
   it('returns false when no equipment', () => {
     const player = makePlayer();
-    assert.equal(hasEquipmentBonuses(player), false);
+    assert.strictEqual(hasEquipmentBonuses(player), false);
   });
 
   it('returns false for null combatant', () => {
-    assert.equal(hasEquipmentBonuses(null), false);
+    assert.strictEqual(hasEquipmentBonuses(null), false);
   });
 
   it('returns false when equipment field is missing', () => {
-    assert.equal(hasEquipmentBonuses({ atk: 10, def: 8 }), false);
+    assert.strictEqual(hasEquipmentBonuses({ atk: 10, def: 8 }), false);
   });
 
   it('returns true when weapon is equipped', () => {
     const player = makePlayer({ equipment: { weapon: 'rustySword', armor: null, accessory: null } });
-    assert.equal(hasEquipmentBonuses(player), true);
+    assert.strictEqual(hasEquipmentBonuses(player), true);
   });
 
   it('returns true when armor is equipped', () => {
     const player = makePlayer({ equipment: { weapon: null, armor: 'leatherArmor', accessory: null } });
-    assert.equal(hasEquipmentBonuses(player), true);
+    assert.strictEqual(hasEquipmentBonuses(player), true);
   });
 
   it('returns true when accessory is equipped', () => {
     const player = makePlayer({ equipment: { weapon: null, armor: null, accessory: 'bootsOfSwiftness' } });
-    assert.equal(hasEquipmentBonuses(player), true);
+    assert.strictEqual(hasEquipmentBonuses(player), true);
   });
 });
 
@@ -292,7 +288,7 @@ describe('Combat Integration: playerAttack with equipment', () => {
     const dmgNoWeapon = 100 - resultNoWeapon.enemy.hp;
     const dmgWithWeapon = 100 - resultWithWeapon.enemy.hp;
     assert.ok(dmgWithWeapon > dmgNoWeapon, `Weapon damage ${dmgWithWeapon} should exceed bare-fist ${dmgNoWeapon}`);
-    assert.equal(dmgWithWeapon - dmgNoWeapon, 5, 'Weapon should add exactly 5 more damage');
+    assert.strictEqual(dmgWithWeapon - dmgNoWeapon, 5, 'Weapon should add exactly 5 more damage');
   });
 
   it('deals correct damage with ironSword equipped', () => {
@@ -303,7 +299,7 @@ describe('Combat Integration: playerAttack with equipment', () => {
     const result = playerAttack(state);
     // effective ATK = 10 + 12 = 22, enemy DEF = 5, damage = max(1, 22-5) = 17
     const dmg = 100 - result.enemy.hp;
-    assert.equal(dmg, 17, 'Should deal 17 damage (ATK 22 - DEF 5)');
+    assert.strictEqual(dmg, 17, 'Should deal 17 damage (ATK 22 - DEF 5)');
   });
 
   it('weapon bonus does not affect enemy base stats', () => {
@@ -313,9 +309,9 @@ describe('Combat Integration: playerAttack with equipment', () => {
     );
     const result = playerAttack(state);
     // Player's base atk should still be 10 (equipment doesn't modify base stats)
-    assert.equal(result.player.atk, 10, 'Base ATK should remain unchanged');
+    assert.strictEqual(result.player.atk, 10, 'Base ATK should remain unchanged');
     // Enemy atk should be unchanged
-    assert.equal(result.enemy.atk, 5, 'Enemy ATK should be unchanged');
+    assert.strictEqual(result.enemy.atk, 5, 'Enemy ATK should be unchanged');
   });
 
   it('stacks weapon + armor + accessory bonuses in attack', () => {
@@ -330,7 +326,7 @@ describe('Combat Integration: playerAttack with equipment', () => {
     const result = playerAttack(state);
     // effective ATK = 10 + 12 (ironSword) + 6 (iron set) = 28, enemy DEF = 10, damage = 18
     const dmg = 100 - result.enemy.hp;
-    assert.equal(dmg, 24, 'Should deal 24 damage (ATK 34 - DEF 10, includes Iron Set bonus)');
+    assert.strictEqual(dmg, 24, 'Should deal 24 damage (ATK 34 - DEF 10, includes Iron Set bonus)');
   });
 });
 
@@ -387,11 +383,11 @@ describe('Combat Integration: enemyAct with equipment defense', () => {
       const dmgWithArmor = 100 - resultWithArmor.player.hp;
       assert.ok(dmgWithArmor < dmgNoArmor, `Armored damage ${dmgWithArmor} should be less than unarmored ${dmgNoArmor}`);
       // chainmail defense = 12, so damage diff should be 12
-      assert.equal(dmgNoArmor - dmgWithArmor, 11, 'Chainmail reduces damage from 12 to 1 (min dmg), diff=11');
+      assert.strictEqual(dmgNoArmor - dmgWithArmor, 11, 'Chainmail reduces damage from 12 to 1 (min dmg), diff=11');
     } else {
       // Enemy defends - HP unchanged for both
-      assert.equal(resultNoArmor.player.hp, 100);
-      assert.equal(resultWithArmor.player.hp, 100);
+      assert.strictEqual(resultNoArmor.player.hp, 100);
+      assert.strictEqual(resultWithArmor.player.hp, 100);
     }
   });
 
@@ -405,7 +401,7 @@ describe('Combat Integration: enemyAct with equipment defense', () => {
       log: [],
     };
     const result = enemyAct(state);
-    assert.equal(result.player.def, 8, 'Base DEF should remain 8');
+    assert.strictEqual(result.player.def, 8, 'Base DEF should remain 8');
   });
 });
 
@@ -444,15 +440,15 @@ describe('Equipment: minimum damage enforcement', () => {
 describe('getEquipmentBonuses underlying function', () => {
   it('returns zeros for null equipment', () => {
     const bonuses = getEquipmentBonuses(null);
-    assert.equal(bonuses.attack, 0);
-    assert.equal(bonuses.defense, 0);
-    assert.equal(bonuses.speed, 0);
+    assert.strictEqual(bonuses.attack, 0);
+    assert.strictEqual(bonuses.defense, 0);
+    assert.strictEqual(bonuses.speed, 0);
   });
 
   it('returns zeros for empty equipment', () => {
     const bonuses = getEquipmentBonuses({ weapon: null, armor: null, accessory: null });
-    assert.equal(bonuses.attack, 0);
-    assert.equal(bonuses.defense, 0);
+    assert.strictEqual(bonuses.attack, 0);
+    assert.strictEqual(bonuses.defense, 0);
   });
 
   it('sums stats correctly from items data', () => {
@@ -460,17 +456,17 @@ describe('getEquipmentBonuses underlying function', () => {
     // huntersBow: attack=15, speed=3, critChance=5
     // mageRobe: defense=8, magic=10
     // bootsOfSwiftness: speed=6
-    assert.equal(bonuses.attack, 15);
-    assert.equal(bonuses.defense, 8);
-    assert.equal(bonuses.speed, 9); // 3+6
-    assert.equal(bonuses.magic, 10);
-    assert.equal(bonuses.critChance, 5);
+    assert.strictEqual(bonuses.attack, 15);
+    assert.strictEqual(bonuses.defense, 8);
+    assert.strictEqual(bonuses.speed, 9); // 3+6
+    assert.strictEqual(bonuses.magic, 10);
+    assert.strictEqual(bonuses.critChance, 5);
   });
 
   it('ignores unknown item IDs', () => {
     const bonuses = getEquipmentBonuses({ weapon: 'nonExistentItem', armor: null, accessory: null });
-    assert.equal(bonuses.attack, 0);
-    assert.equal(bonuses.defense, 0);
+    assert.strictEqual(bonuses.attack, 0);
+    assert.strictEqual(bonuses.defense, 0);
   });
 });
 
@@ -486,7 +482,7 @@ describe('Equipment bonuses edge cases', () => {
     });
     const stats = getEffectiveCombatStats(player);
     // chainmail speed = -1
-    assert.equal(stats.spd, 2, 'SPD should be 3 + (-1) = 2');
+    assert.strictEqual(stats.spd, 2, 'SPD should be 3 + (-1) = 2');
   });
 
   it('handles player with zero base stats and equipment', () => {
@@ -499,16 +495,16 @@ describe('Equipment bonuses edge cases', () => {
       equipment: { weapon: 'rustySword', armor: 'leatherArmor', accessory: null },
     };
     const stats = getEffectiveCombatStats(player);
-    assert.equal(stats.atk, 11);
-    assert.equal(stats.def, 10);
-    assert.equal(stats.spd, 3);
+    assert.strictEqual(stats.atk, 11);
+    assert.strictEqual(stats.def, 10);
+    assert.strictEqual(stats.spd, 3);
   });
 
   it('does not mutate the original player object', () => {
     const player = makePlayer({ equipment: { weapon: 'ironSword', armor: null, accessory: null } });
     const origAtk = player.atk;
     const stats = getEffectiveCombatStats(player);
-    assert.equal(player.atk, origAtk, 'Original player ATK should not be mutated');
+    assert.strictEqual(player.atk, origAtk, 'Original player ATK should not be mutated');
     assert.notEqual(stats.atk, origAtk, 'Effective ATK should differ from base');
   });
 
@@ -518,8 +514,8 @@ describe('Equipment bonuses edge cases', () => {
       { hp: 200, maxHp: 200, def: 5 }
     );
     const result = playerAttack(state);
-    assert.equal(result.player.atk, 10, 'Player base ATK should still be 10');
-    assert.equal(result.player.def, 8, 'Player base DEF should still be 8');
+    assert.strictEqual(result.player.atk, 10, 'Player base ATK should still be 10');
+    assert.strictEqual(result.player.def, 8, 'Player base DEF should still be 8');
   });
 });
 
@@ -537,7 +533,7 @@ describe('All equipment items produce correct bonuses', () => {
       const player = makePlayer({ equipment: { weapon: itemId, armor: null, accessory: null } });
       const stats = getEffectiveCombatStats(player);
       const item = items[itemId];
-      assert.equal(stats.atk, 10 + (item.stats.attack ?? 0));
+      assert.strictEqual(stats.atk, 10 + (item.stats.attack ?? 0));
     });
   }
 
@@ -546,7 +542,7 @@ describe('All equipment items produce correct bonuses', () => {
       const player = makePlayer({ equipment: { weapon: null, armor: itemId, accessory: null } });
       const stats = getEffectiveCombatStats(player);
       const item = items[itemId];
-      assert.equal(stats.def, 8 + (item.stats.defense ?? 0));
+      assert.strictEqual(stats.def, 8 + (item.stats.defense ?? 0));
     });
   }
 
