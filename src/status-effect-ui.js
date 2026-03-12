@@ -164,6 +164,11 @@ export function getStatusEffectStyles() {
 .se-atk-down { background: #3a2a1a; color: #c09060; border-color: #806040; }
 .se-def-down { background: #2a2a3a; color: #a0a0c0; border-color: #606080; }
 .se-spd-down { background: #2a3a2a; color: #90b090; border-color: #508050; }
+.se-bleed    { background: #5a1a1a; color: #ff6060; border-color: #a03030; }
+.se-blind    { background: #2a2a3a; color: #9090b0; border-color: #505070; }
+.se-curse    { background: #1a1a2a; color: #a070c0; border-color: #503060; }
+.se-freeze   { background: #1a3a5a; color: #80d0ff; border-color: #3080c0; }
+.se-silence  { background: #2a1a3a; color: #b080d0; border-color: #704090; }
 .se-unknown  { background: #2a2a2a; color: #c0c0c0; border-color: #606060; }
 
 .status-row-label {

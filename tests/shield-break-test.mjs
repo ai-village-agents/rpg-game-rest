@@ -9,6 +9,10 @@
  * Reference: docs/shield-break-integration-guide.md
  */
 
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { ENEMY_SHIELD_DATABASE } from "../src/shield-break.js";
+
 // TODO: Uncomment when shield-break.js is created
 // import {
 //   checkWeakness,
@@ -22,7 +26,7 @@
 let passed = 0;
 let failed = 0;
 
-function assert(condition, msg) {
+function legacyAssert(condition, msg) {
   if (condition) {
     passed++;
     console.log(`  ✅ ${msg}`);
@@ -31,6 +35,67 @@ function assert(condition, msg) {
     console.error(`  ❌ FAIL: ${msg}`);
   }
 }
+
+// ── Test: F11-F15 Enemy Shield Entries ──────────────────────────────────
+test("F11-F15 enemy shield entries", async (t) => {
+  await t.test("F11-F15 enemies have shield database entries", () => {
+    const ids = [
+      "crystal-sentinel",
+      "ember-drake",
+      "phantom-assassin",
+      "arcane-guardian",
+      "crimson-berserker",
+      "frost-archon",
+      "void-knight",
+      "thunder-titan",
+      "infernal-sorcerer",
+      "abyssal-warden",
+      "celestial-wyrm",
+      "chaos-spawn",
+      "oblivion-lord",
+      "eternal-guardian",
+      "primordial-phoenix",
+      "lich-king",
+    ];
+
+    for (const id of ids) {
+      const entry = ENEMY_SHIELD_DATABASE[id];
+      assert.ok(entry, `${id} is present in ENEMY_SHIELD_DATABASE`);
+      assert.ok(entry.shieldCount >= 4, `${id} has shieldCount >= 4`);
+    }
+  });
+
+  await t.test("crystal-sentinel weak to lightning", () => {
+    assert.ok(
+      ENEMY_SHIELD_DATABASE["crystal-sentinel"].weaknesses.includes("lightning"),
+      "crystal-sentinel has lightning weakness"
+    );
+  });
+
+  await t.test("ember-drake immune to fire and absorbs fire", () => {
+    const emberDrake = ENEMY_SHIELD_DATABASE["ember-drake"];
+    assert.ok(emberDrake.immunities.includes("fire"), "ember-drake immune to fire");
+    assert.ok(emberDrake.absorbs.includes("fire"), "ember-drake absorbs fire");
+  });
+
+  await t.test("void-knight absorbs shadow", () => {
+    assert.ok(
+      ENEMY_SHIELD_DATABASE["void-knight"].absorbs.includes("shadow"),
+      "void-knight absorbs shadow"
+    );
+  });
+
+  await t.test("oblivion-lord has shieldCount 12", () => {
+    assert.equal(ENEMY_SHIELD_DATABASE["oblivion-lord"].shieldCount, 12);
+  });
+
+  await t.test("lich-king weak to holy", () => {
+    assert.ok(
+      ENEMY_SHIELD_DATABASE["lich-king"].weaknesses.includes("holy"),
+      "lich-king has holy weakness"
+    );
+  });
+});
 
 // ── Test: checkWeakness() ───────────────────────────────────────────────
 console.log('\n--- checkWeakness() ---');

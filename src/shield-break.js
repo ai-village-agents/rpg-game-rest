@@ -111,6 +111,101 @@ export const ENEMY_SHIELD_DATABASE = {
     weaknesses: ["holy", "lightning"],
     immunities: ["shadow", "physical"],
   },
+  // F11: Twilight Sanctum
+  "crystal-sentinel": {
+    shieldCount: 5,
+    weaknesses: ["lightning", "nature"],
+    immunities: ["physical"],
+  },
+  "ember-drake": {
+    shieldCount: 5,
+    weaknesses: ["ice", "holy"],
+    immunities: ["fire"],
+    absorbs: ["fire"],
+  },
+  "phantom-assassin": {
+    shieldCount: 4,
+    weaknesses: ["holy", "lightning"],
+    immunities: ["shadow", "physical"],
+  },
+  // F12: Arcane Labyrinth
+  "arcane-guardian": {
+    shieldCount: 6,
+    weaknesses: ["shadow", "lightning"],
+    immunities: ["holy"],
+  },
+  "crimson-berserker": {
+    shieldCount: 5,
+    weaknesses: ["ice", "holy"],
+    immunities: ["physical"],
+  },
+  "frost-archon": {
+    shieldCount: 6,
+    weaknesses: ["fire", "lightning"],
+    immunities: ["ice"],
+    absorbs: ["ice"],
+  },
+  // F13: Void Threshold
+  "void-knight": {
+    shieldCount: 7,
+    weaknesses: ["holy", "fire"],
+    immunities: ["shadow", "physical"],
+    absorbs: ["shadow"],
+  },
+  "thunder-titan": {
+    shieldCount: 6,
+    weaknesses: ["ice", "nature"],
+    immunities: ["lightning"],
+    absorbs: ["lightning"],
+  },
+  "infernal-sorcerer": {
+    shieldCount: 6,
+    weaknesses: ["ice", "holy"],
+    immunities: ["fire"],
+  },
+  // F14: Celestial Ruins
+  "abyssal-warden": {
+    shieldCount: 8,
+    weaknesses: ["holy", "lightning"],
+    immunities: ["shadow", "fire"],
+    absorbs: ["shadow"],
+  },
+  "celestial-wyrm": {
+    shieldCount: 7,
+    weaknesses: ["shadow", "ice"],
+    immunities: ["holy", "lightning"],
+    absorbs: ["holy"],
+  },
+  "chaos-spawn": {
+    shieldCount: 6,
+    weaknesses: ["holy", "ice"],
+    immunities: ["shadow"],
+  },
+  // F15: Oblivion Throne
+  "oblivion-lord": {
+    shieldCount: 12,
+    weaknesses: ["holy", "lightning"],
+    immunities: ["shadow", "fire", "ice"],
+    absorbs: ["shadow"],
+    breakImmune: false,
+  },
+  "eternal-guardian": {
+    shieldCount: 9,
+    weaknesses: ["lightning", "nature"],
+    immunities: ["physical", "fire"],
+  },
+  "primordial-phoenix": {
+    shieldCount: 8,
+    weaknesses: ["ice", "shadow"],
+    immunities: ["fire"],
+    absorbs: ["fire"],
+  },
+  "lich-king": {
+    shieldCount: 10,
+    weaknesses: ["holy", "fire"],
+    immunities: ["shadow", "ice"],
+    absorbs: ["shadow"],
+  }
 };
 
 const DEFAULT_ENEMY_SHIELDS = {
