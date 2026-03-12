@@ -6,12 +6,14 @@
 import {
   EQUIPMENT_SETS,
   EQUIPMENT_SLOTS,
+  countEquippedSetPieces,
   getSetData,
   getActiveSetBonuses,
   getSetProgress,
   getSetPieceStatus,
   checkSetAdvancement,
   getEquipmentSetSummary,
+  getAllSets,
 } from './equipment-sets.js';
 
 /**
@@ -531,4 +533,94 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+export function getEquipmentSetsPanelStyles() {
+  return `
+.equipment-sets-panel {
+  display: block;
+  padding: 16px;
+  background: rgba(10, 12, 18, 0.9);
+  border-radius: 12px;
+  color: #ccc;
+}
+.equipment-sets-panel .set-card {
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: rgba(20, 22, 30, 0.8);
+}
+.equipment-sets-panel .set-card--active {
+  border-color: #4a9;
+  background: rgba(20, 60, 40, 0.6);
+}
+.equipment-sets-panel .set-card--compact {
+  padding: 6px 10px;
+  margin-bottom: 5px;
+}
+.equipment-sets-panel .set-bonuses {
+  margin-top: 8px;
+  font-size: 0.88em;
+  color: #aef;
+}
+.equipment-sets-panel .set-header {
+  font-weight: bold;
+  color: #ffd700;
+  margin-bottom: 4px;
+}
+.equipment-sets-panel .inactive-sets {
+  margin-top: 14px;
+}
+.equipment-sets-panel .inactive-sets h3 {
+  color: #888;
+  margin-bottom: 8px;
+}
+.equipment-sets-panel .set-progress {
+  color: #aaa;
+  font-size: 0.85em;
+}
+`;
+}
+
+export function renderEquipmentSetsPanel(equipment, options = {}) {
+  const { showInactive = true, compact = false } = options;
+  const allSets = Object.values(EQUIPMENT_SETS);
+  const activeSets = [];
+  const inactiveSets = [];
+  for (const set of allSets) {
+    const total = Object.keys(set.pieces).length;
+    const equipped = equipment ? countEquippedSetPieces(equipment, set.id) : 0;
+    const isActive = equipped >= 2 && equipped >= total;
+    const missingItems = [];
+    for (const [slot, pieceId] of Object.entries(set.pieces)) {
+      if (!equipment || equipment[slot] !== pieceId) missingItems.push(pieceId);
+    }
+    const cardClass = 'set-card' + (isActive ? ' set-card--active' : '') + (compact ? ' set-card--compact' : '');
+    const bonusThreshold = Object.keys(set.bonuses).map(Number).filter(t => equipped >= t).sort((a, b) => b - a)[0];
+    const bonusText = bonusThreshold ? set.bonuses[bonusThreshold].description : '';
+    const card = '<div class="' + cardClass + '"><div class="set-header">' + set.name + '</div><div class="set-progress">' + equipped + '/' + total + '</div>' + (bonusText ? '<div class="set-bonuses">' + bonusText + '</div>' : '') + '</div>';
+    if (isActive) activeSets.push(card); else inactiveSets.push(card);
+  }
+  let html = '<div class="equipment-sets-panel">';
+  html += activeSets.join('');
+  if (showInactive && inactiveSets.length > 0) {
+    html += '<div class="inactive-sets"><h3>Available Sets</h3>' + inactiveSets.join('') + '</div>';
+  }
+  html += (activeSets.length === 0 ? '<div class="no-active-sets">No complete sets equipped</div>' : '') + '</div>';
+  return html;
+}
+
+export function getEquipmentSetsStatus(equipment) {
+  const allSets = Object.values(EQUIPMENT_SETS);
+  return allSets.map(set => {
+    const totalRequired = Object.keys(set.pieces).length;
+    const equippedCount = equipment ? countEquippedSetPieces(equipment, set.id) : 0;
+    const isActive = equippedCount >= totalRequired;
+    const missingItems = [];
+    for (const [slot, pieceId] of Object.entries(set.pieces)) {
+      if (!equipment || equipment[slot] !== pieceId) missingItems.push(pieceId);
+    }
+    return { set, isActive, equippedCount, totalRequired, missingItems };
+  });
 }

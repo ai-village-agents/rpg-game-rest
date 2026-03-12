@@ -163,6 +163,32 @@ export const EQUIPMENT_SETS = {
       4: { shadowBonus: 0.5, evasion: 0.2, shadowResist: 0.3, description: '+50% Shadow, +20% Evade, +30% Shadow Resist' },
     },
   },
+  rustySet: {
+    id: 'rustySet',
+    name: 'Rusty Set',
+    icon: '🗡️',
+    description: 'Old but sturdy starter gear.',
+    pieces: {
+      weapon: 'rustySword',
+      armor: 'leatherArmor',
+    },
+    bonuses: {
+      2: { attack: 3, defense: 2, speed: 1, description: '+3 ATK, +2 DEF, +1 SPD' },
+    },
+  },
+  ironSet: {
+    id: 'ironSet',
+    name: 'Iron Set',
+    icon: '⚔️',
+    description: 'Dependable iron equipment for seasoned fighters.',
+    pieces: {
+      weapon: 'ironSword',
+      armor: 'chainmail',
+    },
+    bonuses: {
+      2: { attack: 6, defense: 8, critChance: 2, description: '+6 ATK, +8 DEF, +2% Crit' },
+    },
+  },
 };
 
 /**
@@ -424,3 +450,5 @@ export function getEquipmentSetSummary(equipment) {
     setCount: activeBonuses.length,
   };
 }
+
+export const equipmentSets = Object.values(EQUIPMENT_SETS);
