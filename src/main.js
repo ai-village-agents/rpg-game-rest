@@ -4,6 +4,7 @@ import { applyReducedMotion } from './accessibility.js';
 
 import { render } from './render.js';
 import { keyToCardinalDirection } from './input.js';
+import { loadKeybindings, getActionForKey } from './keybindings.js';
 import { handleCombatAction, handleEnemyTurnLogic } from './handlers/combat-handler.js';
 import { handleExplorationAction, handleFastTravelAction } from './handlers/exploration-handler.js';
 import { handleSystemAction } from './handlers/system-handler.js';
@@ -86,13 +87,13 @@ if (IS_BROWSER) {
     if (tag === 'INPUT' || tag === 'TEXTAREA' || target?.isContentEditable) return;
 
     const key = event.key;
-    if (key === '?' || key?.toLowerCase() === 'h') {
+    if (getActionForKey(key, loadKeybindings()) === 'openHelp') {
       event.preventDefault();
       dispatch({ type: 'TOGGLE_HELP' });
       return;
     }
 
-    if (key === 'b' || key === 'B') {
+    if (getActionForKey(key, loadKeybindings()) === 'openBestiary') {
       event.preventDefault();
       dispatch({ type: 'VIEW_BESTIARY' });
       return;

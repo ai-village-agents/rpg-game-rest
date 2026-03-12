@@ -1,3 +1,5 @@
+import { loadKeybindings, getActionForKey } from './keybindings.js';
+
 /**
  * Input helpers.
  *
@@ -5,31 +7,27 @@
  * across UI/front-end entrypoints.
  */
 
-const KEY_TO_CARDINAL = {
-  w: 'north',
-  W: 'north',
-  ArrowUp: 'north',
-
-  s: 'south',
-  S: 'south',
-  ArrowDown: 'south',
-
-  a: 'west',
-  A: 'west',
-  ArrowLeft: 'west',
-
-  d: 'east',
-  D: 'east',
-  ArrowRight: 'east',
-};
-
 /**
- * Convert a keyboard `event.key` value into a cardinal direction.
+ * Convert a keyboard `event.key` value into a cardinal direction using current keybindings.
  *
  * @param {unknown} key
  * @returns {'north'|'south'|'west'|'east'|null}
  */
 export function keyToCardinalDirection(key) {
   if (typeof key !== 'string') return null;
-  return KEY_TO_CARDINAL[key] ?? null;
+
+  const action = getActionForKey(key, loadKeybindings());
+
+  switch (action) {
+    case 'moveNorth':
+      return 'north';
+    case 'moveSouth':
+      return 'south';
+    case 'moveWest':
+      return 'west';
+    case 'moveEast':
+      return 'east';
+    default:
+      return null;
+  }
 }

@@ -5,6 +5,7 @@
 
 import { getDefaultSettings } from './settings.js';
 import { getThemeList } from './data/themes.js';
+import { renderKeybindingsPanel, getKeybindingsStyles } from './keybindings-ui.js';
 
 /**
  * HTML-escape a string
@@ -94,9 +95,11 @@ export function renderSectionHeader(title, icon) {
 /**
  * Render the full settings panel
  * @param {Object} settings - Current settings object
+ * @param {Object} [keybindings] - Current keybinding map
+ * @param {string} [listeningAction] - Action currently waiting for a key press
  * @returns {string} HTML string
  */
-export function renderSettingsPanel(settings) {
+export function renderSettingsPanel(settings, keybindings, listeningAction) {
   const defaults = getDefaultSettings();
   const s = settings || defaults;
   const themes = getThemeList();
@@ -124,6 +127,13 @@ export function renderSettingsPanel(settings) {
     ${renderCheckbox('setting-confirm-flee', 'Confirm Before Fleeing', s.gameplay?.confirmFlee ?? true)}
     ${renderCheckbox('setting-tutorial-hints', 'Show Tutorial Hints', s.gameplay?.showTutorialHints ?? true)}
   `;
+
+  const keybindingsSection = keybindings
+    ? `
+    ${renderSectionHeader('Controls', '⌨️')}
+    ${renderKeybindingsPanel(keybindings, listeningAction)}
+  `
+    : '';
   
   return `
     <div class="settings-panel card">
@@ -131,6 +141,7 @@ export function renderSettingsPanel(settings) {
       ${audioSection}
       ${displaySection}
       ${gameplaySection}
+      ${keybindingsSection}
       <div class="settings-actions">
         <button id="btnCloseSettings">✕ Close Settings</button>
         <button id="btnResetSettings" class="secondary">Reset to Defaults</button>
@@ -145,6 +156,7 @@ export function renderSettingsPanel(settings) {
  */
 export function getSettingsStyles() {
   return `
+    ${getKeybindingsStyles()}
     .settings-panel {
       max-width: 450px;
       padding: 16px;
