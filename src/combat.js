@@ -33,6 +33,7 @@ import { initCombatBattleLog, logPlayerAttack, logPlayerAbility, logDamageDealt,
 import { applyDifficultyToEnemyHp, applyDifficultyToEnemyDamage, applyDifficultyToXpReward, applyDifficultyToGoldReward, DEFAULT_DIFFICULTY } from './difficulty.js';
 import { ACTION_TYPES, calculateMomentumGain, addMomentum, consumeOverdrive, applyMomentumDecay, getOverdriveAbility, calculateOverdriveDamage, canUseOverdrive, createMomentumState } from './momentum.js';
 import { registerHit, checkComboDecay, resetCombo, isComboBreaker, getChainBonus, getComboMultiplier } from './combo-system.js';
+import { initIntentState, updateIntentState } from './enemy-intent.js';
 
 // Minimal deterministic RNG (Park-Miller LCG)
 export function nextRng(seed) {
@@ -244,6 +245,7 @@ export function startNewEncounter(state, zoneLevel = 1) {
     turn: 1,
     player: { ...state.player, defending: false, statusEffects: [] },
     momentumState: state.momentumState ? createMomentumState() : undefined,
+    intentState: initIntentState(),
   };
   if (isEnemyAttacksFirst(next.worldEvent || state.worldEvent)) {
     next = { ...next, phase: 'enemy-turn' };
@@ -332,6 +334,8 @@ export function playerAttack(state) {
   state = applyVictoryDefeat(state);
   if (state.phase === 'victory' || state.phase === 'defeat') return state;
   state = processTurnStart(state, 'enemy');
+  // Update enemy intent prediction
+  state = { ...state, intentState: updateIntentState(state.intentState, state.enemy, state.rngSeed ?? 1) };
   if (state.phase === 'victory' || state.phase === 'defeat') return state;
   if (state.momentumState) {
     const isCrit = false; // base attacks don't crit by default
