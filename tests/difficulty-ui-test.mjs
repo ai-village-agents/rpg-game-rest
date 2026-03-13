@@ -7,8 +7,23 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { initialStateWithClass } from '../src/state.js';
-import { DIFFICULTY_LEVELS, DIFFICULTY_NAMES, DIFFICULTY_DESCRIPTIONS, DIFFICULTY_MULTIPLIERS, applyDifficultyToEnemyHp } from '../src/difficulty.js';
+import {
+  DIFFICULTY_LEVELS,
+  DIFFICULTY_NAMES,
+  DIFFICULTY_DESCRIPTIONS,
+  DIFFICULTY_MULTIPLIERS,
+} from '../src/difficulty.js';
 import { handleSystemAction } from '../src/handlers/system-handler.js';
+
+function withMockedMathRandom(value, fn) {
+  const realRandom = Math.random;
+  Math.random = () => value;
+  try {
+    return fn();
+  } finally {
+    Math.random = realRandom;
+  }
+}
 
 describe('Difficulty Selection UI', () => {
   describe('initialStateWithClass with difficulty parameter', () => {
@@ -33,30 +48,43 @@ describe('Difficulty Selection UI', () => {
     });
 
     it('should apply difficulty to initial enemy HP (easy)', () => {
-      const normalState = initialStateWithClass('warrior', 'Test', DIFFICULTY_LEVELS.NORMAL);
-      const easyState = initialStateWithClass('warrior', 'Test', DIFFICULTY_LEVELS.EASY);
-      
-      // Easy enemies should have less HP than normal
-      assert.ok(easyState.enemy.maxHp <= normalState.enemy.maxHp, 
-        `Easy HP (${easyState.enemy.maxHp}) should be <= Normal HP (${normalState.enemy.maxHp})`);
+      withMockedMathRandom(0.123456789, () => {
+        const normalState = initialStateWithClass('warrior', 'Test', DIFFICULTY_LEVELS.NORMAL);
+        const easyState = initialStateWithClass('warrior', 'Test', DIFFICULTY_LEVELS.EASY);
+
+        // Easy enemies should have less (or equal) HP than normal.
+        // We mock Math.random so both states pick the same initial enemy.
+        assert.ok(
+          easyState.enemy.maxHp <= normalState.enemy.maxHp,
+          `Easy HP (${easyState.enemy.maxHp}) should be <= Normal HP (${normalState.enemy.maxHp})`
+        );
+      });
     });
 
     it('should apply difficulty to initial enemy HP (hard)', () => {
-      const normalState = initialStateWithClass('warrior', 'Test', DIFFICULTY_LEVELS.NORMAL);
-      const hardState = initialStateWithClass('warrior', 'Test', DIFFICULTY_LEVELS.HARD);
-      
-      // Hard enemies should have more HP than normal
-      assert.ok(hardState.enemy.maxHp > normalState.enemy.maxHp,
-        `Hard HP (${hardState.enemy.maxHp}) should be greater than Normal HP (${normalState.enemy.maxHp})`);
+      withMockedMathRandom(0.123456789, () => {
+        const normalState = initialStateWithClass('warrior', 'Test', DIFFICULTY_LEVELS.NORMAL);
+        const hardState = initialStateWithClass('warrior', 'Test', DIFFICULTY_LEVELS.HARD);
+
+        // Hard enemies should have more HP than normal.
+        assert.ok(
+          hardState.enemy.maxHp > normalState.enemy.maxHp,
+          `Hard HP (${hardState.enemy.maxHp}) should be greater than Normal HP (${normalState.enemy.maxHp})`
+        );
+      });
     });
 
     it('should apply difficulty to initial enemy HP (nightmare)', () => {
-      const normalState = initialStateWithClass('warrior', 'Test', DIFFICULTY_LEVELS.NORMAL);
-      const nightmareState = initialStateWithClass('warrior', 'Test', DIFFICULTY_LEVELS.NIGHTMARE);
-      
-      // Nightmare enemies should have significantly more HP than normal
-      assert.ok(nightmareState.enemy.maxHp > normalState.enemy.maxHp,
-        `Nightmare HP (${nightmareState.enemy.maxHp}) should be greater than Normal HP (${normalState.enemy.maxHp})`);
+      withMockedMathRandom(0.123456789, () => {
+        const normalState = initialStateWithClass('warrior', 'Test', DIFFICULTY_LEVELS.NORMAL);
+        const nightmareState = initialStateWithClass('warrior', 'Test', DIFFICULTY_LEVELS.NIGHTMARE);
+
+        // Nightmare enemies should have significantly more HP than normal.
+        assert.ok(
+          nightmareState.enemy.maxHp > normalState.enemy.maxHp,
+          `Nightmare HP (${nightmareState.enemy.maxHp}) should be greater than Normal HP (${normalState.enemy.maxHp})`
+        );
+      });
     });
   });
 
@@ -67,9 +95,9 @@ describe('Difficulty Selection UI', () => {
         type: 'SELECT_CLASS',
         classId: 'warrior',
         name: 'TestWarrior',
-        difficulty: DIFFICULTY_LEVELS.HARD
+        difficulty: DIFFICULTY_LEVELS.HARD,
       };
-      
+
       const newState = handleSystemAction(mockState, action);
       assert.strictEqual(newState.difficulty, DIFFICULTY_LEVELS.HARD);
     });
@@ -80,9 +108,9 @@ describe('Difficulty Selection UI', () => {
         type: 'SELECT_CLASS',
         classId: 'mage',
         name: 'TestMage',
-        difficulty: 'invalid-difficulty'
+        difficulty: 'invalid-difficulty',
       };
-      
+
       const newState = handleSystemAction(mockState, action);
       assert.strictEqual(newState.difficulty, DIFFICULTY_LEVELS.NORMAL);
     });
@@ -92,9 +120,9 @@ describe('Difficulty Selection UI', () => {
       const action = {
         type: 'SELECT_CLASS',
         classId: 'cleric',
-        name: 'TestCleric'
+        name: 'TestCleric',
       };
-      
+
       const newState = handleSystemAction(mockState, action);
       assert.strictEqual(newState.difficulty, DIFFICULTY_LEVELS.NORMAL);
     });
