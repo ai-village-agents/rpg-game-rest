@@ -17,6 +17,7 @@ import { createTavernDiceState } from './tavern-dice.js';
 import { createTutorialState } from './tutorial.js';
 import { createWeatherState } from './weather.js';
 import { createDailyChallengeState } from './daily-challenge-system.js';
+import { createArenaState } from './arena-tournament-system.js';
 
 export function initialState() {
   const playerBase = characters.player;
@@ -65,6 +66,7 @@ export function initialState() {
     dailyChallengeState: createDailyChallengeState(),
     showDailyChallenges: false,
     encounterState: createEncounterState(),
+    arenaState: createArenaState(),
     ...createCompanionState(),
     npcRelationshipManager: createNPCRelationshipManager(),
   };
@@ -132,6 +134,7 @@ export function initialStateWithClass(classId, characterName = '', difficulty = 
     dailyChallengeState: createDailyChallengeState(),
     showDailyChallenges: false,
     encounterState: createEncounterState(),
+    arenaState: createArenaState(),
     ...createCompanionState(),
     npcRelationshipManager: createNPCRelationshipManager(),
   };
