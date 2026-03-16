@@ -2,7 +2,7 @@ import { renderBountyBoardPanel } from './bounty-board-ui.js';
 import { renderReputationPanel } from './faction-reputation-system-ui.js';
 import { renderFastTravelButton, renderFastTravelModal, isFastTravelModalOpen, attachFastTravelHandlers, getFastTravelStyles } from './fast-travel-ui.js';
 import { renderTavernDicePanel } from './tavern-dice-ui.js';
-import { saveToLocalStorage } from './state.js';
+import { saveToLocalStorage, loadFromLocalStorage } from './state.js';
 import { CLASS_DEFINITIONS } from './characters/classes.js';
 import { DEFAULT_WORLD_DATA, getRoomExits } from './map.js';
 import { getCategorizedInventory, getEquipmentDisplay, getItemDetails, getEquipmentComparison, INVENTORY_SCREENS, EQUIPMENT_SLOTS, getEquipmentBonuses } from './inventory.js';
@@ -18,6 +18,7 @@ import { renderStatusEffectsRow, getStatusEffectStyles } from './status-effect-u
 import { getMinimapStyles, renderMinimap } from './minimap.js';
 import { renderStatsPanel, getStatsPanelStyles } from './stats-display.js';
 import { renderSaveSlotsList, getSaveSlotsStyles } from './save-slots-ui.js';
+import { getSaveSlots } from './engine.js';
 import { renderSettingsPanel, getSettingsStyles, attachSettingsHandlers } from './settings-ui.js';
 import { renderQuestRewardScreen, renderQuestRewardActions, attachQuestRewardHandlers, getQuestRewardStyles } from './quest-rewards-ui.js';
 import { renderShopPanel, getShopStyles, attachShopHandlers } from './shop-ui.js';
@@ -68,11 +69,59 @@ let _victoryAnimStartTime = 0;
 /** Track previous log for floating text diff */
 let _previousLog = [];
 
+export function getContinueButtonStyles() {
+  return `
+    .continue-game {
+      margin-bottom: 16px;
+      padding: 12px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(95, 125, 167, 0.15), rgba(87, 211, 140, 0.08));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn-continue-game {
+      width: 100%;
+      max-width: 480px;
+      font-size: 15px;
+      padding: 12px 18px;
+      background: linear-gradient(135deg, #2d8a4e, var(--good, #57d38c));
+      border: 1px solid color-mix(in srgb, var(--good, #57d38c) 80%, #ffffff 10%);
+      color: var(--text);
+      box-shadow: 0 4px 14px rgba(87, 211, 140, 0.35);
+    }
+
+    .btn-continue-game:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(87, 211, 140, 0.45);
+    }
+
+    .btn-continue-game:active {
+      transform: translateY(1px);
+      filter: brightness(0.95);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+
+    .continue-note {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+  `;
+}
+
 export function getStyles() {
   return [
     getStatusEffectStyles(),
     getMinimapStyles(),
     getStatsPanelStyles(),
+    getContinueButtonStyles(),
     getCraftingStyles(),
     getProvisionsStyles(),
     getTalentTreeStyles(),
@@ -333,6 +382,13 @@ export function render(state, dispatch) {
     document.head.appendChild(s);
   }
 
+  if (!document.getElementById('continue-button-styles')) {
+    const styleEl = document.createElement('style');
+    styleEl.id = 'continue-button-styles';
+    styleEl.textContent = getContinueButtonStyles();
+    document.head.appendChild(styleEl);
+  }
+
   if (!document.getElementById('shield-break-styles')) {
     const styleEl = document.createElement('style');
     styleEl.id = 'shield-break-styles';
@@ -513,6 +569,14 @@ export function render(state, dispatch) {
     const difficultyOptions = Object.values(DIFFICULTY_LEVELS)
       .map((level) => `<option value="${esc(level)}" title="${esc(DIFFICULTY_DESCRIPTIONS[level] || '')}">${esc(DIFFICULTY_NAMES[level] || level)}</option>`)
       .join('');
+    const saveSlots = getSaveSlots();
+    const hasSaveSlots = Array.isArray(saveSlots) && saveSlots.some((slot) => slot?.exists);
+    const continueHtml = hasSaveSlots ? `
+      <div class="continue-game">
+        <button id="btn-continue-game" class="btn-continue-game">Continue Game (Load Saved Game)</button>
+        <div class="continue-note">Or create a new character below.</div>
+      </div>
+    ` : '';
     const cards = order.map((classId) => {
       const def = CLASS_DEFINITIONS[classId];
       if (!def) return '';
@@ -533,6 +597,7 @@ export function render(state, dispatch) {
     }).join('');
 
     hud.innerHTML = `
+      ${continueHtml}
       <div class="card">
         <h2>Choose Your Name</h2>
         <input id="class-select-name" type="text" maxlength="24" placeholder="Enter your character name" autocomplete="off" />
@@ -547,6 +612,13 @@ export function render(state, dispatch) {
     const nameInput = hud.querySelector('#class-select-name');
     if (nameInput) {
       nameInput.focus();
+    }
+
+    if (hasSaveSlots) {
+      const continueButton = hud.querySelector('#btn-continue-game');
+      if (continueButton) {
+        continueButton.onclick = () => dispatch({ type: 'LOAD_SLOTS' });
+      }
     }
 
     hud.querySelectorAll('button[data-class]').forEach((button) => {
