@@ -65,7 +65,10 @@ export const createRewardsState = (state) => {
   const turnsUsed = normalizeNumber(combat.turnsUsed ?? state?.turnsUsed, 0);
   const damageDealt = normalizeNumber(combat.damageDealt ?? state?.damageDealt, 0);
   const damageReceived = normalizeNumber(combat.damageReceived ?? state?.damageReceived, 0);
-  const enemyName = normalizeString(combat.enemyName ?? enemy.name ?? state?.enemyName, 'Enemy');
+  const enemyName = normalizeString(
+    combat.enemyName ?? enemy.displayName ?? enemy.name ?? state?.enemyName,
+    'Enemy'
+  );
 
   const playerMaxHp = normalizeNumber(player.maxHp ?? state?.playerMaxHp, 1);
   const enemyMaxHp = normalizeNumber(enemy.maxHp ?? state?.enemyMaxHp, 1);

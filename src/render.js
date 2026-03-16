@@ -1641,6 +1641,7 @@ if (state.phase === 'achievements') {
     const ds = state.dialogState;
     const currentLine = getCurrentDialogLine(ds);
     const progress = getDialogProgress(ds);
+    const isLastDialogPage = progress.current >= progress.total && progress.sectionCurrent >= progress.sectionTotal;
     const progressText = ds.lines.length > 0
       ? `(${progress.current}/${progress.total})`
       : '';
@@ -1658,7 +1659,7 @@ if (state.phase === 'achievements') {
 
     actions.innerHTML = `
       <div class="buttons">
-        ${currentLine ? `<button id="btnDialogNext">Next ▶</button>` : ''}
+        ${currentLine ? `<button id="btnDialogNext">${isLastDialogPage ? 'Done ✓' : 'Next ▶'}</button>` : ''}
         <button id="btnDialogClose">Farewell</button>
       </div>
     `;
