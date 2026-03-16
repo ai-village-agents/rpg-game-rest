@@ -219,7 +219,13 @@ export function handleEnemyTurnLogic(state) {
 
 function finalizeCombatState(next, overrides = {}) {
   if (!next) return next;
-  return trackAchievements({ ...next, ...overrides });
+  const combined = { ...next, ...overrides };
+  const cs = combined.combatStats;
+  if (cs && (combined.phase === 'victory' || combined.phase === 'defeat')) {
+    finalizeCombatStats(cs, combined.phase, combined.player?.hp ?? 0, combined.player?.maxHp ?? 100);
+    combined.combatStatsSummary = formatCombatStatsDisplay(cs);
+  }
+  return trackAchievements(combined);
 }
 
 function applyCraftingMaterialDrops(state) {
