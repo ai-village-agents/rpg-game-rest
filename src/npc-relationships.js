@@ -297,3 +297,51 @@ export class NPCRelationshipManager {
 export function createNPCRelationshipManager() {
   return new NPCRelationshipManager();
 }
+
+/**
+ * Safely obtain a usable NPCRelationshipManager from a saved object.
+ * @param {any} candidate
+ * @returns {NPCRelationshipManager}
+ */
+export function ensureNPCRelationshipManager(candidate) {
+  const isManager = (value) =>
+    value &&
+    typeof value.modifyReputation === 'function' &&
+    typeof value.getRelationshipLevel === 'function' &&
+    value.relationships instanceof Map;
+
+  if (isManager(candidate)) {
+    return candidate;
+  }
+
+  const manager = createNPCRelationshipManager();
+
+  const sanitizeEntries = (entries) => {
+    if (!Array.isArray(entries)) return null;
+    return entries.filter((entry) => Array.isArray(entry) && entry.length >= 2);
+  };
+
+  const normalizeRelationships = (source) => {
+    if (!source) return null;
+    if (Array.isArray(source)) return sanitizeEntries(source);
+    if (source instanceof Map) return Array.from(source.entries());
+    if (source && typeof source === 'object' && 'relationships' in source) {
+      const rels = source.relationships;
+      if (Array.isArray(rels)) return sanitizeEntries(rels);
+      if (rels instanceof Map) return Array.from(rels.entries());
+      if (rels && typeof rels === 'object') return Object.entries(rels);
+    }
+    return null;
+  };
+
+  const relationshipEntries =
+    normalizeRelationships(candidate) ||
+    normalizeRelationships(candidate?.relationships) ||
+    normalizeRelationships(candidate?.relationships?.relationships);
+
+  if (relationshipEntries) {
+    manager.restoreState({ relationships: relationshipEntries });
+  }
+
+  return manager;
+}

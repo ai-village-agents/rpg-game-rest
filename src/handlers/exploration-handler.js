@@ -9,7 +9,7 @@ import { handleEncounterAction } from './encounter-handler.js';
 import { createEncounterState } from '../random-encounter-system.js';
 import { advanceTime, tryChangeWeather, hasWeatherSystem } from '../weather.js';
 import { logLocationDiscovery } from '../journal.js';
-import { createNPCRelationshipManager, ReputationEvent, RelationshipLevel } from '../npc-relationships.js';
+import { ensureNPCRelationshipManager, ReputationEvent, RelationshipLevel } from '../npc-relationships.js';
 import { removeItemFromInventory } from '../items.js';
 import { getExplorationQuest } from '../data/exploration-quests.js';
 import { processQuestCompletionWithBonus, generateQuestCompletionMessages } from '../quest-relationship-bridge.js';
@@ -107,15 +107,7 @@ function applyQuestRelationshipEffects(nextState, completedQuests) {
     if (!relationshipInfo.npcId && !hasBeneficiaries) continue;
 
     if (!managerUsed) {
-      // Check if we have a valid manager instance (not just plain JSON from localStorage)
-      if (!manager || typeof manager.modifyReputation !== 'function') {
-        const newManager = createNPCRelationshipManager();
-        // Restore state from plain JSON if available
-        if (manager && typeof manager === 'object') {
-          newManager.restoreState(manager);
-        }
-        manager = newManager;
-      }
+      manager = ensureNPCRelationshipManager(manager);
       state = { ...state, npcRelationshipManager: manager };
       managerUsed = true;
     }
@@ -352,18 +344,7 @@ export function handleExplorationAction(state, action) {
     }
 
     // NPC relationship greeting/reputation
-    // Check if we have a valid manager instance (not just plain JSON from localStorage)
-    const managerFromState = next.npcRelationshipManager;
-    let npcRelationshipManager;
-    if (managerFromState && typeof managerFromState.modifyReputation === 'function') {
-      npcRelationshipManager = managerFromState;
-    } else {
-      npcRelationshipManager = createNPCRelationshipManager();
-      // Restore state from plain JSON if available
-      if (managerFromState && typeof managerFromState === 'object') {
-        npcRelationshipManager.restoreState(managerFromState);
-      }
-    }
+    const npcRelationshipManager = ensureNPCRelationshipManager(next.npcRelationshipManager);
     npcRelationshipManager.modifyReputation(
       npc.id,
       ReputationEvent.DIALOGUE_POSITIVE.value,
