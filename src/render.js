@@ -2009,12 +2009,12 @@ if (state.phase === 'achievements') {
 
     actions.innerHTML = `
       <div class="buttons">
-        <button id="btnCloseProvisions">Close Provisions</button>
+        <button id="btnCloseProvisionsOuter">Close Provisions</button>
       </div>
     `;
 
     attachProvisionsHandlers(dispatch);
-    document.getElementById('btnCloseProvisions').onclick = () => dispatch({ type: 'CLOSE_PROVISIONS' });
+    document.getElementById('btnCloseProvisionsOuter').onclick = () => dispatch({ type: 'CLOSE_PROVISIONS' });
 
     log.innerHTML = state.log
       .slice()
