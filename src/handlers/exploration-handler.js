@@ -107,7 +107,15 @@ function applyQuestRelationshipEffects(nextState, completedQuests) {
     if (!relationshipInfo.npcId && !hasBeneficiaries) continue;
 
     if (!managerUsed) {
-      manager = manager ?? createNPCRelationshipManager();
+      // Check if we have a valid manager instance (not just plain JSON from localStorage)
+      if (!manager || typeof manager.modifyReputation !== 'function') {
+        const newManager = createNPCRelationshipManager();
+        // Restore state from plain JSON if available
+        if (manager && typeof manager === 'object') {
+          newManager.restoreState(manager);
+        }
+        manager = newManager;
+      }
       state = { ...state, npcRelationshipManager: manager };
       managerUsed = true;
     }
@@ -344,7 +352,18 @@ export function handleExplorationAction(state, action) {
     }
 
     // NPC relationship greeting/reputation
-    const npcRelationshipManager = next.npcRelationshipManager ?? createNPCRelationshipManager();
+    // Check if we have a valid manager instance (not just plain JSON from localStorage)
+    const managerFromState = next.npcRelationshipManager;
+    let npcRelationshipManager;
+    if (managerFromState && typeof managerFromState.modifyReputation === 'function') {
+      npcRelationshipManager = managerFromState;
+    } else {
+      npcRelationshipManager = createNPCRelationshipManager();
+      // Restore state from plain JSON if available
+      if (managerFromState && typeof managerFromState === 'object') {
+        npcRelationshipManager.restoreState(managerFromState);
+      }
+    }
     npcRelationshipManager.modifyReputation(
       npc.id,
       ReputationEvent.DIALOGUE_POSITIVE.value,
