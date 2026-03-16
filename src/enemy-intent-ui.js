@@ -207,12 +207,12 @@ function injectStyles() {
       content: '';
       position: absolute;
       top: 50%;
-      left: 8px;
+      left: 9px;
       width: 18px;
-      height: 22px;
+      height: 18px;
       transform: translateY(-50%);
-      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-      background: radial-gradient(ellipse, rgba(255, 215, 0, 0.4), transparent 70%);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 215, 0, 0.45), transparent 70%);
       animation: charge-pulse 1.5s ease-in-out infinite;
       pointer-events: none;
       z-index: 0;
