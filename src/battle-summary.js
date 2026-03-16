@@ -13,7 +13,7 @@ import { computeDerivedStats, formatCombatStatsDisplay } from './combat-stats-tr
 export function createBattleSummary(state) {
   const xpGained = state.xpGained ?? 0;
   const goldGained = state.goldGained ?? 0;
-  const enemyName = state.enemy?.name ?? 'Unknown Enemy';
+  const enemyName = state.enemy?.displayName ?? state.enemy?.name ?? 'Unknown Enemy';
   const lootedItems = Array.isArray(state.lootedItems) ? [...state.lootedItems] : [];
   const levelUps = Array.isArray(state.pendingLevelUps) ? [...state.pendingLevelUps] : [];
 
