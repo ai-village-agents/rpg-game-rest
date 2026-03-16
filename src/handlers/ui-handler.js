@@ -188,6 +188,7 @@ export function handleUIAction(state, action) {
           levelUpState: undefined,
           pendingLevelUps: undefined,
         };
+        next2 = pushLog(next2, '— Back to exploration —');
         next2 = pushLog(next2, 'You gather yourself and continue your journey.');
         next2 = pushLog(next2, `${getRoomDescription(state.world)} Exits: ${exits.join(', ') || 'none'}.`);
         return next2;
@@ -268,6 +269,7 @@ export function handleUIAction(state, action) {
       pendingLevelUps: undefined,
       gameStats: gs,
     };
+    next = pushLog(next, '— Back to exploration —');
     next = pushLog(next, 'You gather yourself and continue your journey.');
     next = pushLog(next, `${getRoomDescription(state.world)} Exits: ${exits.join(', ') || 'none'}.`);
     return next;
@@ -287,6 +289,7 @@ export function handleUIAction(state, action) {
       pendingLevelUps: undefined,
       gameStats: gs,
     };
+    next = pushLog(next, '— Back to exploration —');
     next = pushLog(next, 'You slip away and return to safety.');
     next = pushLog(next, `${getRoomDescription(state.world)} Exits: ${exits.join(', ') || 'none'}.`);
     return next;
@@ -302,6 +305,7 @@ export function handleUIAction(state, action) {
       levelUpState: undefined,
       pendingLevelUps: undefined,
     };
+    next = pushLog(next, '— Back to exploration —');
     next = pushLog(next, `You gather yourself and continue your journey.`);
     next = pushLog(next, `${getRoomDescription(state.world)} Exits: ${exits.join(', ') || 'none'}.`);
     return next;
