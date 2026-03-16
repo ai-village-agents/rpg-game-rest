@@ -1645,6 +1645,7 @@ if (state.phase === 'achievements') {
     const progressText = ds.lines.length > 0
       ? `(${progress.current}/${progress.total})`
       : '';
+    const showNextButton = !ds.done && !!currentLine;
 
     hud.innerHTML = `
       <div class="card">
@@ -1664,7 +1665,7 @@ if (state.phase === 'achievements') {
       </div>
     `;
 
-    if (currentLine) {
+    if (showNextButton) {
       document.getElementById('btnDialogNext').onclick = () => dispatch({ type: 'DIALOG_NEXT' });
     }
     document.getElementById('btnDialogClose').onclick = () => dispatch({ type: 'DIALOG_CLOSE' });
