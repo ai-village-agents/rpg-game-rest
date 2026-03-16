@@ -39,16 +39,16 @@ function formatEffect(effect) {
 
 /**
  * Get provisions from the player inventory.
- * @param {Array} inventory - Player inventory array
+ * @param {object} inventory - Player inventory object { itemId: quantity }
  * @returns {Array} Provisions found in inventory with their data
  */
 function getPlayerProvisions(inventory) {
-  if (!inventory) return [];
+  if (!inventory || typeof inventory !== 'object') return [];
   const results = [];
-  for (const item of inventory) {
-    const provData = PROVISIONS[item.id];
-    if (provData && item.quantity > 0) {
-      results.push({ ...provData, quantity: item.quantity });
+  for (const [itemId, quantity] of Object.entries(inventory)) {
+    const provData = PROVISIONS[itemId];
+    if (provData && quantity > 0) {
+      results.push({ ...provData, id: itemId, quantity });
     }
   }
   return results;
