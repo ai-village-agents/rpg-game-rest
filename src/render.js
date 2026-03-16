@@ -139,6 +139,65 @@ function inventorySummary(player) {
   return entries + `<div>Gold</div><div><b>${gold}</b></div>`;
 }
 
+function renderExplorationButtons(state) {
+  const dungeonButton = shouldShowDungeonEntrance(state)
+    ? '<button id="btnEnterDungeon" class="dungeon-enter-btn">Enter Dungeon \u26CF\uFE0F</button>'
+    : '';
+
+  return `
+    <div class="button-group">
+      <h3 class="group-label">Movement</h3>
+      <div class="buttons">
+        <button id="btnNorth">North</button>
+        <button id="btnSouth">South</button>
+        <button id="btnWest">West</button>
+        <button id="btnEast">East</button>
+        <button id="btnSeek">Seek Battle</button>
+        ${dungeonButton}
+      </div>
+    </div>
+    <div class="button-group">
+      <h3 class="group-label">Core Actions</h3>
+      <div class="buttons">
+        <button id="btnInventory">Inventory</button>
+        <button id="btnQuests">Quests 📜</button>
+        <button id="btnViewStats">Stats 📊</button>
+        <button id="btnSaveSlots">Save/Load 💾</button>
+        <button id="btnSettings">Settings ⚙️</button>
+        <button id="btnHelp">Help ❓</button>
+      </div>
+    </div>
+    <div class="button-group">
+      <h3 class="group-label">Game Systems</h3>
+      <div class="buttons">
+        <button id="btnCrafting">Crafting 🔨</button>
+        <button id="btnTalents">Talents ⭐</button>
+        <button id="btnCompanions">Companions 🤝${renderCompanionBadge(state)}</button>
+        <button id="btnSporeling">\uD83E\uDDA0 Sporeling</button>
+        <button id="btnProvisions">Provisions 🍖</button>
+        <button id="btnFastTravel">🗺️ Fast Travel</button>
+      </div>
+    </div>
+    <div class="button-group">
+      <h3 class="group-label">Locations</h3>
+      <div class="buttons">
+        <button id="btnTavern">Tavern 🍺</button>
+        <button id="btnBountyBoard">Bounty Board 📜</button>
+        <button id="btnArena">Arena ⚔️</button>
+        <button id="btnFactions">Factions 👑</button>
+      </div>
+    </div>
+    <div class="button-group">
+      <h3 class="group-label">Progress</h3>
+      <div class="buttons">
+        <button id="btnDailyChallenges">Daily 📅</button>
+        <button id="btnStatsDashboard">📈 Statistics</button>
+        <button id="btnJournal">Journal 📔${renderJournalBadge(state)}</button>
+      </div>
+    </div>
+  `;
+}
+
 function summarizeBonuses(bonuses) {
   if (!bonuses) return 'No bonuses';
   const parts = [];
@@ -586,35 +645,7 @@ export function render(state, dispatch) {
       btn.onclick = () => dispatch({ type: 'EXPLORE', direction: btn.dataset.dir });
     });
 
-    actions.innerHTML = `
-      <div class="buttons">
-        <button id="btnNorth">North</button>
-        <button id="btnSouth">South</button>
-        <button id="btnWest">West</button>
-        <button id="btnEast">East</button>
-        <button id="btnSeek">Seek Battle</button>
-        ${shouldShowDungeonEntrance(state) ? '<button id="btnEnterDungeon" class="dungeon-enter-btn">Enter Dungeon \u26CF\uFE0F</button>' : ''}
-        <button id="btnInventory">Inventory</button>
-        <button id="btnQuests">Quests 📜</button>
-        <button id="btnViewStats">Stats 📊</button>
-        <button id="btnSaveSlots">Save/Load 💾</button>
-        <button id="btnSettings">Settings ⚙️</button>
-        <button id="btnCrafting">Crafting 🔨</button>
-        <button id="btnHelp">Help ❓</button>
-        <button id="btnTalents">Talents ⭐</button>
-        <button id="btnTavern">Tavern 🍺</button>
-        <button id="btnBountyBoard">Bounty Board 📜</button>
-        <button id="btnJournal">Journal 📔${renderJournalBadge(state)}</button>
-        <button id="btnFactions">Factions 👑</button>
-        <button id="btnArena">Arena ⚔️</button>
-        <button id="btnCompanions">Companions 🤝${renderCompanionBadge(state)}</button>
-        <button id="btnSporeling">\uD83E\uDDA0 Sporeling</button>
-        <button id="btnProvisions">Provisions 🍖</button>
-        <button id="btnFastTravel">🗺️ Fast Travel</button>
-        <button id="btnDailyChallenges">Daily 📅</button>
-        <button id="btnStatsDashboard">📈 Statistics</button>
-      </div>
-    `;
+    actions.innerHTML = renderExplorationButtons(state);
 
     document.getElementById('btnNorth').onclick = () => dispatch({ type: 'EXPLORE', direction: 'north' });
     document.getElementById('btnSouth').onclick = () => dispatch({ type: 'EXPLORE', direction: 'south' });

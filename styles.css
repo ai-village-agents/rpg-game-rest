@@ -56,6 +56,24 @@ body {
   padding: 12px;
 }
 
+#actions {
+  column-count: 1;
+  column-gap: 24px;
+  break-inside: avoid;
+}
+
+@media (min-width: 768px) {
+  #actions {
+    column-count: 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  #actions {
+    column-count: 3;
+  }
+}
+
 .row {
   display: flex;
   gap: 12px;
@@ -89,6 +107,31 @@ body {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.button-group {
+  margin-bottom: 20px;
+  break-inside: avoid;
+}
+
+.button-group:last-child {
+  margin-bottom: 0;
+}
+
+.button-group .buttons {
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.group-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  margin: 0 0 6px 0;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 button {
