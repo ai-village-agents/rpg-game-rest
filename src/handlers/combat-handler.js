@@ -2,7 +2,7 @@ import { playerAttack, playerDefend, playerFlee, playerUsePotion, playerUseAbili
 import { createGameStats, recordDamageDealt, recordTurnPlayed, recordItemUsed, recordAbilityUsed, recordDamageReceived, recordShieldBroken, recordWeaknessHit as recordWeaknessHitGame, recordDefeatedWhileBroken } from '../game-stats.js';
 import { getCraftingMaterialDrops, lookupItem } from '../crafting.js';
 import { addItemToInventory } from '../items.js';
-import { trackAchievements } from '../achievements.js';
+import * as achievements from '../achievements.js';
 import { companionAutoAct } from '../companions.js';
 import { createCombatStats, recordPlayerAttack, recordPlayerDefend, recordAbilityUse, recordItemUse, recordPotionUse, recordDamageReceived as csRecordDamageReceived, recordFleeAttempt, recordWeaknessHit, recordCompanionAction, recordTurn, finalizeCombatStats, formatCombatStatsDisplay } from '../combat-stats-tracker.js';
 
@@ -219,7 +219,15 @@ export function handleEnemyTurnLogic(state) {
 
 function finalizeCombatState(next, overrides = {}) {
   if (!next) return next;
+  // Throttle achievement checks to prevent spam (max once per 500ms)
+  const now = Date.now();
+  const lastCheck = next.lastAchievementCheck;
+  if (typeof lastCheck === 'number' && now - lastCheck < 500) {
+    return { ...next, ...overrides };
+  }
   const combined = { ...next, ...overrides };
+  combined.lastAchievementCheck = now;
+  // Finalize combat stats for victory/defeat screens (HP fix)
   if (combined.combatStats && (combined.phase === 'victory' || combined.phase === 'defeat')) {
     finalizeCombatStats(
       combined.combatStats,
@@ -229,7 +237,7 @@ function finalizeCombatState(next, overrides = {}) {
     );
     combined.combatStatsSummary = formatCombatStatsDisplay(combined.combatStats);
   }
-  return trackAchievements(combined);
+  return achievements.trackAchievements(combined);
 }
 
 function applyCraftingMaterialDrops(state) {
