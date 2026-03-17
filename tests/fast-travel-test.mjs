@@ -32,7 +32,7 @@ describe('Fast Travel System', () => {
     });
 
     it('should return single destination for one visited room', () => {
-      const visitedRooms = [[1, 1]]; // center
+      const visitedRooms = ['center'];
       const result = getUnlockedFastTravelDestinations(visitedRooms);
       assert.equal(result.length, 1);
       assert.equal(result[0].id, 'center');
@@ -44,7 +44,7 @@ describe('Fast Travel System', () => {
     });
 
     it('should return multiple destinations sorted by danger level', () => {
-      const visitedRooms = [[2, 0], [1, 1], [0, 1]]; // sw (danger 3), center (danger 0), n (danger 1)
+      const visitedRooms = ['sw', 'center', 'n']; // sw (danger 3), center (danger 0), n (danger 1)
       const result = getUnlockedFastTravelDestinations(visitedRooms);
       assert.equal(result.length, 3);
       // Should be sorted: center (0), n (1), sw (3)
@@ -57,7 +57,7 @@ describe('Fast Travel System', () => {
     });
 
     it('should sort alphabetically when danger levels are equal', () => {
-      const visitedRooms = [[1, 2], [0, 2], [0, 0]]; // e (danger 2), ne (danger 2), nw (danger 2)
+      const visitedRooms = ['e', 'ne', 'nw']; // e (danger 2), ne (danger 2), nw (danger 2)
       const result = getUnlockedFastTravelDestinations(visitedRooms);
       assert.equal(result.length, 3);
       // All danger 2, sorted alphabetically: Eastern Fields, Northeast Ridge, Northwest Grove
@@ -67,14 +67,14 @@ describe('Fast Travel System', () => {
     });
 
     it('should skip invalid room coordinates', () => {
-      const visitedRooms = [[1, 1], [99, 99], [-1, -1]]; // only center is valid
+      const visitedRooms = ['center', 'unknown_room', '']; // only center is valid
       const result = getUnlockedFastTravelDestinations(visitedRooms);
       assert.equal(result.length, 1);
       assert.equal(result[0].id, 'center');
     });
 
     it('should include danger labels for all danger levels', () => {
-      const visitedRooms = [[1, 1], [0, 1], [1, 2], [2, 0]]; // center, n, e, sw
+      const visitedRooms = ['center', 'n', 'e', 'sw']; // center, n, e, sw
       const result = getUnlockedFastTravelDestinations(visitedRooms);
       const labels = result.map(d => d.dangerLabel);
       assert.ok(labels.includes('Safe'));      // danger 0
@@ -101,19 +101,19 @@ describe('Fast Travel System', () => {
     });
 
     it('should return true for visited center room', () => {
-      const visitedRooms = [[1, 1]];
+      const visitedRooms = ['center'];
       const result = isRoomUnlockedForFastTravel(visitedRooms, 'center');
       assert.equal(result, true);
     });
 
     it('should return false for unvisited room', () => {
-      const visitedRooms = [[1, 1]]; // only center visited
+      const visitedRooms = ['center']; // only center visited
       const result = isRoomUnlockedForFastTravel(visitedRooms, 'nw');
       assert.equal(result, false);
     });
 
     it('should return true for visited corner rooms', () => {
-      const visitedRooms = [[0, 0], [0, 2], [2, 0], [2, 2]]; // nw, ne, sw, se
+      const visitedRooms = ['nw', 'ne', 'sw', 'se']; // nw, ne, sw, se
       assert.equal(isRoomUnlockedForFastTravel(visitedRooms, 'nw'), true);
       assert.equal(isRoomUnlockedForFastTravel(visitedRooms, 'ne'), true);
       assert.equal(isRoomUnlockedForFastTravel(visitedRooms, 'sw'), true);
@@ -121,7 +121,7 @@ describe('Fast Travel System', () => {
     });
 
     it('should return false for unknown room ID', () => {
-      const visitedRooms = [[1, 1]];
+      const visitedRooms = ['center'];
       const result = isRoomUnlockedForFastTravel(visitedRooms, 'unknown_room');
       assert.equal(result, false);
     });
@@ -246,7 +246,7 @@ describe('Fast Travel System', () => {
 
   describe('canUseFastTravel', () => {
     it('should return canTravel false when not in exploration phase', () => {
-      const state = { phase: 'combat', visitedRooms: [[1, 1]] };
+      const state = { phase: 'combat', visitedRooms: ['center'] };
       const { canTravel, reason } = canUseFastTravel(state);
       
       assert.equal(canTravel, false);
@@ -254,7 +254,7 @@ describe('Fast Travel System', () => {
     });
 
     it('should return canTravel false for battle phase', () => {
-      const state = { phase: 'battle', visitedRooms: [[1, 1]] };
+      const state = { phase: 'battle', visitedRooms: ['center'] };
       const { canTravel, reason } = canUseFastTravel(state);
       
       assert.equal(canTravel, false);
@@ -277,7 +277,7 @@ describe('Fast Travel System', () => {
     });
 
     it('should return canTravel true during exploration with visited rooms', () => {
-      const state = { phase: 'exploration', visitedRooms: [[1, 1]] };
+      const state = { phase: 'exploration', visitedRooms: ['center'] };
       const { canTravel, reason } = canUseFastTravel(state);
       
       assert.equal(canTravel, true);
@@ -287,7 +287,7 @@ describe('Fast Travel System', () => {
     it('should return canTravel true with multiple visited rooms', () => {
       const state = {
         phase: 'exploration',
-        visitedRooms: [[0, 0], [1, 1], [2, 2]],
+        visitedRooms: ['nw', 'center', 'se'],
       };
       const { canTravel, reason } = canUseFastTravel(state);
       

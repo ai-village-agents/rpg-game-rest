@@ -7,9 +7,23 @@
 
 import { MINIMAP_ROOM_ID_MAP, ROOM_NAMES, ROOM_DANGER_LEVEL, DANGER_LABELS } from './minimap.js';
 
+// Reverse lookup: room ID -> coordinates
+const ROOM_ID_TO_COORDS = (() => {
+  const coords = {};
+  for (let row = 0; row < MINIMAP_ROOM_ID_MAP.length; row++) {
+    for (let col = 0; col < MINIMAP_ROOM_ID_MAP[row].length; col++) {
+      const roomId = MINIMAP_ROOM_ID_MAP[row][col];
+      if (roomId) {
+        coords[roomId] = { row, col };
+      }
+    }
+  }
+  return coords;
+})();
+
 /**
  * Get all rooms that the player has visited and can fast travel to.
- * @param {Array} visitedRooms - Array of [row, col] pairs representing visited rooms
+ * @param {string[]} visitedRooms - Array of room ID strings representing visited rooms
  * @returns {Array} Array of { id, name, row, col, dangerLevel, dangerLabel }
  */
 export function getUnlockedFastTravelDestinations(visitedRooms) {
@@ -19,9 +33,9 @@ export function getUnlockedFastTravelDestinations(visitedRooms) {
 
   const destinations = [];
   
-  for (const [row, col] of visitedRooms) {
-    const roomId = MINIMAP_ROOM_ID_MAP[row]?.[col];
-    if (!roomId) continue;
+  for (const roomId of visitedRooms) {
+    const coords = ROOM_ID_TO_COORDS[roomId];
+    if (!coords) continue;
     
     const name = ROOM_NAMES[roomId] || roomId;
     const dangerLevel = ROOM_DANGER_LEVEL[roomId] ?? 1;
@@ -30,8 +44,8 @@ export function getUnlockedFastTravelDestinations(visitedRooms) {
     destinations.push({
       id: roomId,
       name,
-      row,
-      col,
+      row: coords.row,
+      col: coords.col,
       dangerLevel,
       dangerLabel,
     });
@@ -50,21 +64,17 @@ export function getUnlockedFastTravelDestinations(visitedRooms) {
 
 /**
  * Check if a specific room is unlocked for fast travel.
- * @param {Array} visitedRooms - Array of [row, col] pairs
+ * @param {string[]} visitedRooms - Array of visited room IDs
  * @param {string} roomId - The room ID to check (e.g., 'center', 'nw')
  * @returns {boolean}
  */
 export function isRoomUnlockedForFastTravel(visitedRooms, roomId) {
   if (!visitedRooms || !Array.isArray(visitedRooms)) return false;
-  
-  for (let row = 0; row < MINIMAP_ROOM_ID_MAP.length; row++) {
-    for (let col = 0; col < MINIMAP_ROOM_ID_MAP[row].length; col++) {
-      if (MINIMAP_ROOM_ID_MAP[row][col] === roomId) {
-        return visitedRooms.some(([r, c]) => r === row && c === col);
-      }
-    }
-  }
-  return false;
+
+  // Validate room exists in the map before checking membership
+  if (!ROOM_ID_TO_COORDS[roomId]) return false;
+
+  return visitedRooms.includes(roomId);
 }
 
 /**
