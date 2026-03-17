@@ -6,6 +6,14 @@
 import { getAvailableRecipes, getRecipeById, lookupItem, getRecipesByCategory } from './crafting.js';
 import { recipes as allRecipes } from './data/recipes.js';
 
+const ITEMID_TO_INVENTORY_KEY = {
+  hiPotion: 'potion',
+  herbBundle: 'herb',
+  etherShard: 'ether',
+  spellScroll: 'scroll',
+  superPotion: 'superPotion',
+};
+
 /**
  * Get CSS styles for the crafting panel.
  * @returns {string}
@@ -328,13 +336,14 @@ export function attachCraftingHandlers(container, dispatch) {
  * @private
  */
 function _getItemCountFromInventory(inventory, itemId) {
+  const inventoryKey = ITEMID_TO_INVENTORY_KEY[itemId] || itemId;
   if (!inventory) return 0;
   if (typeof inventory === 'object' && !Array.isArray(inventory)) {
     // Object format: { itemId: quantity }
-    if (typeof inventory[itemId] === 'number') return inventory[itemId];
+    if (typeof inventory[inventoryKey] === 'number') return inventory[inventoryKey];
     // Could be nested: { items: { itemId: qty } }
-    if (inventory.items && typeof inventory.items[itemId] === 'number') {
-      return inventory.items[itemId];
+    if (inventory.items && typeof inventory.items[inventoryKey] === 'number') {
+      return inventory.items[inventoryKey];
     }
   }
   return 0;
