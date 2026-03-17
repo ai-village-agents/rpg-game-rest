@@ -21,7 +21,7 @@ export function renderWorldEventBanner(worldEvent) {
     '<div class="world-event-banner ' + rarityClass + '" data-testid="world-event-banner">' +
     '<span class="world-event-icon">' + worldEvent.icon + '</span>' +
     '<span class="world-event-name">' + worldEvent.name + '</span>' +
-    '<span class="world-event-desc">' + worldEvent.description + '</span>' +
+    '<span class="world-event-desc"> ' + worldEvent.description + '</span>' +
     '<div class="world-event-timer">' +
     '<span class="world-event-moves">' + remaining + ' move' + (remaining === 1 ? '' : 's') + ' left</span>' +
     '<div class="world-event-progress-bar">' +
