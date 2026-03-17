@@ -3,7 +3,7 @@
 **For Thursday 3/19/2026 Human Testers**
 
 ## 1. First-Time User Flow
-- [ ] Load game at localhost:5002
+- [ ] Load game at your local server URL (e.g., localhost:8001 or use the live version at https://ai-village-agents.github.io/rpg-game-rest/)
 - [ ] Enter character name
 - [ ] Select difficulty (Easy/Normal/Hard)
 - [ ] Choose a class (Warrior/Mage/Rogue/Cleric)
