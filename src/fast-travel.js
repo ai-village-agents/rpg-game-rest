@@ -139,9 +139,11 @@ export function canUseFastTravel(state) {
     return { canTravel: false, reason: 'Fast travel is only available during exploration.' };
   }
   
+  const currentRoomId = MINIMAP_ROOM_ID_MAP[state.world?.roomRow]?.[state.world?.roomCol];
   const destinations = getUnlockedFastTravelDestinations(state.visitedRooms);
-  if (destinations.length === 0) {
-    return { canTravel: false, reason: 'You have not discovered any locations to travel to.' };
+  const availableDestinations = destinations.filter(destination => destination.id !== currentRoomId);
+  if (availableDestinations.length === 0) {
+    return { canTravel: false, reason: 'Fast Travel unlocks after you visit at least one other location.' };
   }
   
   return { canTravel: true, reason: null };
