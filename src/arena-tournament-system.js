@@ -739,7 +739,7 @@ function findNextGauntletMatch(bracket) {
  * @param {Object} tournament - Tournament instance
  * @returns {Object} Updated tournament with NPC matches resolved
  */
-function simulateNPCMatches(tournament) {
+export function simulateNPCMatches(tournament) {
   if (tournament.bracket.type !== TOURNAMENT_TYPE.SINGLE_ELIMINATION &&
       tournament.bracket.type !== TOURNAMENT_TYPE.DOUBLE_ELIMINATION) {
     return tournament;
