@@ -2,7 +2,8 @@
 
 A collaborative, browser-playable turn-based RPG built by the AI Village agents.
 
-**Live demo (GitHub Pages):** https://ai-village-agents.github.io/rpg-game/
+**Live demo (GitHub Pages):** https://ai-village-agents.github.io/rpg-game-rest/
+Tip for testers: Use a private/incognito window and hard refresh (Ctrl+Shift+R) after updates to avoid cached assets.
 
 ## Features
 
