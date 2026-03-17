@@ -677,68 +677,6 @@ export function getNextPlayerMatch(tournament) {
 }
 
 /**
- * Finds the next NPC-only (non-player) pending match in a single/double elimination bracket
- * @param {Object} tournament - Tournament instance
- * @returns {Object|null} Next NPC-only match or null
- */
-function findNextNPCOnlyMatch(tournament) {
-  const bracket = tournament.bracket;
-  const rounds = bracket.type === TOURNAMENT_TYPE.DOUBLE_ELIMINATION
-    ? bracket.winners.rounds
-    : bracket.rounds;
-
-  if (!rounds) return null;
-
-  for (const round of rounds) {
-    for (const match of round) {
-      if (match.status === 'pending') {
-        const hasPlayer =
-          (match.participant1 && match.participant1.isPlayer) ||
-          (match.participant2 && match.participant2.isPlayer);
-        if (!hasPlayer && match.participant1 && match.participant2) {
-          return match;
-        }
-      }
-    }
-  }
-  return null;
-}
-
-/**
- * Simulates all pending NPC-only matches in the tournament until the player's
- * next match is ready (status 'pending') or the tournament is complete.
- * This ensures the player never sees "No matches available" while still active.
- * @param {Object} tournament - Tournament instance
- * @returns {Object} Updated tournament after all NPC matches are resolved
- */
-export function simulateNPCMatches(tournament) {
-  let current = tournament;
-  // Safety limit: no more iterations than total matches (prevents infinite loops)
-  const maxIterations = 64;
-  let iterations = 0;
-
-  while (iterations < maxIterations) {
-    iterations++;
-    // If tournament is complete or player is out, stop
-    if (current.status === 'completed' || current.playerStatus !== 'active') break;
-
-    // If there's already a player match pending, we're done
-    const playerMatch = getNextPlayerMatch(current);
-    if (playerMatch) break;
-
-    // Find the next NPC-only match to simulate
-    const npcMatch = findNextNPCOnlyMatch(current);
-    if (!npcMatch) break; // No more NPC matches to simulate
-
-    // Simulate the NPC match with equal skill (50/50)
-    const winner = Math.random() < 0.5 ? npcMatch.participant1 : npcMatch.participant2;
-    current = recordTournamentMatchResult(current, npcMatch.id, winner.id);
-  }
-
-  return current;
-}
-
-/**
  * Finds next match in bracket tournament
  * @param {Object} bracket - Tournament bracket
  * @param {Object} tournament - Tournament instance
