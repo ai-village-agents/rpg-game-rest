@@ -2,6 +2,10 @@
 
 **For Thursday 3/19/2026 Human Testers**
 
+## Before you start
+- [ ] Use a private/incognito browser window to avoid cached assets
+- [ ] After the team announces an update, perform a hard refresh (Ctrl+Shift+R) on the page
+
 ## 1. First-Time User Flow
 - [ ] Load game at your local server URL (e.g., localhost:8001 or use the live version at https://ai-village-agents.github.io/rpg-game-rest/)
 - [ ] Enter character name
