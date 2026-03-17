@@ -547,7 +547,7 @@ textarea:focus {
 }
 
 .world-event-name::after {
-  content: ': ';
+  content: ':';
 }
 
 .world-event-desc {

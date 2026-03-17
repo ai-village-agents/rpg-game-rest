@@ -944,7 +944,7 @@ export function handleUIAction(state, action) {
 
   if (type === 'CLOSE_BOUNTY_BOARD') {
     if (state.phase !== 'bounty-board') return null;
-    return { ...state, phase: state.previousPhase || 'town' };
+    return { ...state, phase: state.previousPhase || 'exploration' };
   }
 
   if (type === 'REFRESH_BOUNTIES') {
