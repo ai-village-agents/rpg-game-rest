@@ -84,12 +84,12 @@ export function getAvailableRecipes(state) {
   const inventory = state?.player?.inventory || {};
 
   return recipes
-    .filter((recipe) => known.has(recipe.id))
     .map((recipe) => {
       const missingIngredients = getMissingIngredients(recipe, inventory);
       const levelOk = playerLevel >= (recipe.requiredLevel || 1);
       const canCraft = missingIngredients.length === 0 && levelOk;
-      return { ...recipe, canCraft, missingIngredients };
+      const discovered = known.has(recipe.id);
+      return { ...recipe, discovered, canCraft, missingIngredients };
     });
 }
 
@@ -107,9 +107,6 @@ export function canCraftRecipe(state, recipeId) {
     return { canCraft: false, reason: `Recipe not found: ${recipeId}`, missingIngredients: [] };
   }
 
-  if (!crafting.discoveredRecipes.includes(recipeId)) {
-    return { canCraft: false, reason: 'Recipe not discovered.', missingIngredients: [] };
-  }
 
   const playerLevel = state?.player?.level ?? 1;
   if (playerLevel < (recipe.requiredLevel || 1)) {
