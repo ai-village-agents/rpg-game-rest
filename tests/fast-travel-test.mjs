@@ -265,7 +265,7 @@ describe('Fast Travel System', () => {
       const { canTravel, reason } = canUseFastTravel(state);
       
       assert.equal(canTravel, false);
-      assert.ok(reason.includes('not discovered'));
+      assert.ok(reason.includes('visit at least one other'));
     });
 
     it('should return canTravel false with null visitedRooms', () => {
@@ -273,11 +273,27 @@ describe('Fast Travel System', () => {
       const { canTravel, reason } = canUseFastTravel(state);
       
       assert.equal(canTravel, false);
-      assert.ok(reason.includes('not discovered'));
+      assert.ok(reason.includes('visit at least one other'));
     });
 
-    it('should return canTravel true during exploration with visited rooms', () => {
-      const state = { phase: 'exploration', visitedRooms: ['center'] };
+    it('should return canTravel false during exploration when only current location visited', () => {
+      const state = {
+        phase: 'exploration',
+        visitedRooms: ['center'],
+        world: { roomRow: 1, roomCol: 1 },
+      };
+      const { canTravel, reason } = canUseFastTravel(state);
+      
+      assert.equal(canTravel, false);
+      assert.ok(reason.includes('visit at least one other'));
+    });
+
+    it('should return canTravel true when at least one other location visited', () => {
+      const state = {
+        phase: 'exploration',
+        visitedRooms: ['center', 'e'],
+        world: { roomRow: 1, roomCol: 1 },
+      };
       const { canTravel, reason } = canUseFastTravel(state);
       
       assert.equal(canTravel, true);
