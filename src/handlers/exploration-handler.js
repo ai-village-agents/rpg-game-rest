@@ -1,4 +1,4 @@
-import { movePlayer, getCurrentRoom, getRoomExits } from '../map.js';
+import { movePlayer, getCurrentRoom, getRoomExits, travelToAdjacentRoom } from '../map.js';
 import { nextRng, startNewEncounter } from '../combat.js';
 import { markRoomVisited } from '../minimap.js';
 import { onRoomEnter, onNPCTalk, onNPCDeliver } from '../quest-integration.js';
@@ -136,9 +136,10 @@ export function handleExplorationAction(state, action) {
     const direction = action.direction;
     if (!direction) return pushLog(state, 'Choose a direction to move.');
 
-    const result = movePlayer(state.world, direction);
+    const result = travelToAdjacentRoom(state.world, direction);
     if (!result.moved) {
-      return pushLog(state, `You cannot go ${direction}. The way is blocked.`);
+      const reason = result.blocked === 'edge' ? 'The path ends here.' : 'Something blocks your way.';
+      return pushLog(state, reason);
     }
 
     let next = { ...state, world: result.worldState };
@@ -184,7 +185,8 @@ export function handleExplorationAction(state, action) {
       next = pushLog(next, `You travel ${direction} and arrive at ${roomName}.`);
       next = logLocationDiscovery(next, roomName);
     } else {
-      next = pushLog(next, `You move ${direction}.`);
+      const reason = result.blocked === 'edge' ? 'The path ends here.' : 'Something blocks your way.';
+      return pushLog(state, reason);
     }
 
     let newWorldEvent = tickWorldEvent(state.worldEvent);

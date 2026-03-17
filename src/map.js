@@ -3,6 +3,8 @@ const WORLD_GRID_WIDTH = 32;
 const WORLD_GRID_HEIGHT = 32;
 const ROOM_WIDTH = 16;
 const ROOM_HEIGHT = 12;
+export const ROOM_MID_X = Math.floor(ROOM_WIDTH / 2);
+export const ROOM_MID_Y = Math.floor(ROOM_HEIGHT / 2);
 
 const DIRECTIONS = {
   north: { dx: 0, dy: -1, roomRow: -1, roomCol: 0 },
@@ -24,21 +26,18 @@ function addObstacle(grid, x, y, w, h) {
 }
 
 function openEdge(grid, edge) {
-  const midX = Math.floor(ROOM_WIDTH / 2);
-  const midY = Math.floor(ROOM_HEIGHT / 2);
-
   if (edge === 'north') {
-    grid[0][midX] = 0;
-    grid[1][midX] = 0;
+    grid[0][ROOM_MID_X] = 0;
+    grid[1][ROOM_MID_X] = 0;
   } else if (edge === 'south') {
-    grid[ROOM_HEIGHT - 1][midX] = 0;
-    grid[ROOM_HEIGHT - 2][midX] = 0;
+    grid[ROOM_HEIGHT - 1][ROOM_MID_X] = 0;
+    grid[ROOM_HEIGHT - 2][ROOM_MID_X] = 0;
   } else if (edge === 'west') {
-    grid[midY][0] = 0;
-    grid[midY][1] = 0;
+    grid[ROOM_MID_Y][0] = 0;
+    grid[ROOM_MID_Y][1] = 0;
   } else if (edge === 'east') {
-    grid[midY][ROOM_WIDTH - 1] = 0;
-    grid[midY][ROOM_WIDTH - 2] = 0;
+    grid[ROOM_MID_Y][ROOM_WIDTH - 1] = 0;
+    grid[ROOM_MID_Y][ROOM_WIDTH - 2] = 0;
   }
 }
 
@@ -246,6 +245,80 @@ export function movePlayer(worldState, directionKey, worldData = DEFAULT_WORLD_D
   const world = new WorldMap(worldData, worldState);
   const result = world.move(directionKey);
   return { ...result, worldState: world.snapshot(), room: world.getCurrentRoom() };
+}
+
+export function travelToAdjacentRoom(worldState, directionKey, worldData = DEFAULT_WORLD_DATA) {
+  const world = new WorldMap(worldData, worldState);
+  const direction = DIRECTIONS[directionKey];
+  if (!direction) {
+    return {
+      moved: false,
+      blocked: 'invalid-direction',
+      transitioned: false,
+      worldState,
+      room: null,
+    };
+  }
+
+  const currentState = world.snapshot();
+  const nextRoomRow = currentState.roomRow + direction.roomRow;
+  const nextRoomCol = currentState.roomCol + direction.roomCol;
+  const targetRoom = world.rooms[nextRoomRow]?.[nextRoomCol];
+
+  if (!targetRoom) {
+    return { moved: false, blocked: 'edge', transitioned: false, worldState, room: null };
+  }
+
+  let entryX = ROOM_MID_X;
+  let entryY = ROOM_MID_Y;
+  if (directionKey === 'north') {
+    entryX = ROOM_MID_X;
+    entryY = world.roomHeight - 2;
+  } else if (directionKey === 'south') {
+    entryX = ROOM_MID_X;
+    entryY = 1;
+  } else if (directionKey === 'west') {
+    entryX = world.roomWidth - 2;
+    entryY = ROOM_MID_Y;
+  } else if (directionKey === 'east') {
+    entryX = 1;
+    entryY = ROOM_MID_Y;
+  }
+
+  const offsets = [0, -1, 1, -2, 2];
+  let resolvedEntry = null;
+  if (directionKey === 'north' || directionKey === 'south') {
+    for (const offset of offsets) {
+      const candidateX = entryX + offset;
+      if (candidateX < 0 || candidateX >= world.roomWidth) continue;
+      if (!world._isBlocked(targetRoom, candidateX, entryY)) {
+        resolvedEntry = { x: candidateX, y: entryY };
+        break;
+      }
+    }
+  } else {
+    for (const offset of offsets) {
+      const candidateY = entryY + offset;
+      if (candidateY < 0 || candidateY >= world.roomHeight) continue;
+      if (!world._isBlocked(targetRoom, entryX, candidateY)) {
+        resolvedEntry = { x: entryX, y: candidateY };
+        break;
+      }
+    }
+  }
+
+  if (!resolvedEntry) {
+    return { moved: false, blocked: 'collision', transitioned: false, worldState, room: null };
+  }
+
+  world.state = {
+    roomRow: nextRoomRow,
+    roomCol: nextRoomCol,
+    x: resolvedEntry.x,
+    y: resolvedEntry.y,
+  };
+
+  return { moved: true, blocked: null, transitioned: true, worldState: world.snapshot(), room: world.getCurrentRoom() };
 }
 
 /**
