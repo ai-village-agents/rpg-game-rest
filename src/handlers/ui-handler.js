@@ -627,8 +627,28 @@ export function handleUIAction(state, action) {
     const activeTournament = activeId ? state.arenaState.tournaments?.[activeId] : null;
     if (!activeTournament || activeTournament.playerStatus !== 'active') return null;
 
-    const nextMatch = getNextPlayerMatch(activeTournament);
-    if (!nextMatch) return pushLog(state, 'No matches available.');
+    let nextMatch = getNextPlayerMatch(activeTournament);
+    
+    // If no player match found, simulate all pending NPC-only matches
+    if (!nextMatch) {
+      const updatedTournament = simulateNPCMatches(activeTournament);
+      // Update the tournament in state
+      const updatedState = {
+        ...state,
+        arenaState: {
+          ...state.arenaState,
+          tournaments: {
+            ...state.arenaState.tournaments,
+            [activeId]: updatedTournament
+          }
+        }
+      };
+      // Try again after simulating NPC matches
+      nextMatch = getNextPlayerMatch(updatedTournament);
+      if (!nextMatch) return pushLog(updatedState, 'No matches available.');
+      // Update state for further processing
+      state = updatedState;
+    }
 
     // Determine player and opponent
     const isPlayer1 = nextMatch.participant1?.isPlayer;

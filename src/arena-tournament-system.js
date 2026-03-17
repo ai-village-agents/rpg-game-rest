@@ -1171,6 +1171,92 @@ export function validateArenaState(state) {
 }
 
 /**
+ * Simulates all pending NPC-only matches in a tournament
+ * @param {Object} tournament - Tournament instance
+ * @returns {Object} Updated tournament with simulated results
+ */
+export function simulateNPCMatches(tournament) {
+  if (!tournament || !tournament.bracket) return tournament;
+
+  let updatedTournament = tournament;
+  let nextMatch = findNextNPCOnlyMatch(updatedTournament.bracket);
+
+  while (nextMatch) {
+    if (!nextMatch.participant1 || !nextMatch.participant2) {
+      break;
+    }
+
+    const winner = Math.random() < 0.5 ? nextMatch.participant1 : nextMatch.participant2;
+    updatedTournament = recordTournamentMatchResult(updatedTournament, nextMatch.id, winner.id);
+    nextMatch = findNextNPCOnlyMatch(updatedTournament.bracket);
+  }
+
+  return updatedTournament;
+}
+
+/**
+ * Finds the next pending NPC-only match in a bracket
+ * @param {Object} bracket - Tournament bracket
+ * @returns {Object|null} Pending NPC-only match or null
+ */
+export function findNextNPCOnlyMatch(bracket) {
+  if (!bracket) return null;
+
+  const isNPCOnly = match => {
+    const p1IsPlayer = match.participant1 && match.participant1.isPlayer;
+    const p2IsPlayer = match.participant2 && match.participant2.isPlayer;
+    return !p1IsPlayer && !p2IsPlayer;
+  };
+
+  switch (bracket.type) {
+    case TOURNAMENT_TYPE.SINGLE_ELIMINATION:
+      return findPendingNPCMatchInRounds(bracket.rounds, isNPCOnly);
+
+    case TOURNAMENT_TYPE.DOUBLE_ELIMINATION: {
+      const winnersMatch = findPendingNPCMatchInRounds(bracket.winners.rounds, isNPCOnly);
+      if (winnersMatch) return winnersMatch;
+      const losersMatch = findPendingNPCMatchInRounds(bracket.losers.rounds || [], isNPCOnly);
+      if (losersMatch) return losersMatch;
+      const finalMatch = bracket.grandFinal;
+      if (finalMatch && finalMatch.status === 'pending' && isNPCOnly(finalMatch)) {
+        return finalMatch;
+      }
+      return null;
+    }
+
+    case TOURNAMENT_TYPE.ROUND_ROBIN:
+      return bracket.matches.find(match =>
+        match.status === 'pending' &&
+        match.participant1 &&
+        match.participant2 &&
+        isNPCOnly(match)
+      ) || null;
+
+    case TOURNAMENT_TYPE.GAUNTLET:
+      // Gauntlet is always player vs NPC, so no NPC-only matches to simulate
+      return null;
+
+    default:
+      return null;
+  }
+}
+
+// Helper to scan rounds for the next pending NPC-only match
+function findPendingNPCMatchInRounds(rounds, isNPCOnly) {
+  for (const round of rounds) {
+    for (const match of round) {
+      if (match.status === 'pending' &&
+          match.participant1 &&
+          match.participant2 &&
+          isNPCOnly(match)) {
+        return match;
+      }
+    }
+  }
+  return null;
+}
+
+/**
  * Escapes HTML for safe rendering
  * @param {string} str - String to escape
  * @returns {string} Escaped string
