@@ -517,3 +517,181 @@ textarea:focus {
 .dark-theme .dungeon-map-floor--cleared {
   background: rgba(72, 187, 120, 0.15);
 }
+
+/* ============================================================
+   World Event Banner & Notification Styles
+   ============================================================ */
+
+.world-event-banner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(255, 200, 50, 0.15);
+  border: 1px solid rgba(255, 200, 50, 0.4);
+  font-size: 0.82rem;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.world-event-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.world-event-name {
+  font-weight: bold;
+  color: #f0c040;
+  flex-shrink: 0;
+}
+
+.world-event-name::after {
+  content: ': ';
+}
+
+.world-event-desc {
+  color: #d4c080;
+  flex: 1;
+  min-width: 120px;
+}
+
+.world-event-timer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.world-event-moves {
+  font-size: 0.75rem;
+  color: #aaa;
+  white-space: nowrap;
+}
+
+.world-event-progress-bar {
+  width: 60px;
+  height: 6px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.world-event-progress-fill {
+  height: 100%;
+  background: #f0c040;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.world-event-dismiss-btn {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 2px 4px;
+  margin-left: 4px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.world-event-dismiss-btn:hover {
+  color: #ccc;
+  background: rgba(255,255,255,0.1);
+}
+
+/* Rarity-based color theming */
+.world-event-rarity-common .world-event-name { color: #999; }
+.world-event-rarity-uncommon .world-event-name { color: #1eff00; }
+.world-event-rarity-rare .world-event-name { color: #0070ff; }
+.world-event-rarity-epic .world-event-name { color: #a335ee; }
+.world-event-rarity-legendary .world-event-name { color: #ff8000; }
+
+.world-event-rarity-uncommon { border-color: rgba(30, 255, 0, 0.4); background: rgba(30, 255, 0, 0.08); }
+.world-event-rarity-rare { border-color: rgba(0, 112, 255, 0.4); background: rgba(0, 112, 255, 0.08); }
+.world-event-rarity-epic { border-color: rgba(163, 53, 238, 0.4); background: rgba(163, 53, 238, 0.1); }
+.world-event-rarity-legendary { border-color: rgba(255, 128, 0, 0.5); background: rgba(255, 128, 0, 0.1); }
+
+/* World Event Notification (full-screen popup on event start) */
+.world-event-notification {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.world-event-notification-inner {
+  background: #1a1a2e;
+  border: 2px solid #f0c040;
+  border-radius: 12px;
+  padding: 32px 40px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+}
+
+.world-event-notification-icon {
+  font-size: 3rem;
+  margin-bottom: 8px;
+}
+
+.world-event-notification-title {
+  font-size: 0.85rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 4px;
+}
+
+.world-event-notification-name {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #f0c040;
+  margin: 0 0 12px;
+}
+
+.world-event-notification-desc {
+  color: #d4c080;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+
+.world-event-notification-duration {
+  font-size: 0.8rem;
+  color: #888;
+  margin-bottom: 20px;
+}
+
+.world-event-notification-close {
+  background: #f0c040;
+  color: #1a1a2e;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 28px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.world-event-notification-close:hover {
+  background: #ffd060;
+}
+
+/* World Event Badge (small inline badge) */
+.world-event-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: bold;
+  background: rgba(255, 200, 50, 0.15);
+  border: 1px solid rgba(255, 200, 50, 0.4);
+  color: #f0c040;
+}
