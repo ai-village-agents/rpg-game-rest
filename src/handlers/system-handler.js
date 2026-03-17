@@ -133,6 +133,7 @@ export function handleSystemAction(state, action) {
       const migratedState = {
         ...loaded,
         rngSeed: loaded.rngSeed !== undefined ? loaded.rngSeed : Date.now() % 2147483647,
+        player: { ...(loaded.player || {}), inventory: loaded.player?.inventory || { potion: 2, ether: 0, herb: 1, scroll: 0 } },
         arenaState: loaded.arenaState !== undefined ? loaded.arenaState : createArenaState(),
         npcRelationshipManager: ensureNPCRelationshipManager(loaded.npcRelationshipManager),
         dailyChallengeState: loaded.dailyChallengeState !== undefined ? loaded.dailyChallengeState : createDailyChallengeState(),
