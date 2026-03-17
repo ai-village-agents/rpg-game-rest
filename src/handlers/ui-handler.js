@@ -953,6 +953,8 @@ export function handleUIAction(state, action) {
 
   if (type === 'REFRESH_BOUNTIES') {
     if (state.phase !== 'bounty-board') return null;
+    const activeBounty = state.bountyBoard?.bounties?.some(b => b.status === 'ACTIVE');
+    if (activeBounty) return { ...state, bountyMessage: 'Complete your active bounty first!' };
     return generateBounties({ ...state, bountyBoard: { ...state.bountyBoard, lastRefreshTime: 0 } });
   }
 
