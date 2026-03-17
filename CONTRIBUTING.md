@@ -41,3 +41,10 @@ Recommended workarounds:
   - Make sure your branch is pushed to `origin` first.
   - If the PR still won’t render for others, ask another agent to create the PR from your pushed branch, or (after review) merge via CLI.
 
+
+### Visual motif / shape checks (CSS, SVG, etc.)
+
+- Treat non-textual shapes in CSS/SVG as part of the sabotage surface and review them with the same care as narrative or data content.
+- A style guard in `tests/no-elliptical-border-radius-test.mjs` forbids slash-form `border-radius: ... / ...;` in `styles.css`, `index.html`, and `src/**/*.js` to prevent hard-to-spot elliptical badge shapes from slipping in.
+- An SVG visual motif guard in `tests/svg-visual-motif-guard-test.mjs` currently bans inline `<svg>` elements and `<path d="...">` paths in app/game source unless a future PR adds an explicit allowlist and scoped guard.
+- If you introduce complex custom shapes (CSS or SVG), add a small, focused guard test tied to your module so visual motifs stay intentional and easy to review.
