@@ -1094,6 +1094,70 @@ export function resetSeason(state) {
 }
 
 /**
+ * Simulates NPC-only matches until a player match is pending or tournament ends
+ * @param {Object} tournament - Tournament instance
+ * @returns {Object} Updated tournament with simulated results
+ */
+export function simulateNPCMatches(tournament) {
+  if (!tournament || !tournament.bracket) return tournament;
+  if (tournament.bracket.type !== TOURNAMENT_TYPE.SINGLE_ELIMINATION) {
+    return tournament;
+  }
+
+  let updatedTournament = tournament;
+
+  const hasPendingPlayerMatch = () => {
+    for (const round of updatedTournament.bracket.rounds) {
+      for (const match of round) {
+        if (match.status === 'pending') {
+          const p1Player = match.participant1?.isPlayer;
+          const p2Player = match.participant2?.isPlayer;
+          if (p1Player || p2Player) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  };
+
+  const findNextNPCMatch = () => {
+    for (const round of updatedTournament.bracket.rounds) {
+      for (const match of round) {
+        if (
+          match.status === 'pending' &&
+          match.participant1 &&
+          match.participant2 &&
+          !match.participant1.isPlayer &&
+          !match.participant2.isPlayer
+        ) {
+          return match;
+        }
+      }
+    }
+    return null;
+  };
+
+  const pickWinner = (p1, p2) => {
+    const p1Level = Math.max(1, p1.level || 1);
+    const p2Level = Math.max(1, p2.level || 1);
+    const p1Chance = p1Level / (p1Level + p2Level);
+    return Math.random() < p1Chance ? p1.id : p2.id;
+  };
+
+  // Continue simulating until a player match is ready or tournament completes
+  while (!hasPendingPlayerMatch() && updatedTournament.status !== 'completed') {
+    const match = findNextNPCMatch();
+    if (!match) break;
+
+    const winnerId = pickWinner(match.participant1, match.participant2);
+    updatedTournament = recordSingleEliminationResult(updatedTournament, match.id, winnerId);
+  }
+
+  return updatedTournament;
+}
+
+/**
  * Validates arena state
  * @param {Object} state - State to validate
  * @returns {boolean} Whether state is valid

@@ -30,7 +30,7 @@ import { getAllStandings, modifyReputation, getFactionStanding, claimReward } fr
 import { renderReputationPanel } from '../faction-reputation-system-ui.js';
 import { createGuild, addMember, removeMember, changeMemberRank, depositGold, withdrawGold, unlockPerk, disbandGuild, getGuildStats } from '../guild-system.js';
 import { renderGuildPanel, renderCreateGuildForm, renderGuildBrowser, renderGuildHud } from '../guild-system-ui.js';
-import { processMatchResult, createTournament, recordTournamentMatchResult, getTournamentRewards, resetSeason, generateOpponent, getNextPlayerMatch, TOURNAMENTS } from '../arena-tournament-system.js';
+import { processMatchResult, createTournament, recordTournamentMatchResult, simulateNPCMatches, getTournamentRewards, resetSeason, generateOpponent, getNextPlayerMatch, TOURNAMENTS } from '../arena-tournament-system.js';
 import { dismissSporeling } from '../sporeling-integration.js';
 
 function getRoomDescription(worldState) {
@@ -646,12 +646,13 @@ export function handleUIAction(state, action) {
 
     // Record result
     const updatedTournament = recordTournamentMatchResult(activeTournament, nextMatch.id, winnerId);
+    const tournamentWithSimulatedNPCs = simulateNPCMatches(updatedTournament);
 
     const arenaState = {
       ...state.arenaState,
       tournaments: {
         ...state.arenaState.tournaments,
-        [activeId]: updatedTournament
+        [activeId]: tournamentWithSimulatedNPCs
       }
     };
     const next = { ...state, arenaState };
@@ -675,7 +676,7 @@ export function handleUIAction(state, action) {
       ...state.arenaState,
       tournaments: {
         ...state.arenaState.tournaments,
-        [activeId]: updatedTournament
+        [activeId]: tournamentWithSimulatedNPCs
       },
       activeTournament: null
     };
