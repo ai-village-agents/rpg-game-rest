@@ -275,6 +275,7 @@ function executeAttack(state, attackerId, targetId) {
     element: attacker.element ?? 'physical',
     targetElement: target.element ?? null,
     rngValue: nextRng(state.rngSeed).value,
+    critChance: attacker.critChance ?? 0,
   });
 
   const { state: newState } = rngFromState(state);
@@ -357,6 +358,7 @@ function applySingleTargetAbility(state, casterId, targetId, ability) {
       targetElement: target.element ?? null,
       rngValue: nextRng(state.rngSeed).value,
       abilityPower: ability.power,
+      critChance: caster.critChance ?? 0,
     });
 
     const { state: newState } = rngFromState(state);

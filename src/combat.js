@@ -43,13 +43,23 @@ export function nextRng(seed) {
   return { seed: next, value: next / m };
 }
 
-function computeDamage({ attackerAtk, targetDef, targetDefending, worldEvent, targetIsBroken, targetIsCursed }) {
+function computeDamage({ attackerAtk, targetDef, targetDefending, worldEvent, targetIsBroken, targetIsCursed, critChance = 0, rngValue = 0.5 }) {
   const defendBonus = targetDefending ? 3 : 0;
   const raw = attackerAtk - (targetDef + defendBonus);
   const baseDamage = Math.max(1, raw);
   const mult = getDamageMultiplier(worldEvent);
   const curseMult = targetIsCursed ? 1.25 : 1;
-  return Math.max(1, Math.floor(baseDamage * mult * (targetIsBroken ? BREAK_DAMAGE_MULTIPLIER : 1) * curseMult));
+
+  // Critical hit check (10% base chance + equipment bonus, max 75%)
+  // Uses > threshold check to maintain compatibility with existing test seeds
+  const baseCritChance = 0.10;
+  const bonusCritChance = Math.min(critChance, 65) / 100;
+  const totalCritChance = Math.min(baseCritChance + bonusCritChance, 0.75);
+  const critical = rngValue > (1 - totalCritChance);
+  const critMult = critical ? 1.5 : 1.0;
+
+  const damage = Math.max(1, Math.floor(baseDamage * mult * (targetIsBroken ? BREAK_DAMAGE_MULTIPLIER : 1) * curseMult * critMult));
+  return { damage, critical };
 }
 
 function isStunned(entity) {
@@ -284,13 +294,18 @@ export function playerAttack(state) {
 
   // Apply equipment bonuses to player's attack stat
   const playerStats = getEffectiveCombatStats(state.player);
-  const baseDamage = computeDamage({
+  // Get RNG value for crit check
+  const { seed: critSeed, value: critRngValue } = nextRng(state.rngSeed);
+  state = { ...state, rngSeed: critSeed };
+  const { damage: baseDamage, critical } = computeDamage({
     attackerAtk: playerStats.atk,
     targetDef: state.enemy.def,
     targetDefending: state.enemy.defending,
     worldEvent: state.worldEvent || null,
     targetIsBroken: state.enemy.isBroken,
     targetIsCursed: isCursed(state.enemy),
+    critChance: playerStats.critChance ?? 0,
+    rngValue: critRngValue,
   });
   const comboMultiplier = state.comboState ? getComboMultiplier(state.comboState) : 1;
   const damage = Math.max(1, Math.floor(baseDamage * comboMultiplier));
@@ -314,7 +329,9 @@ export function playerAttack(state) {
     player: { ...state.player, defending: false },
   };
 
-  state = pushLog(state, `You strike for ${damage} damage.`);
+  let attackMsg = `You strike for ${damage} damage.`;
+  if (critical) attackMsg += ' Critical hit!';
+  state = pushLog(state, attackMsg);
   logPlayerAttack(damage, (state.enemy.displayName ?? state.enemy.name));
   if (state.comboState) {
     state = { ...state, comboState: registerHit(state.comboState, state.turn ?? 0, damage) };
@@ -500,6 +517,7 @@ export function playerUseAbility(state, abilityId) {
         rngValue,
         abilityPower: ability.power,
         worldEvent: state.worldEvent || null,
+        critChance: abilityPlayerStats.critChance ?? 0,
       });
       if ((state.enemy.weaknesses ?? []).includes(abilityElement)) {
         state = { ...state, _hitWeakness: true };
@@ -790,12 +808,17 @@ export function enemyAct(state) {
 
       // Apply equipment bonuses to player's defense stat
       const defenderStats = getEffectiveCombatStats(state.player);
-      const baseDamage = computeDamage({
+      // Get RNG value for enemy crit check
+      const { seed: enemyCritSeed, value: enemyCritRngValue } = nextRng(state.rngSeed);
+      state = { ...state, rngSeed: enemyCritSeed };
+      const { damage: baseDamage, critical: enemyCrit } = computeDamage({
         attackerAtk: state.enemy.atk,
         targetDef: defenderStats.def,
         targetDefending: state.player.defending,
         worldEvent: state.worldEvent || null,
         targetIsCursed: isCursed(state.player),
+        critChance: state.enemy.critChance ?? 0,
+        rngValue: enemyCritRngValue,
       });
       const difficulty = state.difficulty ?? DEFAULT_DIFFICULTY;
       const damage = applyDifficultyToEnemyDamage(baseDamage, difficulty);
@@ -808,7 +831,9 @@ export function enemyAct(state) {
         turn: state.turn + 1,
       };
 
-      state = pushLog(state, `${(state.enemy.displayName ?? state.enemy.name)} slams you for ${damage} damage.`);
+      let enemyAttackMsg = `${(state.enemy.displayName ?? state.enemy.name)} slams you for ${damage} damage.`;
+      if (enemyCrit) enemyAttackMsg += ' Critical hit!';
+      state = pushLog(state, enemyAttackMsg);
       logDamageReceived(damage, (state.enemy.displayName ?? state.enemy.name));
       if (state.comboState) {
         state = { ...state, comboState: resetCombo(state.comboState) };

@@ -2106,6 +2106,9 @@ if (state.phase === 'achievements') {
     hud.querySelectorAll('[data-action="leave-tournament"]').forEach(btn => {
       btn.onclick = () => dispatch({ type: 'LEAVE_TOURNAMENT' });
     });
+    hud.querySelectorAll('[data-action="close-result"]').forEach(btn => {
+      btn.onclick = () => dispatch({ type: 'CLOSE_ARENA' });
+    });
 
     log.innerHTML = state.log.slice().reverse().map(line => formatLogEntryHtml(line)).join('');
     finalizeRender();

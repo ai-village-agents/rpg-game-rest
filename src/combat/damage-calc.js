@@ -52,7 +52,7 @@ export function getElementMultiplier(attackElement, targetElement) {
  *  - power_mod: ability power multiplier (1.0 for basic attack)
  *  - def_mod: 0.5 if defending, 1.0 otherwise
  *  - element_mult: from element chart
- *  - crit_mult: 1.5 on critical hit (10% base chance)
+ *  - crit_mult: 1.5 on critical hit (10% base + equipment critChance)
  *  - variance: random 0.9 - 1.1
  *  - Minimum damage: 1 (unless immune via element, then 0)
  *
@@ -64,6 +64,7 @@ export function getElementMultiplier(attackElement, targetElement) {
  * @param {string|null} params.targetElement - Target's element affinity
  * @param {number} params.rngValue - Random value 0-1
  * @param {number} [params.abilityPower] - Ability power multiplier (default 1.0)
+ * @param {number} [params.critChance] - Bonus crit chance from equipment (0-100 scale, added to base 10%)
  * @returns {{ damage: number, critical: boolean, elementMult: number }}
  */
 export function calculateDamage({
@@ -75,6 +76,7 @@ export function calculateDamage({
   rngValue = 0.5,
   abilityPower = 1.0,
   worldEvent = null,
+  critChance = 0,
 }) {
   const powerMod = Math.max(0.1, abilityPower);
   const defMod = targetDefending ? 2.0 : 1.0;  // Defending doubles effective DEF
@@ -85,8 +87,12 @@ export function calculateDamage({
     return { damage: 0, critical: false, elementMult: 0.0 };
   }
 
-  // Critical hit check (10% base chance)
-  const critical = rngValue > 0.9;
+  // Critical hit check (10% base chance + equipment bonus, max 75%)
+  // Uses > threshold check to maintain compatibility with existing test seeds
+  const baseCritChance = 0.10;
+  const bonusCritChance = Math.min(critChance, 65) / 100; // Convert from 0-100 scale, cap total at 75%
+  const totalCritChance = Math.min(baseCritChance + bonusCritChance, 0.75);
+  const critical = rngValue > (1 - totalCritChance);
   const critMult = critical ? 1.5 : 1.0;
 
   // Variance: use fractional part of rngValue to get 0.9 - 1.1
