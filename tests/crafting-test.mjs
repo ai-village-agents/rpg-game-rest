@@ -192,16 +192,32 @@ console.log('-- getAvailableRecipes --');
 test('returns empty when nothing discovered', () => {
   const state = makeState();
   const available = getAvailableRecipes(state);
-  assert.strictEqual(available.length, 0);
+  assert.ok(available.length > 0);
+  assert.strictEqual(available.length, recipes.length);
+  const undiscovered = available.filter(
+    (recipe) => !state.crafting.discoveredRecipes.includes(recipe.id)
+  );
+  assert.ok(undiscovered.every((recipe) => recipe.discovered === false));
 });
 
 test('returns discovered recipes with canCraft info', () => {
   const state = makeState();
   discoverRecipe(state, 'recipe_superPotion');
   const available = getAvailableRecipes(state);
-  assert.strictEqual(available.length, 1);
-  assert.strictEqual(available[0].id, 'recipe_superPotion');
-  assert.strictEqual(typeof available[0].canCraft, 'boolean');
+  assert.strictEqual(available.length, recipes.length);
+  assert.strictEqual(
+    available.find((recipe) => recipe.id === 'recipe_superPotion').discovered,
+    true
+  );
+  assert.ok(
+    available
+      .filter((recipe) => recipe.id !== 'recipe_superPotion')
+      .every((recipe) => recipe.discovered === false)
+  );
+  assert.ok(available.every((recipe) => typeof recipe.canCraft === 'boolean'));
+  assert.ok(
+    available.every((recipe) => Array.isArray(recipe.missingIngredients))
+  );
 });
 
 test('canCraft is false when missing ingredients', () => {
@@ -219,7 +235,9 @@ test('returns false for undiscovered recipe', () => {
   const state = makeState();
   const result = canCraftRecipe(state, 'recipe_superPotion');
   assert.strictEqual(result.canCraft, false);
-  assert.ok(result.reason.includes('not discovered'));
+  assert.ok(result.reason.toLowerCase().includes('missing'));
+  assert.ok(!result.reason.includes('not discovered'));
+  assert.ok(result.missingIngredients.length > 0);
 });
 
 test('returns false for nonexistent recipe', () => {
