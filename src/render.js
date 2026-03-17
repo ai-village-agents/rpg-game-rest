@@ -1276,7 +1276,7 @@ if (state.phase === 'achievements') {
 
   // --- Quests Phase ---
   if (state.phase === 'quests') {
-    const questState = state.questState || { activeQuests: {}, completedQuests: [] };
+    const questState = state.questState || { activeQuests: [], completedQuests: [] };
     const questUiState = state.questUiState || { sortBy: 'name', sortOrder: 'asc', filter: 'active' };
     const summary = getActiveQuestsSummary(questState);
     const currentRoomId = state.world?.roomRow !== undefined && state.world?.roomCol !== undefined
