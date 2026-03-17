@@ -13,6 +13,9 @@ const BOUNTY_TYPES = [
 
 export function generateBounties(state) {
   const now = Date.now();
+  // Never overwrite an active bounty
+  const hasActiveBounty = state.bountyBoard?.bounties?.some(b => b.status === 'ACTIVE');
+  if (hasActiveBounty) return state;
   // Allow refresh if 5 minutes passed or if all are completed or empty
   const timePassed = now - (state.bountyBoard?.lastRefreshTime || 0) > 5 * 60 * 1000;
   const hasActiveOrAvailable = state.bountyBoard?.bounties?.some(b => b.status === 'AVAILABLE' || b.status === 'ACTIVE');

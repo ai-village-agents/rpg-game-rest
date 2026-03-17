@@ -5,6 +5,9 @@ export function renderBountyBoardPanel(state) {
   html += `<h2>Tavern Bounty Board</h2>`;
   html += `<p class="tavern-message">Looking for work? Complete these bounties for gold.</p>`;
   html += `<p>Bounties Completed: <strong>${bb.completed}</strong></p>`;
+  if (state.bountyMessage) {
+      html += `<p style='color: #ffaa00;'>${state.bountyMessage}</p>`;
+  }
   
   if (!bb.bounties || bb.bounties.length === 0) {
       html += `<p>No bounties available right now.</p>`;
@@ -45,7 +48,11 @@ export function renderBountyBoardPanel(state) {
   html += `</div>`;
   
   html += `<div class="buttons" style="margin-top: 20px;">`;
-  html += `<button data-action="REFRESH_BOUNTIES">Refresh Bounties</button>`;
+  if (hasActive) {
+      html += `<button data-action="REFRESH_BOUNTIES" disabled title="Complete your active bounty first">Refresh Bounties</button>`;
+  } else {
+      html += `<button data-action="REFRESH_BOUNTIES">Refresh Bounties</button>`;
+  }
   html += `</div>`;
   
   html += `</div>`;
