@@ -94,7 +94,7 @@ export function handleCombatAction(state, action) {
     }
     if (cs) {
       recordPotionUse(cs, healAmount);
-      recordItemUse(cs, 'potion', healAmount);
+      recordItemUse(cs, 'potion', 0); // count potion in itemUses without double-counting healing
       recordTurn(cs, 'player');
     }
     return finalizeCombatState(next, { gameStats: gs, combatStats: cs });
