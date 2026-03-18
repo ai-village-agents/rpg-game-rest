@@ -19,6 +19,7 @@ const BEHAVIOR_WEIGHTS = {
   caster: { attack: 0.2, ability: 0.65, defend: 0.15 },
   support: { attack: 0.3, ability: 0.5, defend: 0.2 },
   boss: { attack: 0.3, ability: 0.55, defend: 0.15 },
+  defensive: { attack: 0.25, ability: 0.35, defend: 0.4 },
 };
 
 function nextSeed(seed) {

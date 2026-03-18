@@ -27,7 +27,7 @@ function isFiniteNumber(n) {
   return typeof n === 'number' && Number.isFinite(n);
 }
 
-const VALID_AI_BEHAVIORS = new Set(['basic', 'aggressive', 'caster', 'support', 'boss']);
+const VALID_AI_BEHAVIORS = new Set(['basic', 'aggressive', 'caster', 'support', 'boss', 'defensive']);
 
 console.log('\n--- Enemy Data Integrity ---');
 

@@ -67,7 +67,7 @@ export const ENEMIES = {
     element: 'physical',
     xpReward: 8,
     goldReward: 6,
-    aiBehavior: 'basic',
+    aiBehavior: 'defensive',
   },
   goblin_chief: {
     id: 'goblin_chief',
@@ -99,7 +99,7 @@ export const ENEMIES = {
     element: 'physical',
     xpReward: 4,
     goldReward: 2,
-    aiBehavior: 'basic',
+    aiBehavior: 'aggressive',
   },
   giant_spider: {
     id: 'giant_spider',
