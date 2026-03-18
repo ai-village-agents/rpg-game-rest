@@ -119,7 +119,12 @@ export function handleCombatAction(state, action) {
       recordTurn(cs, 'player');
     }
     if (next._hitWeakness && cs) recordWeaknessHit(cs);
-    
+    if (dmgDealt > 0) {
+      next.statistics = recordDashboardDamageDealt({ statistics: next.statistics }, dmgDealt).statistics;
+    }
+    if (healingDone > 0) {
+      next.statistics = recordHealing({ statistics: next.statistics }, healingDone).statistics;
+    }
     return finalizeCombatState(next, { gameStats: gs, combatStats: cs });
   }
 
@@ -137,7 +142,9 @@ export function handleCombatAction(state, action) {
       recordAbilityUse(cs, 'overdrive', dmgDealt, 0);
       recordTurn(cs, 'player');
     }
-
+    if (dmgDealt > 0) {
+      next.statistics = recordDashboardDamageDealt({ statistics: next.statistics }, dmgDealt).statistics;
+    }
     return finalizeCombatState(next, { gameStats: gs, combatStats: cs });
   }
 
@@ -151,6 +158,9 @@ export function handleCombatAction(state, action) {
     if (cs) {
       recordItemUse(cs, action.itemId, healingDone);
       recordTurn(cs, 'player');
+    }
+    if (healingDone > 0) {
+      next.statistics = recordHealing({ statistics: next.statistics }, healingDone).statistics;
     }
     return finalizeCombatState(next, { gameStats: gs, combatStats: cs });
   }
