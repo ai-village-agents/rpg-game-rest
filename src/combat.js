@@ -443,6 +443,9 @@ export function playerUsePotion(state) {
   };
 
   state = pushLog(state, `You drink a potion and heal ${actualHeal} HP.`);
+  if (actualHeal > 0) {
+    logHealing(actualHeal, 'potion');
+  }
   if (state.comboState) {
     state = { ...state, comboState: resetCombo(state.comboState) };
   }
@@ -661,6 +664,9 @@ export function playerUseItem(state, itemId) {
     };
     state = pushLog(state, `You use ${item.name} and restore ${actualHeal} HP.`);
     logItemUsed(item.name, `Restored ${actualHeal} HP`);
+    if (actualHeal > 0) {
+      logHealing(actualHeal, item.name);
+    }
   }
 
   // Handle mana restoration (ether)
