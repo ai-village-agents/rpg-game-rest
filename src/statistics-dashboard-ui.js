@@ -205,13 +205,13 @@ export function renderCombatSection(combat) {
         <span>Combat Statistics</span>
       </div>
       <div class="stats-grid">
-        ${renderStatItem('Damage Dealt', combat.totalDamageDealt)}
-        ${renderStatItem('Damage Received', combat.totalDamageReceived, 'negative')}
-        ${renderStatItem('Healing Done', combat.totalHealingDone, 'highlight')}
-        ${renderStatItem('Hits Landed', combat.totalHits)}
-        ${renderStatItem('Misses', combat.totalMisses, 'neutral')}
-        ${renderStatItem('Critical Hits', combat.totalCriticalHits, 'highlight')}
-        ${renderStatItem('Highest Hit', combat.highestSingleHit, 'highlight')}
+        ${renderStatItem('Damage Dealt', combat.damageDealt)}
+        ${renderStatItem('Damage Received', combat.damageReceived, 'negative')}
+        ${renderStatItem('Healing Done', combat.healingDone, 'highlight')}
+        ${renderStatItem('Hits Landed', combat.hits)}
+        ${renderStatItem('Misses', combat.misses, 'neutral')}
+        ${renderStatItem('Critical Hits', combat.criticalHits, 'highlight')}
+        ${renderStatItem('Highest Hit', combat.highestHit, 'highlight')}
         ${renderStatItem('Longest Combo', combat.longestCombo)}
         ${renderStatItem('Perfect Victories', combat.perfectVictories, 'highlight')}
         ${renderStatItem('Close Calls', combat.closeCalls, 'neutral')}
