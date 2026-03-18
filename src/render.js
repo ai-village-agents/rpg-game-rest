@@ -907,6 +907,7 @@ export function render(state, dispatch) {
         + '<div style="margin-bottom:6px;"><b>Stat Bonuses:</b></div>' + statLines
         + '<div style="margin-top:6px;margin-bottom:6px;"><b>New Abilities:</b></div>' + abilityLines
         + passiveHtml
+        + '<div style="margin-top:12px;"><button class="btn" style="width:100%;background:#ffd700;color:#1a1a2e;font-weight:bold;">Choose ' + esc(choice.name) + '</button></div>'
         + '</div>';
     }).join('');
 
