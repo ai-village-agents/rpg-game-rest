@@ -536,11 +536,16 @@ export function recordPlayTime(state, seconds, activity = 'general') {
  */
 export function getStatisticsSummary(state) {
   const stats = state.statistics || createEmptyStatistics();
+  console.log("DEBUG getStatisticsSummary:", { hasStatistics: !!state.statistics, stats: stats?.combat });
   
   return {
     combat: {
       damageDealt: stats.combat.totalDamageDealt,
       damageReceived: stats.combat.totalDamageReceived,
+      healingDone: stats.combat.totalHealingDone,
+      hits: stats.combat.totalHits,
+      misses: stats.combat.totalMisses,
+      criticalHits: stats.combat.totalCriticalHits,
       damageRatio: stats.combat.totalDamageReceived > 0 
         ? (stats.combat.totalDamageDealt / stats.combat.totalDamageReceived).toFixed(2) 
         : 'N/A',

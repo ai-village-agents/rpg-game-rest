@@ -907,6 +907,7 @@ export function render(state, dispatch) {
         + '<div style="margin-bottom:6px;"><b>Stat Bonuses:</b></div>' + statLines
         + '<div style="margin-top:6px;margin-bottom:6px;"><b>New Abilities:</b></div>' + abilityLines
         + passiveHtml
+        + '<div style="margin-top:12px;"><button class="btn" style="width:100%;background:#ffd700;color:#1a1a2e;font-weight:bold;">Choose ' + esc(choice.name) + '</button></div>'
         + '</div>';
     }).join('');
 
@@ -1654,8 +1655,8 @@ if (state.phase === 'achievements') {
       btn.onclick = () => dispatch({ type: 'INVENTORY_SET_FILTER', filterBy: btn.dataset.filter });
     });
 
-    // Wire item action buttons
-    actions.querySelectorAll('.inv-btn').forEach(btn => {
+    // Wire item action buttons (in both actions and hud sections)
+    [...actions.querySelectorAll('.inv-btn'), ...hud.querySelectorAll('.inv-btn')].forEach(btn => {
       const action2 = btn.dataset.action;
       const itemId = btn.dataset.item;
       const slot = btn.dataset.slot;

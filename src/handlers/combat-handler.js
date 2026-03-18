@@ -6,6 +6,7 @@ import * as achievements from '../achievements.js';
 import { companionAutoAct } from '../companions.js';
 import { createCombatStats, recordPlayerAttack, recordPlayerDefend, recordAbilityUse, recordItemUse, recordPotionUse, recordDamageReceived as csRecordDamageReceived, recordFleeAttempt, recordWeaknessHit, recordCompanionAction, recordTurn, finalizeCombatStats, formatCombatStatsDisplay } from '../combat-stats-tracker.js';
 import { updateBountyProgress } from '../bounty-board.js';
+import { recordDamageDealt as recordDashboardDamageDealt, recordDamageReceived as recordDashboardDamageReceived, recordEnemyDefeated, recordHealing } from '../statistics-dashboard.js';
 
 /**
  * Handles combat-related actions dispatched during 'player-turn'.
@@ -37,6 +38,9 @@ export function handleCombatAction(state, action) {
     if (next._hitWeakness) gs = recordWeaknessHitGame(gs);
     if (next._defeatedWhileBroken) gs = recordDefeatedWhileBroken(gs);
     applyCraftingMaterialDrops(next);
+    if (dmgDealt > 0) {
+      next.statistics = recordDashboardDamageDealt({ statistics: next.statistics }, dmgDealt).statistics;
+    }
 
     if (cs) {
       recordPlayerAttack(cs, dmgDealt);
@@ -48,7 +52,13 @@ export function handleCombatAction(state, action) {
   }
 
   if (type === 'PLAYER_DEFEND') {
+    const hpBefore = state.player?.hp ?? 0;
     const next = playerDefend(state);
+    const hpAfter = next.player?.hp ?? hpBefore;
+    const dmgReceived = Math.max(0, hpBefore - hpAfter);
+    if (dmgReceived > 0) {
+      next.statistics = recordDashboardDamageReceived({ statistics: next.statistics }, dmgReceived).statistics;
+    }
     if (cs) {
       recordPlayerDefend(cs);
       recordTurn(cs, 'player');
@@ -78,8 +88,12 @@ export function handleCombatAction(state, action) {
     gs = recordTurnPlayed(gs);
     applyCraftingMaterialDrops(next);
     const healingDone = (next.player?.hp ?? 0) - (state.player?.hp ?? 0);
+    const healAmount = Math.max(0, healingDone);
+    if (healAmount > 0) {
+      next.statistics = recordHealing({ statistics: next.statistics }, healAmount).statistics;
+    }
     if (cs) {
-      recordPotionUse(cs, Math.max(0, healingDone));
+      recordPotionUse(cs, healAmount);
       recordTurn(cs, 'player');
     }
     return finalizeCombatState(next, { gameStats: gs, combatStats: cs });
@@ -105,7 +119,12 @@ export function handleCombatAction(state, action) {
       recordTurn(cs, 'player');
     }
     if (next._hitWeakness && cs) recordWeaknessHit(cs);
-    
+    if (dmgDealt > 0) {
+      next.statistics = recordDashboardDamageDealt({ statistics: next.statistics }, dmgDealt).statistics;
+    }
+    if (healingDone > 0) {
+      next.statistics = recordHealing({ statistics: next.statistics }, healingDone).statistics;
+    }
     return finalizeCombatState(next, { gameStats: gs, combatStats: cs });
   }
 
@@ -123,7 +142,9 @@ export function handleCombatAction(state, action) {
       recordAbilityUse(cs, 'overdrive', dmgDealt, 0);
       recordTurn(cs, 'player');
     }
-
+    if (dmgDealt > 0) {
+      next.statistics = recordDashboardDamageDealt({ statistics: next.statistics }, dmgDealt).statistics;
+    }
     return finalizeCombatState(next, { gameStats: gs, combatStats: cs });
   }
 
@@ -137,6 +158,9 @@ export function handleCombatAction(state, action) {
     if (cs) {
       recordItemUse(cs, action.itemId, healingDone);
       recordTurn(cs, 'player');
+    }
+    if (healingDone > 0) {
+      next.statistics = recordHealing({ statistics: next.statistics }, healingDone).statistics;
     }
     return finalizeCombatState(next, { gameStats: gs, combatStats: cs });
   }
@@ -167,6 +191,9 @@ export function handleEnemyTurnLogic(state) {
   
   if (dmgReceived > 0) {
     let withGs = { ...next, gameStats: recordDamageReceived(next.gameStats || createGameStats(), dmgReceived), combatStats: cs };
+    if (dmgReceived > 0) {
+      withGs.statistics = recordDashboardDamageReceived({ statistics: withGs.statistics }, dmgReceived).statistics;
+    }
     // Companions auto-act after enemy turn (if still in combat)
     if (withGs.phase === 'player-turn' || withGs.phase === 'enemy-turn') {
       const enemyHpBeforeCompanion = withGs.enemy?.hp ?? 0;
@@ -226,7 +253,7 @@ function finalizeCombatState(next, overrides = {}) {
   if (typeof lastCheck === 'number' && now - lastCheck < 500) {
     return { ...next, ...overrides };
   }
-  const combined = { ...next, ...overrides };
+  let combined = { ...next, ...overrides };
   combined.lastAchievementCheck = now;
   // Finalize combat stats for victory/defeat screens (HP fix)
   if (combined.combatStats && (combined.phase === 'victory' || combined.phase === 'defeat')) {
@@ -238,11 +265,11 @@ function finalizeCombatState(next, overrides = {}) {
     );
     combined.combatStatsSummary = formatCombatStatsDisplay(combined.combatStats);
   }
-  let withBounty = combined;
   if (combined.phase === 'victory' && combined.enemy) {
-    withBounty = updateBountyProgress(combined, 'ENEMY_DEFEATED', combined.enemy.displayName ?? combined.enemy.name);
+    combined = updateBountyProgress(combined, 'ENEMY_DEFEATED', combined.enemy.displayName ?? combined.enemy.name);
+    combined = recordEnemyDefeated(combined, combined.enemy?.displayName ?? combined.enemy?.name, combined.enemy?.isBoss ? 'boss' : 'normal');
   }
-  return achievements.trackAchievements(withBounty);
+  return achievements.trackAchievements(combined);
 }
 
 function applyCraftingMaterialDrops(state) {

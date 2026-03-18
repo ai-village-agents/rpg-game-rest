@@ -23,6 +23,7 @@ import { createTavernDiceState } from '../tavern-dice.js';
 import { createTutorialState } from '../tutorial.js';
 import { createWeatherState } from '../weather.js';
 import { createDailyChallengeState } from '../daily-challenge-system.js';
+import { createEmptyStatistics } from '../statistics-dashboard.js';
 
 function getRoomDescription(worldState) {
   const room = getCurrentRoom(worldState);
@@ -133,7 +134,7 @@ export function handleSystemAction(state, action) {
       const migratedState = {
         ...loaded,
         rngSeed: loaded.rngSeed !== undefined ? loaded.rngSeed : Date.now() % 2147483647,
-        player: { ...(loaded.player || {}), inventory: loaded.player?.inventory || { potion: 2, ether: 0, herb: 1, scroll: 0 } },
+        player: { ...(loaded.player || {}), inventory: loaded.player?.inventory || { potion: 2, megaEther: 0, herbBundle: 1, scroll: 0 } },
         arenaState: loaded.arenaState !== undefined ? loaded.arenaState : createArenaState(),
         npcRelationshipManager: ensureNPCRelationshipManager(loaded.npcRelationshipManager),
         dailyChallengeState: loaded.dailyChallengeState !== undefined ? loaded.dailyChallengeState : createDailyChallengeState(),
@@ -220,6 +221,8 @@ export function handleSystemAction(state, action) {
     if (loaded) {
       const migratedState = {
         ...loaded,
+        player: { ...(loaded.player || {}), inventory: loaded.player?.inventory || { potion: 2, megaEther: 0, herbBundle: 1, scroll: 0 } },
+        statistics: loaded.statistics !== undefined ? loaded.statistics : createEmptyStatistics(),
         rngSeed: loaded.rngSeed !== undefined ? loaded.rngSeed : Date.now() % 2147483647,
         arenaState: loaded.arenaState !== undefined ? loaded.arenaState : createArenaState(),
         npcRelationshipManager: ensureNPCRelationshipManager(loaded.npcRelationshipManager),

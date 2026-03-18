@@ -18,6 +18,7 @@ import { createTutorialState } from './tutorial.js';
 import { createWeatherState } from './weather.js';
 import { createDailyChallengeState } from './daily-challenge-system.js';
 import { createArenaState } from './arena-tournament-system.js';
+import { createEmptyStatistics } from './statistics-dashboard.js';
 
 export function initialState() {
   const playerBase = characters.player;
@@ -48,6 +49,7 @@ export function initialState() {
       def: enemyBase.def,
       defending: false,
     },
+    statistics: createEmptyStatistics(),
     log: [
       `A wild ${enemyBase.name} appears.`,
       `Your turn.`,
@@ -68,6 +70,7 @@ export function initialState() {
     fastTravelModalOpen: false,
     encounterState: createEncounterState(),
     arenaState: createArenaState(),
+    statistics: createEmptyStatistics(),
     ...createCompanionState(),
     npcRelationshipManager: createNPCRelationshipManager(),
   };
@@ -137,6 +140,7 @@ export function initialStateWithClass(classId, characterName = '', difficulty = 
     fastTravelModalOpen: false,
     encounterState: createEncounterState(),
     arenaState: createArenaState(),
+    statistics: createEmptyStatistics(),
     ...createCompanionState(),
     npcRelationshipManager: createNPCRelationshipManager(),
   };
