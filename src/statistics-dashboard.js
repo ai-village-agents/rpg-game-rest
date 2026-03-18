@@ -536,6 +536,7 @@ export function recordPlayTime(state, seconds, activity = 'general') {
  */
 export function getStatisticsSummary(state) {
   const stats = state.statistics || createEmptyStatistics();
+  console.log("DEBUG getStatisticsSummary:", { hasStatistics: !!state.statistics, stats: stats?.combat });
   
   return {
     combat: {
