@@ -449,9 +449,6 @@ export function playerUsePotion(state) {
     logItemUsed('Potion', 'No HP restored');
   }
   state = pushLog(state, `You drink a potion and heal ${actualHeal} HP.`);
-  if (actualHeal > 0) {
-    logHealing(actualHeal, 'potion');
-  }
   if (state.comboState) {
     state = { ...state, comboState: resetCombo(state.comboState) };
   }
