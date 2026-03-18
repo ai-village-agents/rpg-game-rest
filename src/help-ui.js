@@ -106,7 +106,10 @@ export function renderHelpModal() {
             <div>Open Bestiary</div>
             
             <div><span class="key-badge">?</span> / <span class="key-badge">H</span></div>
-            <div>Toggle Help Menu</div>
+            <div>Toggle Help Menu & Controls</div>
+            
+            <div><span class="key-badge">/</span></div>
+            <div>Toggle Keyboard Shortcuts</div>
           </div>
         </div>
 
@@ -141,7 +144,7 @@ export function renderHelpModal() {
         </div>
 
         <div class="help-tip">
-          💡 <b>Tip:</b> Check the Bestiary to learn enemy weaknesses and plan your strategy!
+          💡 <b>Tip:</b> Check the Bestiary to learn enemy weaknesses and plan your strategy! Press <span class="key-badge">/</span> to see context-specific shortcuts during combat and exploration.
         </div>
 
         <button id="btnHelpClose" class="close-help-btn">Close</button>

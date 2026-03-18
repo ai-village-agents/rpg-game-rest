@@ -246,6 +246,9 @@ function renderExplorationButtons(state) {
         <button id="btnJournal">Journal 📔${renderJournalBadge(state)}</button>
       </div>
     </div>
+    <div class="keyboard-hint">
+      Tip: Press <kbd>/</kbd> to view all keyboard shortcuts.
+    </div>
   `;
 }
 
@@ -843,6 +846,7 @@ export function render(state, dispatch) {
       </div>
       ${combatItemBtns ? '<div class="buttons item-buttons"><b>Items:</b> ' + combatItemBtns + '</div>' : ''}
       ${renderBossTelegraphPanel(state)}
+      <div class="keyboard-hint">Tip: Press <kbd>/</kbd> to view all keyboard shortcuts.</div>
     `;
 
     document.getElementById('btnAttack').onclick = () => dispatch({ type: 'PLAYER_ATTACK' });
@@ -1634,6 +1638,7 @@ if (state.phase === 'achievements') {
       </div>
       <div class="buttons">
         <button id="btnCloseInv">Close Inventory</button>
+        <div class="keyboard-hint">Tip: Press <kbd>/</kbd> to view all keyboard shortcuts.</div>
       </div>
     `;
 
@@ -1731,6 +1736,7 @@ if (state.phase === 'achievements') {
     actions.innerHTML = `
       <div class="buttons">
         <button id="btnCloseCrafting">Close Crafting</button>
+        <div class="keyboard-hint">Tip: Press <kbd>/</kbd> to view all keyboard shortcuts.</div>
       </div>
     `;
 
@@ -1754,6 +1760,7 @@ if (state.phase === 'achievements') {
     actions.innerHTML = `
       <div class="buttons">
         <button id="btnCloseShop">Leave Shop</button>
+        <div class="keyboard-hint">Tip: Press <kbd>/</kbd> to view all keyboard shortcuts.</div>
       </div>
     `;
 
