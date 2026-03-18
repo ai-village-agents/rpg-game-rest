@@ -19,6 +19,7 @@ import { createWeatherState } from './weather.js';
 import { createDailyChallengeState } from './daily-challenge-system.js';
 import { createArenaState } from './arena-tournament-system.js';
 import { createEmptyStatistics } from './statistics-dashboard.js';
+import { createDungeonState } from './dungeon-floors.js';
 
 export function initialState() {
   const playerBase = characters.player;
@@ -64,6 +65,7 @@ export function initialState() {
     comboState: createComboState(),
     factionReputation: createReputationState(),
     guildSystemState: createGuildSystemState(),
+    dungeonState: createDungeonState(),
     dailyChallengeState: createDailyChallengeState(),
     showDailyChallenges: false,
     fastTravelModalOpen: false,
@@ -134,6 +136,7 @@ export function initialStateWithClass(classId, characterName = '', difficulty = 
     comboState: createComboState(),
     factionReputation: createReputationState(),
     guildSystemState: createGuildSystemState(),
+    dungeonState: createDungeonState(),
     dailyChallengeState: createDailyChallengeState(),
     showDailyChallenges: false,
     fastTravelModalOpen: false,
