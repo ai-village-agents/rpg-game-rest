@@ -82,9 +82,18 @@ export function handleCombatAction(state, action) {
   }
 
   if (type === 'PLAYER_POTION') {
+    const invBefore = state.player?.inventory || {};
+    const potionBefore = invBefore.potion ?? 0;
+    const hiPotionBefore = invBefore.hiPotion ?? 0;
     const next = playerUsePotion(state);
+    const invAfter = next.player?.inventory || {};
+    const potionAfter = invAfter.potion ?? 0;
+    const hiPotionAfter = invAfter.hiPotion ?? 0;
+    const usedItemId = potionAfter < potionBefore ? 'potion' : (hiPotionAfter < hiPotionBefore ? 'hiPotion' : null);
     let gs = next.gameStats || createGameStats();
-    gs = recordItemUsed(gs, 'potion');
+    if (usedItemId) {
+      gs = recordItemUsed(gs, usedItemId);
+    }
     gs = recordTurnPlayed(gs);
     applyCraftingMaterialDrops(next);
     const healingDone = (next.player?.hp ?? 0) - (state.player?.hp ?? 0);

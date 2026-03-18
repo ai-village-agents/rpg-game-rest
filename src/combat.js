@@ -423,24 +423,36 @@ export function playerUsePotion(state) {
     return { ...state, phase: 'enemy-turn' };
   }
 
-  const count = state.player.inventory.potion ?? 0;
-  if (count <= 0) {
+  const inventory = state.player.inventory || {};
+  const potionCount = inventory.potion ?? 0;
+  const hiPotionCount = inventory.hiPotion ?? 0;
+  const usingPotion = potionCount > 0;
+  const usingHiPotion = !usingPotion && hiPotionCount > 0;
+
+  if (!usingPotion && !usingHiPotion) {
     return pushLog(state, `You fumble for a potion, but you're out.`);
   }
 
-  const heal = items.potion.heal;
-  const hp = clamp(state.player.hp + heal, 0, state.player.maxHp);
+  const healBase = usingPotion ? items.potion.heal : items.hiPotion.heal;
+  const healAmount = usingHiPotion ? Math.ceil(healBase * getHealMultiplier(state.worldEvent)) : healBase;
+  const newHp = clamp(state.player.hp + healAmount, 0, state.player.maxHp);
+  const actualHeal = newHp - state.player.hp;
   state = {
     ...state,
     player: {
       ...state.player,
-      hp,
+      hp: newHp,
       defending: false,
-      inventory: { ...state.player.inventory, potion: count - 1 },
+      inventory: {
+        ...state.player.inventory,
+        ...(usingPotion ? { potion: potionCount - 1 } : {}),
+        ...(usingHiPotion ? { hiPotion: hiPotionCount - 1 } : {}),
+      },
     },
   };
 
-  state = pushLog(state, `You drink a potion and heal ${hp - (state.player.hp)} HP.`);
+  const itemName = usingPotion ? 'potion' : 'hi-potion';
+  state = pushLog(state, `You drink a ${itemName} and heal ${actualHeal} HP.`);
   if (state.comboState) {
     state = { ...state, comboState: resetCombo(state.comboState) };
   }

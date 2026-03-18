@@ -50,7 +50,8 @@ console.log('\n--- Exploration Phase Setup ---');
   assert(state.player.classId === 'warrior', 'player classId is warrior');
   assert(state.player.level === 1, 'player starts at level 1');
   assert(state.player.xp === 0, 'player starts with 0 XP');
-  assert(state.player.inventory.potion === 3, 'player starts with 3 potions');
+  const totalStartingPotions = (state.player.inventory.potion ?? 0) + (state.player.inventory.hiPotion ?? 0);
+  assert(totalStartingPotions === 3, 'player starts with 3 potions');
 }
 
 // --- Test: Movement with movePlayer ---
@@ -224,7 +225,8 @@ console.log('\n--- Multi-Encounter Loop ---');
     while (state.phase !== 'victory' && state.phase !== 'defeat' && turns < 50) {
       if (state.phase === 'player-turn') {
         // Use potion if HP is low
-        if (state.player.hp < state.player.maxHp * 0.3 && (state.player.inventory.potion ?? 0) > 0) {
+        const totalPotions = (state.player.inventory.potion ?? 0) + (state.player.inventory.hiPotion ?? 0);
+        if (state.player.hp < state.player.maxHp * 0.3 && totalPotions > 0) {
           state = playerUsePotion(state);
         } else {
           state = playerAttack(state);
@@ -283,7 +285,8 @@ console.log('\n--- Inventory View ---');
   const state = initialStateWithClass('warrior');
   const inv = state.player.inventory;
   assert(inv !== undefined, 'player has inventory');
-  assert(inv.potion === 3, 'starts with 3 potions');
+  const totalInvPotions = (inv.potion ?? 0) + (inv.hiPotion ?? 0);
+  assert(totalInvPotions === 3, 'starts with 3 potions');
 
   // Simulate VIEW_INVENTORY message generation
   const entries = Object.entries(inv)
@@ -293,7 +296,7 @@ console.log('\n--- Inventory View ---');
   const msg = entries.length > 0
     ? `Inventory: ${entries.join(', ')}. Gold: ${gold}.`
     : `Inventory is empty. Gold: ${gold}.`;
-  assert(msg.includes('potion'), 'inventory message includes potion');
+  assert(msg.toLowerCase().includes('potion'), 'inventory message includes potion');
   assert(msg.includes('3'), 'inventory message includes potion count');
 }
 

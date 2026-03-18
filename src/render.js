@@ -781,7 +781,7 @@ export function render(state, dispatch) {
             })()}</b></div>
             <div>Defending</div><div><b>${state.player.defending ? 'Yes' : 'No'}</b></div>
             ${renderStatusEffectsRow(state.player.statusEffects ?? [])}
-            <div>Potions</div><div><b>${state.player.inventory.potion ?? 0}</b></div>
+            <div>Potions</div><div><b>${(state.player.inventory?.potion ?? 0) + (state.player.inventory?.hiPotion ?? 0)}</b></div>
           </div>
           ${state.momentumState ? renderMomentumGauge(state.momentumState, state.player.classId) : ''}
           ${state.comboState ? renderComboDisplay(state.comboState) : ''}
@@ -1084,7 +1084,7 @@ export function render(state, dispatch) {
         '<div class="kv">' +
           '<div>HP</div><div><b>' + hpLine(state.player) + '</b></div>' +
           '<div>Level</div><div><b>' + (state.player.level ?? 1) + '</b></div>' +
-          '<div>Potions</div><div><b>' + (state.player.inventory.potion ?? 0) + '</b></div>' +
+          '<div>Potions</div><div><b>' + ((state.player.inventory?.potion ?? 0) + (state.player.inventory?.hiPotion ?? 0)) + '</b></div>' +
         '</div>' +
       '</div></div>';
 

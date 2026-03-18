@@ -39,7 +39,7 @@ export function initialState() {
       atk: playerBase.atk,
       def: playerBase.def,
       defending: false,
-      inventory: { hiPotion: 2 },
+      inventory: { potion: 2 },
     },
     enemy: {
       name: enemyBase.name,
@@ -70,7 +70,6 @@ export function initialState() {
     fastTravelModalOpen: false,
     encounterState: createEncounterState(),
     arenaState: createArenaState(),
-    statistics: createEmptyStatistics(),
     ...createCompanionState(),
     npcRelationshipManager: createNPCRelationshipManager(),
   };
@@ -112,7 +111,7 @@ export function initialStateWithClass(classId, characterName = '', difficulty = 
       level: 1,
       xp: 0,
       defending: false,
-      inventory: { hiPotion: 3 },
+      inventory: { potion: 3 },
     },
     enemy: {
       ...enemyBase,
