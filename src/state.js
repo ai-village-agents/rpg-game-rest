@@ -49,7 +49,6 @@ export function initialState() {
       def: enemyBase.def,
       defending: false,
     },
-    statistics: createEmptyStatistics(),
     log: [
       `A wild ${enemyBase.name} appears.`,
       `Your turn.`,
