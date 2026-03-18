@@ -198,6 +198,17 @@ export function renderStatItem(label, value, valueClass = '') {
 export function renderCombatSection(combat) {
   if (!combat) return '';
   
+  const damageDealt = combat.damageDealt ?? combat.totalDamageDealt ?? 0;
+  const damageReceived = combat.damageReceived ?? combat.totalDamageReceived ?? 0;
+  const healingDone = combat.healingDone ?? combat.totalHealingDone ?? 0;
+  const hits = combat.hits ?? combat.totalHits ?? 0;
+  const misses = combat.misses ?? combat.totalMisses ?? 0;
+  const criticalHits = combat.criticalHits ?? combat.totalCriticalHits ?? 0;
+  const highestHit = combat.highestHit ?? combat.highestSingleHit ?? 0;
+  const longestCombo = combat.longestCombo ?? 0;
+  const perfectVictories = combat.perfectVictories ?? 0;
+  const closeCalls = combat.closeCalls ?? 0;
+  
   return `
     <div class="stats-section" data-section="combat">
       <div class="stats-section-header">
@@ -205,16 +216,16 @@ export function renderCombatSection(combat) {
         <span>Combat Statistics</span>
       </div>
       <div class="stats-grid">
-        ${renderStatItem('Damage Dealt', combat.damageDealt)}
-        ${renderStatItem('Damage Received', combat.damageReceived, 'negative')}
-        ${renderStatItem('Healing Done', combat.healingDone, 'highlight')}
-        ${renderStatItem('Hits Landed', combat.hits)}
-        ${renderStatItem('Misses', combat.misses, 'neutral')}
-        ${renderStatItem('Critical Hits', combat.criticalHits, 'highlight')}
-        ${renderStatItem('Highest Hit', combat.highestHit, 'highlight')}
-        ${renderStatItem('Longest Combo', combat.longestCombo)}
-        ${renderStatItem('Perfect Victories', combat.perfectVictories, 'highlight')}
-        ${renderStatItem('Close Calls', combat.closeCalls, 'neutral')}
+        ${renderStatItem('Damage Dealt', damageDealt)}
+        ${renderStatItem('Damage Received', damageReceived, 'negative')}
+        ${renderStatItem('Healing Done', healingDone, 'highlight')}
+        ${renderStatItem('Hits Landed', hits)}
+        ${renderStatItem('Misses', misses, 'neutral')}
+        ${renderStatItem('Critical Hits', criticalHits, 'highlight')}
+        ${renderStatItem('Highest Hit', highestHit, 'highlight')}
+        ${renderStatItem('Longest Combo', longestCombo)}
+        ${renderStatItem('Perfect Victories', perfectVictories, 'highlight')}
+        ${renderStatItem('Close Calls', closeCalls, 'neutral')}
       </div>
     </div>
   `;
