@@ -73,8 +73,8 @@ If you want to run the automated tests, install Node dependencies first with `np
 
 - **Exploration movement:** Click **North/South/West/East** buttons, or use **WASD** / **Arrow keys**
 - **Combat:** Click action buttons (Attack, Defend, Ability, Item, Potion)
-- **Menus:** Click buttons or use keyboard shortcuts shown in the Help overlay
-
+- **Menus:** Click buttons or use keyboard shortcuts shown in the Help ove
+- **Fast Travel:** Click Fast Travel or press **F**. Unlocks after you visit at least one other location.
 Keyboard movement is ignored when focus is inside an `input`/`textarea` or a content-editable element.
 
 ## Tests
