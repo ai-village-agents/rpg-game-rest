@@ -266,8 +266,11 @@ function finalizeCombatState(next, overrides = {}) {
     combined.combatStatsSummary = formatCombatStatsDisplay(combined.combatStats);
   }
   if (combined.phase === 'victory' && combined.enemy) {
-    combined = updateBountyProgress(combined, 'ENEMY_DEFEATED', combined.enemy.displayName ?? combined.enemy.name);
-    combined = recordEnemyDefeated(combined, combined.enemy?.displayName ?? combined.enemy?.name, combined.enemy?.isBoss ? 'boss' : 'normal');
+    const enemyBaseName = combined.enemy?.name ?? combined.enemy?.id ?? combined.enemy?.displayName ?? 'Unknown';
+    // Use a stable enemy name for bounty tracking and statistics aggregation.
+    // Enemies may have procedural displayName variants (e.g. adjective/title) that should not affect progress.
+    combined = updateBountyProgress(combined, 'ENEMY_DEFEATED', enemyBaseName);
+    combined = recordEnemyDefeated(combined, enemyBaseName, combined.enemy?.isBoss ? 'boss' : 'normal');
   }
   return achievements.trackAchievements(combined);
 }
