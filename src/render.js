@@ -584,7 +584,7 @@ export function render(state, dispatch) {
       const def = CLASS_DEFINITIONS[classId];
       if (!def) return '';
       return `
-        <div class="card">
+        <div class="card class-card">
           <h2>${({ warrior: '⚔️', mage: '🔮', rogue: '🗡️', cleric: '⛪' }[def.id] ?? '')} ${esc(def.name)}</h2>
           <div>${esc(def.description)}</div>
           <div class="kv">
@@ -609,7 +609,7 @@ export function render(state, dispatch) {
           ${difficultyOptions}
         </select>
       </div>
-      <div class="row">${cards}</div>`;
+      <div class="row class-cards-row">${cards}</div>`;
     actions.innerHTML = '';
 
     const nameInput = hud.querySelector('#class-select-name');
@@ -631,6 +631,21 @@ export function render(state, dispatch) {
         name: nameInput?.value ?? '',
         difficulty: document.getElementById('difficulty-select')?.value || 'normal',
       });
+    });
+    hud.querySelectorAll('.class-card').forEach((card) => {
+      const classId = card.querySelector('button[data-class]')?.dataset?.class;
+      if (classId) {
+        card.onclick = (e) => {
+          if (e.target.tagName !== 'BUTTON') {
+            dispatch({
+              type: 'SELECT_CLASS',
+              classId: classId,
+              name: nameInput?.value ?? '',
+              difficulty: document.getElementById('difficulty-select')?.value || 'normal',
+            });
+          }
+        };
+      }
     });
 
     log.innerHTML = state.log

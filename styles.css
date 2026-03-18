@@ -88,6 +88,40 @@ body {
   border: 1px solid rgba(255,255,255,0.07);
 }
 
+.class-cards-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.class-card {
+  padding: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.class-card:hover {
+  border-color: rgba(122, 162, 255, 0.4);
+}
+
+.class-card h2 {
+  font-size: 13px;
+  margin: 0 0 4px 0;
+}
+
+.class-card .kv {
+  grid-template-columns: 30px 1fr;
+  gap: 2px 6px;
+  font-size: 11px;
+}
+
+.class-card button {
+  margin-top: 6px;
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
 .card h2 {
   margin: 0 0 6px 0;
   font-size: 15px;
