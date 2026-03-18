@@ -70,7 +70,6 @@ export function initialState() {
     fastTravelModalOpen: false,
     encounterState: createEncounterState(),
     arenaState: createArenaState(),
-    statistics: createEmptyStatistics(),
     ...createCompanionState(),
     npcRelationshipManager: createNPCRelationshipManager(),
   };
@@ -120,6 +119,7 @@ export function initialStateWithClass(classId, characterName = '', difficulty = 
       maxHp: adjustedEnemyHp,
       defending: false,
     },
+    statistics: createEmptyStatistics(),
     log: [
       `A wild ${enemyBase.name} appears.`,
       `Your turn.`,

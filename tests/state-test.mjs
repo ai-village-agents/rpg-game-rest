@@ -54,7 +54,7 @@ console.log('\n--- initialState ---');
   assert(typeof state.player.def === 'number', 'Player has def');
   assert(state.player.defending === false, 'Player not defending initially');
   assert(state.player.inventory !== undefined, 'Player has inventory');
-  assert(state.player.inventory.potion >= 0, 'Player has potions');
+  assert(state.player.inventory.hiPotion >= 0, 'Player has hi-potions');
 
   // Enemy checks
   assert(state.enemy !== undefined, 'Enemy exists');
