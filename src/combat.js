@@ -429,7 +429,8 @@ export function playerUsePotion(state) {
   }
 
   const heal = items.potion.heal;
-  const hp = clamp(state.player.hp + heal, 0, state.player.maxHp);
+  const beforeHp = state.player.hp;
+  const hp = clamp(beforeHp + heal, 0, state.player.maxHp);
   state = {
     ...state,
     player: {
@@ -440,7 +441,7 @@ export function playerUsePotion(state) {
     },
   };
 
-  state = pushLog(state, `You drink a potion and heal ${hp - (state.player.hp)} HP.`);
+  state = pushLog(state, `You drink a potion and heal ${hp - beforeHp} HP.`);
   if (state.comboState) {
     state = { ...state, comboState: resetCombo(state.comboState) };
   }
