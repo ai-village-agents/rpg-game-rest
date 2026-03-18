@@ -137,6 +137,7 @@ export function recordItemUse(stats, itemName, healing = 0) {
 export function recordPotionUse(stats, healing = 0) {
   if (!stats) return stats;
   stats.potionCount++;
+  stats.itemUses['potion'] = (stats.itemUses['potion'] || 0) + 1;
   stats.totalHealingDone += Math.max(0, Number(healing) || 0);
   return stats;
 }
