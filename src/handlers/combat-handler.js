@@ -94,6 +94,7 @@ export function handleCombatAction(state, action) {
     }
     if (cs) {
       recordPotionUse(cs, healAmount);
+      recordItemUse(cs, 'potion', healAmount);
       recordTurn(cs, 'player');
     }
     return finalizeCombatState(next, { gameStats: gs, combatStats: cs });
