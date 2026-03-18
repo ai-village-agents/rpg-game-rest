@@ -12,7 +12,7 @@ function assert(condition, msg) {
 
 // Test 1: Returns HTML with defeat-screen section
 {
-  const state = { player: { name: 'Ada', className: 'Mage' }, enemy: { name: 'Goblin' }, dungeonState: { currentFloor: 3 }, gameStats: { enemiesDefeated: 10, totalDamageDealt: 500, totalDamageTaken: 200, goldEarned: 50, potionsUsed: 2, highestCombo: 5 } };
+  const state = { player: { name: 'Ada', className: 'Mage' }, enemy: { name: 'Goblin' }, dungeonState: { currentFloor: 3 }, gameStats: { enemiesDefeated: 10, totalDamageDealt: 500, totalDamageReceived: 200, goldEarned: 50, itemsUsed: 2 }, comboState: { highestCombo: 5 } };
   const html = renderDefeatScreen(state);
   assert(html.includes('defeat-screen'), 'renderDefeatScreen should include defeat-screen class');
   assert(html.includes('DEFEAT'), 'renderDefeatScreen should include DEFEAT title');
@@ -62,15 +62,22 @@ function assert(condition, msg) {
 
 // Test 6: Stats grid has all 6 stat entries
 {
-  const state = { gameStats: { enemiesDefeated: 1, totalDamageDealt: 2, totalDamageTaken: 3, goldEarned: 4, potionsUsed: 5, highestCombo: 6 } };
+  const state = { gameStats: { enemiesDefeated: 1, totalDamageDealt: 2, totalDamageReceived: 3, goldEarned: 4, itemsUsed: 5 }, comboState: { highestCombo: 6 } };
   const html = renderDefeatScreen(state);
   const statCount = (html.match(/defeat-stat-label/g) || []).length;
   assert(statCount === 6, `should have 6 stat entries, got ${statCount}`);
 }
 
+// Test 7: Highest combo comes from comboState
+{
+  const state = { gameStats: { enemiesDefeated: 0, totalDamageDealt: 0, totalDamageReceived: 0, goldEarned: 0, itemsUsed: 0 }, comboState: { highestCombo: 9 } };
+  const html = renderDefeatScreen(state);
+  assert(html.includes('9'), 'should show highest combo from comboState');
+}
+
 // --- renderDefeatActions ---
 
-// Test 7: Contains action buttons
+// Test 8: Contains action buttons
 {
   const html = renderDefeatActions();
   assert(html.includes('btnTryAgain'), 'should include Try Again button');
@@ -83,7 +90,7 @@ function assert(condition, msg) {
 
 // --- getDefeatScreenStyles ---
 
-// Test 8: Returns CSS string
+// Test 9: Returns CSS string
 {
   const styles = getDefeatScreenStyles();
   assert(typeof styles === 'string', 'getDefeatScreenStyles should return a string');
@@ -94,14 +101,14 @@ function assert(condition, msg) {
   assert(styles.includes('defeatFadeIn'), 'styles should include defeatFadeIn keyframes');
 }
 
-// Test 9: Styles include crimson colors
+// Test 10: Styles include crimson colors
 {
   const styles = getDefeatScreenStyles();
   assert(styles.includes('#dc143c'), 'styles should include crimson (#dc143c)');
   assert(styles.includes('#8b0000'), 'styles should include dark red (#8b0000)');
 }
 
-// Test 10: Stats default to 0 with gameStats undefined
+// Test 11: Stats default to 0 with gameStats undefined
 {
   const html = renderDefeatScreen({ player: { name: 'Test' } });
   // Check that the stat values are 0

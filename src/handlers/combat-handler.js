@@ -82,16 +82,18 @@ export function handleCombatAction(state, action) {
   }
 
   if (type === 'PLAYER_POTION') {
+    const hpBefore = state.player?.hp ?? 0;
     const next = playerUsePotion(state);
+    const hpAfterPotion = next.player?.hp ?? hpBefore;
+    const healAmount = Math.max(0, hpAfterPotion - hpBefore);
+
     let gs = next.gameStats || createGameStats();
     gs = recordItemUsed(gs, 'potion');
     gs = recordTurnPlayed(gs);
-    applyCraftingMaterialDrops(next);
-    const healingDone = (next.player?.hp ?? 0) - (state.player?.hp ?? 0);
-    const healAmount = Math.max(0, healingDone);
     if (healAmount > 0) {
       next.statistics = recordHealing({ statistics: next.statistics }, healAmount).statistics;
     }
+    applyCraftingMaterialDrops(next);
     if (cs) {
       recordPotionUse(cs, healAmount);
       recordTurn(cs, 'player');
@@ -149,18 +151,21 @@ export function handleCombatAction(state, action) {
   }
 
   if (type === 'PLAYER_ITEM') {
+    const hpBefore = state.player?.hp ?? 0;
     const next = playerUseItem(state, action.itemId);
+    const hpAfterItem = next.player?.hp ?? hpBefore;
+    const healingDone = Math.max(0, hpAfterItem - hpBefore);
+
     let gs = next.gameStats || createGameStats();
     gs = recordItemUsed(gs, action.itemId);
     gs = recordTurnPlayed(gs);
+    if (healingDone > 0) {
+      next.statistics = recordHealing({ statistics: next.statistics }, healingDone).statistics;
+    }
     applyCraftingMaterialDrops(next);
-    const healingDone = Math.max(0, (next.player?.hp ?? 0) - (state.player?.hp ?? 0));
     if (cs) {
       recordItemUse(cs, action.itemId, healingDone);
       recordTurn(cs, 'player');
-    }
-    if (healingDone > 0) {
-      next.statistics = recordHealing({ statistics: next.statistics }, healingDone).statistics;
     }
     return finalizeCombatState(next, { gameStats: gs, combatStats: cs });
   }

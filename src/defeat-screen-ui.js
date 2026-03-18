@@ -6,10 +6,10 @@ export function renderDefeatScreen(state) {
 
   const enemiesDefeated = state?.gameStats?.enemiesDefeated ?? 0;
   const totalDamageDealt = state?.gameStats?.totalDamageDealt ?? 0;
-  const totalDamageTaken = state?.gameStats?.totalDamageTaken ?? 0;
+  const totalDamageTaken = state?.gameStats?.totalDamageReceived ?? 0;
   const goldEarned = state?.gameStats?.goldEarned ?? 0;
-  const potionsUsed = state?.gameStats?.potionsUsed ?? 0;
-  const highestCombo = state?.gameStats?.highestCombo ?? 0;
+  const potionsUsed = state?.gameStats?.itemsUsed ?? 0;
+  const highestCombo = state?.comboState?.highestCombo ?? 0;
 
   const quotes = [
     "The darkness claims another soul...",
