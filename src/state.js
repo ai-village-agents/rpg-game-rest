@@ -140,6 +140,7 @@ export function initialStateWithClass(classId, characterName = '', difficulty = 
     fastTravelModalOpen: false,
     encounterState: createEncounterState(),
     arenaState: createArenaState(),
+    statistics: createEmptyStatistics(),
     ...createCompanionState(),
     npcRelationshipManager: createNPCRelationshipManager(),
   };
