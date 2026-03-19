@@ -25,7 +25,7 @@ import { clearFloor as clearDungeonFloor, TOTAL_FLOORS } from '../dungeon-floors
 import { handleProvisionAction } from './provisions-handler.js';
 import { handleEncounterAction, shouldCheckForEncounter } from './encounter-handler.js';
 import { BESTIARY_FILTER_DEFAULT, BESTIARY_SORT_DEFAULT } from '../bestiary-ui.js';
-import { completeTutorialStep, dismissCurrentHint, showHint, createTutorialState, resetTutorial } from '../tutorial.js';
+import { completeTutorialStep, dismissCurrentHint, showHint, createTutorialState, resetTutorial, persistTutorialState } from '../tutorial.js';
 import { getAllStandings, modifyReputation, getFactionStanding, claimReward } from '../faction-reputation-system.js';
 import { renderReputationPanel } from '../faction-reputation-system-ui.js';
 import { createGuild, addMember, removeMember, changeMemberRank, depositGold, withdrawGold, unlockPerk, disbandGuild, getGuildStats } from '../guild-system.js';
@@ -1114,18 +1114,21 @@ export function handleUIAction(state, action) {
       ),
     };
     emit('tutorial_dismiss', { state: next });
+    persistTutorialState(next.tutorialState);
     return next;
   }
 
   if (action.type === 'TUTORIAL_DISABLE') {
     if (!state.tutorialState) return null;
-    return {
+    const next = {
       ...state,
       tutorialState: {
         ...dismissCurrentHint(state.tutorialState),
         hintsEnabled: false,
       },
     };
+    persistTutorialState(next.tutorialState);
+    return next;
   }
 
   if (action.type === 'VIEW_TUTORIAL_PROGRESS') {

@@ -85,7 +85,44 @@ export const TUTORIAL_STEPS = [
   },
 ];
 
+const TUTORIAL_STORAGE_KEY = 'aiVillageRpg_tutorialState';
+
+export function persistTutorialState(tutorialState) {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(TUTORIAL_STORAGE_KEY, JSON.stringify(tutorialState));
+    }
+  } catch (_e) {
+    // localStorage may be unavailable in private browsing
+  }
+}
+
+export function loadPersistedTutorialState() {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const raw = localStorage.getItem(TUTORIAL_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object' && Array.isArray(parsed.completedSteps)) {
+          return parsed;
+        }
+      }
+    }
+  } catch (_e) {
+    // ignore parse errors
+  }
+  return null;
+}
+
 export function createTutorialState() {
+  const persisted = loadPersistedTutorialState();
+  if (persisted) {
+    return {
+      completedSteps: persisted.completedSteps || [],
+      currentHint: null,
+      hintsEnabled: persisted.hintsEnabled !== false,
+    };
+  }
   return {
     completedSteps: [],
     currentHint: null,
