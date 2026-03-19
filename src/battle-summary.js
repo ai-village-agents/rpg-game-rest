@@ -93,10 +93,15 @@ export function renderCombatStatsHtml(combatStatsDisplay) {
       const subtitle = escapeHtml(section.subtitle ?? '');
       const color = ratingColors[section.rating] ?? '#999';
 
+      const ratingTooltip = 'Performance Grade: S (Excellent) > A (Great) > B (Good) > C (Average) > D (Poor). Based on HP remaining, damage dealt, and turns taken.';
+
       return `
         <div style="display:flex;align-items:center;gap:12px;margin:10px 0;">
-          <div style="font-size:40px;font-weight:700;line-height:1;color:${color};min-width:36px;text-align:center;">
-            ${rating}
+          <div style="text-align:center;min-width:44px;cursor:help;" title="${ratingTooltip}">
+            <div style="font-size:40px;font-weight:700;line-height:1;color:${color};">
+              ${rating}
+            </div>
+            <div style="font-size:10px;opacity:0.6;margin-top:2px;">GRADE</div>
           </div>
           <div>
             <div style="font-size:18px;font-weight:700;">${title}</div>
