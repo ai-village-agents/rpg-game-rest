@@ -314,6 +314,7 @@ function renderExplorationButtons(state) {
         <button id="btnDailyChallenges">Daily 📅</button>
         <button id="btnStatsDashboard">📈 Statistics</button>
         <button id="btnBestiary">Bestiary 📖</button>
+        <button id="btnAchievements">Achievements 🏆</button>
         <button id="btnJournal">Journal 📔${renderJournalBadge(state)}</button>
       </div>
     </div>
@@ -857,6 +858,7 @@ export function render(state, dispatch) {
     document.getElementById('btnDailyChallenges').onclick = () => dispatch({ type: 'OPEN_DAILY_CHALLENGES' });
     document.getElementById('btnStatsDashboard').onclick = () => dispatch({ type: 'OPEN_STATISTICS_DASHBOARD' });
     document.getElementById('btnBestiary').onclick = () => dispatch({ type: 'VIEW_BESTIARY' });
+    document.getElementById('btnAchievements').onclick = () => dispatch({ type: 'VIEW_ACHIEVEMENTS' });
 
     hud.querySelectorAll('.npc-talk-btn').forEach((btn) => {
       btn.onclick = () => dispatch({ type: 'TALK_TO_NPC', npcId: btn.dataset.npcid });
