@@ -249,7 +249,10 @@ function inventorySummary(player) {
   const inv = player?.inventory || {};
   const entries = Object.entries(inv)
     .filter(([, count]) => count > 0)
-    .map(([item, count]) => `<div>${esc(item)}</div><div><b>${count}</b></div>`)
+    .map(([item, count]) => {
+      const displayName = getItemDetails(item)?.name || item;
+      return `<div>${esc(displayName)}</div><div><b>${count}</b></div>`;
+    })
     .join('');
   const gold = player?.gold ?? 0;
   return entries + `<div>Gold</div><div><b>${gold}</b></div>`;
