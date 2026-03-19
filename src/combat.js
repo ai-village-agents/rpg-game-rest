@@ -39,14 +39,18 @@ import { initIntentState, updateIntentState } from './enemy-intent.js';
 export function nextRng(seed) {
   const a = 48271;
   const m = 2147483647;
-  const next = (seed * a) % m;
+  const safeSeed = (seed == null || isNaN(seed) || seed === 0) ? 12345 : seed;
+  const next = (safeSeed * a) % m;
   return { seed: next, value: next / m };
 }
 
 function computeDamage({ attackerAtk, targetDef, targetDefending, worldEvent, targetIsBroken, targetIsCursed, critChance = 0, rngValue = 0.5 }) {
-  const defendBonus = targetDefending ? 3 : 0;
-  const raw = attackerAtk - (targetDef + defendBonus);
-  const baseDamage = Math.max(1, raw);
+  const DEF_CONSTANT = 20;
+  const effectiveDef = targetDefending ? (targetDef * 2.0) : targetDef;
+  const defMitigation = effectiveDef / (effectiveDef + DEF_CONSTANT);
+  const variance = 0.9 + ((rngValue * 1000) % 1) * 0.2;
+  const raw = attackerAtk * (1 - defMitigation) * variance;
+  const baseDamage = Math.max(1, Math.floor(raw));
   const mult = getDamageMultiplier(worldEvent);
   const curseMult = targetIsCursed ? 1.25 : 1;
 

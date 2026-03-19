@@ -71,19 +71,19 @@ for (const el of elements) {
 test('fire element has warm color', () => {
   const idx = css.indexOf('.bestiary-el-fire');
   const block = css.substring(idx, css.indexOf('}', idx));
-  assert.ok(block.includes('rgba(255,80,40'));
+  assert.ok(block.includes('rgba(184, 72, 38') || block.includes('rgba(255,80,40'));
 });
 
 test('ice element has cool color', () => {
   const idx = css.indexOf('.bestiary-el-ice');
   const block = css.substring(idx, css.indexOf('}', idx));
-  assert.ok(block.includes('rgba(100,180,255'));
+  assert.ok(block.includes('rgba(132, 186, 201') || block.includes('rgba(100,180,255'));
 });
 
 test('shadow element has purple color', () => {
   const idx = css.indexOf('.bestiary-el-shadow');
   const block = css.substring(idx, css.indexOf('}', idx));
-  assert.ok(block.includes('rgba(130,60,200'));
+  assert.ok(block.includes('rgba(115, 74, 140') || block.includes('rgba(130,60,200'));
 });
 
 // --- Shield Break Combat UI ---

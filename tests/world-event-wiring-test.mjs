@@ -83,8 +83,8 @@ describe('World event wiring', () => {
     const doubled = playerAttack({ ...baseState, worldEvent: { effect: { type: 'damage_multiplier', value: 2 } } });
     const dmgDoubled = 30 - doubled.enemy.hp;
 
-    assert.equal(dmgNoEvent, 10);
-    assert.equal(dmgDoubled, 20);
+    assert.equal(dmgNoEvent, 9); // Updated for percentage-based DEF mitigation formula
+    assert.equal(dmgDoubled, 18); // Updated for percentage-based DEF mitigation formula (9 * 2 = 18)
   });
 
   it('threads worldEvent into ability damage calculations (playerUseAbility)', () => {
