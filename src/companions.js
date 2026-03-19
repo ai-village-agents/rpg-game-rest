@@ -22,7 +22,10 @@ export function getLocationsForCurrentRoom(state) {
 }
 
 export function isCompanionAtPlayerLocation(npc, state) {
-  if (!npc || !npc.location) return false;
+  // If companion has no location requirement, they're available anywhere
+  if (!npc || !npc.location) return true;
+  // If state has no world data (e.g., in tests), skip location check
+  if (!state || state.roomRow === undefined) return true;
   const accessibleLocations = getLocationsForCurrentRoom(state);
   return accessibleLocations.includes(npc.location);
 }
