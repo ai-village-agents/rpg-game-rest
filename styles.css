@@ -233,6 +233,36 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   overflow: auto;
 }
 
+@media (min-width: 1200px) {
+  .app {
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 12px;
+    align-items: start;
+    max-width: 1200px;
+  }
+
+  #hud {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  #actions {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  #log {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    max-height: calc(100vh - 140px);
+    min-height: 360px;
+    position: sticky;
+    top: 16px;
+    align-self: start;
+  }
+}
+
 .logLine {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-size: 12px;
