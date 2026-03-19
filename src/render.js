@@ -57,6 +57,7 @@ import { renderArenaPanel, getArenaStyles, renderActiveTournament } from './aren
 import { renderGuildPanel, renderCreateGuildForm, renderGuildBrowser, renderGuildHud } from './guild-system-ui.js';
 import { renderEnemyIntent } from './enemy-intent-ui.js';
 import { getEnemyPictureWithFallback } from './data/enemy-pictures.js';
+import { getNpcEmojiWithFallback } from "./data/npc-emojis.js";
 import { renderAtmospherePanel } from './location-atmosphere.js';
 import { renderAreaScene, getAreaSceneStyles } from './area-scene-renderer.js';
 import { renderCombatHpSection, getCombatHpBarStyles } from './combat-hp-bars.js';
@@ -781,8 +782,8 @@ export function render(state, dispatch) {
     const exploreRoomId = RENDER_ROOM_ID_MAP[state.world?.roomRow]?.[state.world?.roomCol] ?? null;
     const exploreNpcs = exploreRoomId ? getNPCsInRoom(exploreRoomId) : [];
     const npcListHtml = exploreNpcs.length > 0
-      ? exploreNpcs.map(n => `<button class="npc-talk-btn" data-npcid="${esc(n.id)}">${esc(n.name)}</button>`).join('')
-      : '<em>No one is here.</em>';
+      ? exploreNpcs.map(n => `<button class="npc-talk-btn" data-npcid="${esc(n.id)}">${getNpcEmojiWithFallback(n.id)} ${esc(n.name)}</button>`).join("")
+      : "<em>No one is here.</em>";
     const currentXp = state.player.xp ?? 0;
     const nextLevelXp = xpForNextLevel(state.player.level ?? 1);
     const xpLine = nextLevelXp === 0 ? 'MAX LEVEL' : `${currentXp} / ${nextLevelXp} XP`;
