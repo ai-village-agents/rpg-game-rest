@@ -447,6 +447,10 @@ export function handleFastTravelAction(state, action) {
       return { ...next, phase: 'quest-reward', preRewardPhase: 'exploration' };
     }
 
+
+    // Emit a room_change event so the auto-save system persists this move.
+    // EXPLORE already emits room_change; Fast Travel should behave the same.
+    emit('room_change', { state: next });
     return next;
   }
 
