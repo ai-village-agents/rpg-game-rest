@@ -676,30 +676,123 @@ export function rollLootDrop(enemyId, seed, worldEvent = null) {
   return { lootedItems, seed };
 }
 
+// Equipment slot mapping for item types
+const TYPE_TO_SLOT = {
+  weapon: 'weapon',
+  armor: 'armor',
+  accessory: 'accessory',
+};
+
+/**
+ * Calculate a score for an item based on its stats.
+ * Higher score = better item.
+ * Weights: attack and defense are most important, then speed/magic, then critChance.
+ * @param {object|null} item - Item data from items database
+ * @returns {number} Score (0 if no item)
+ */
+function getItemScore(item) {
+  if (!item || !item.stats) return 0;
+  const s = item.stats;
+  return (
+    (s.attack || 0) * 2 +
+    (s.defense || 0) * 2 +
+    (s.speed || 0) * 1.5 +
+    (s.magic || 0) * 1.5 +
+    (s.critChance || 0) * 1
+  );
+}
+
+/**
+ * Check if new item is better than currently equipped item.
+ * @param {string} newItemId - ID of the new item
+ * @param {string|null} currentItemId - ID of currently equipped item (or null)
+ * @returns {boolean} True if new item is better
+ */
+function isItemBetter(newItemId, currentItemId) {
+  const newItem = items[newItemId];
+  const currentItem = currentItemId ? items[currentItemId] : null;
+  return getItemScore(newItem) > getItemScore(currentItem);
+}
+
+/**
+ * Try to auto-equip looted items if they are better than current equipment.
+ * @param {object} player - Player state with inventory and equipment
+ * @param {Array<{itemId:string}>} lootedItems - Items that were looted
+ * @returns {{ player: object, autoEquipped: Array<{itemId:string, slot:string, replaced:string|null}> }}
+ */
+function tryAutoEquip(player, lootedItems) {
+  let equipment = { ...(player.equipment || { weapon: null, armor: null, accessory: null }) };
+  let inventory = { ...(player.inventory || {}) };
+  const autoEquipped = [];
+
+  for (const loot of lootedItems) {
+    const item = items[loot.itemId];
+    if (!item) continue;
+
+    const slot = TYPE_TO_SLOT[item.type];
+    if (!slot) continue; // Not equippable (e.g., consumable)
+
+    const currentEquipped = equipment[slot];
+    if (isItemBetter(loot.itemId, currentEquipped)) {
+      // Auto-equip: remove new item from inventory, equip it, return old to inventory
+      const newCount = (inventory[loot.itemId] || 0) - 1;
+      if (newCount <= 0) {
+        delete inventory[loot.itemId];
+      } else {
+        inventory[loot.itemId] = newCount;
+      }
+
+      // Return old item to inventory if there was one
+      if (currentEquipped) {
+        inventory[currentEquipped] = (inventory[currentEquipped] || 0) + 1;
+      }
+
+      equipment[slot] = loot.itemId;
+      autoEquipped.push({
+        itemId: loot.itemId,
+        name: item.name,
+        slot,
+        replaced: currentEquipped,
+        replacedName: currentEquipped ? items[currentEquipped]?.name : null,
+      });
+    }
+  }
+
+  return {
+    player: { ...player, inventory, equipment },
+    autoEquipped,
+  };
+}
+
 /**
  * Apply looted items to the game state immutably.
- * Adds items to player.inventory and sets state.lootedItems for battle-summary.
+ * Adds items to player.inventory, auto-equips better items, and sets state.lootedItems for battle-summary.
  * @param {object} state - Current game state
  * @param {Array<{itemId:string, name:string, rarity:string}>} lootedItems
  * @returns {object} New state with loot applied
  */
 export function applyLootToState(state, lootedItems) {
   if (!lootedItems || lootedItems.length === 0) {
-    return { ...state, lootedItems: [] };
+    return { ...state, lootedItems: [], autoEquipped: [] };
   }
 
+  // First, add all items to inventory
   let inventory = { ...(state.player?.inventory ?? {}) };
   for (const loot of lootedItems) {
     const current = inventory[loot.itemId] || 0;
     inventory[loot.itemId] = current + 1;
   }
 
+  // Create intermediate player state with new inventory
+  let player = { ...state.player, inventory };
+
+  // Try auto-equip for better items
+  const { player: updatedPlayer, autoEquipped } = tryAutoEquip(player, lootedItems);
+
   return {
     ...state,
     lootedItems,
-    player: {
-      ...state.player,
-      inventory,
-    },
+    autoEquipped,
+    player: updatedPlayer,
   };
 }

@@ -16,6 +16,7 @@ export function createBattleSummary(state) {
   const enemyName = state.enemy?.displayName ?? state.enemy?.name ?? 'Unknown Enemy';
   const lootedItems = Array.isArray(state.lootedItems) ? [...state.lootedItems] : [];
   const levelUps = Array.isArray(state.pendingLevelUps) ? [...state.pendingLevelUps] : [];
+  const autoEquipped = Array.isArray(state.autoEquipped) ? [...state.autoEquipped] : [];
 
   const summary = {
     xpGained,
@@ -23,6 +24,7 @@ export function createBattleSummary(state) {
     enemyName,
     lootedItems,
     levelUps,
+    autoEquipped,
   };
 
   summary.combatStats = state.combatStats ?? null;
@@ -52,6 +54,15 @@ export function formatBattleSummary(summary) {
       })
     : ['No items looted.'];
 
+  // Auto-equip notifications
+  const autoEquipLines = (summary.autoEquipped || []).map((eq) => {
+    const slot = eq.slot ? eq.slot.charAt(0).toUpperCase() + eq.slot.slice(1) : 'Item';
+    if (eq.replacedName) {
+      return `Auto-equipped ${eq.name} (${slot}) - replaced ${eq.replacedName}`;
+    }
+    return `Auto-equipped ${eq.name} (${slot})`;
+  });
+
   return {
     title: 'Battle Won!',
     enemyLine: `Defeated: ${summary.enemyName}`,
@@ -59,8 +70,10 @@ export function formatBattleSummary(summary) {
     goldLine: `Gold Earned: +${summary.goldGained}`,
     lootLines,
     levelUpLines,
+    autoEquipLines,
     hasLevelUps: summary.levelUps.length > 0,
     hasLoot: summary.lootedItems.length > 0,
+    hasAutoEquip: (summary.autoEquipped || []).length > 0,
   };
 }
 
