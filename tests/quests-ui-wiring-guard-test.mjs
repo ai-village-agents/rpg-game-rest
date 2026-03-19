@@ -8,7 +8,7 @@ class ElementMock {
     this.document = document;
     this.children = [];
     this.dataset = {};
-    this.classList = { add: () => {} };
+    this.classList = { add: () => {}, remove: () => {} };
     this.buttons = [];
     this.onclick = null;
   }

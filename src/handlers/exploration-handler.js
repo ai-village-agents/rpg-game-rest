@@ -1,3 +1,4 @@
+import { emit } from '../engine.js';
 import { movePlayer, getCurrentRoom, getRoomExits, travelToAdjacentRoom } from '../map.js';
 import { nextRng, startNewEncounter } from '../combat.js';
 import { markRoomVisited } from '../minimap.js';
@@ -225,6 +226,7 @@ export function handleExplorationAction(state, action) {
       return { ...next, phase: 'quest-reward', preRewardPhase: 'exploration' };
     }
 
+    emit('room_change', { state: next });
     return next;
   }
 
