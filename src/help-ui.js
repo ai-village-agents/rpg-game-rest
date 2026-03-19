@@ -126,7 +126,7 @@ export function renderHelpModal() {
         </div>
 
         <div class="help-section">
-          <h3>Game Systems</h3>
+          <h3>Adventurer's Compendium</h3>
           <p style="color:#ccc;font-size:0.9em;">
             <b>Shield/Break:</b> Enemies have elemental shields. Hit weaknesses to break shields and deal bonus damage!<br><br>
             <b>Companions:</b> Recruit allies to fight alongside you. Build loyalty through combat and gifts.<br><br>
