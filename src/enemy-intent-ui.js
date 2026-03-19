@@ -90,9 +90,6 @@ function injectStyles() {
 
     .enemy-intent-label {
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 180px;
     }
 
     .enemy-intent-damage {

@@ -814,7 +814,7 @@ export function render(state, dispatch) {
             <div>Defending</div><div><b>${state.enemy.defending ? 'Yes' : 'No'}</b></div>
             ${renderStatusEffectsRow(state.enemy.statusEffects ?? [])}
             ${state.enemy?.maxShields > 0 ? `<div style="grid-column: 1 / -1">${renderShieldBreakHUD(state.enemy)}</div>` : ''}
-            ${state.intentState ? renderEnemyIntent(state.intentState) : ''}
+            ${state.intentState ? `<div style="grid-column: 1 / -1">${renderEnemyIntent(state.intentState)}</div>` : ''}
           </div>
         </div>
 
