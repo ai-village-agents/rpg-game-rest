@@ -849,3 +849,237 @@ textarea:focus {
     box-shadow: 0 12px 20px rgba(0,0,0,0.5), 0 0 18px rgba(201, 162, 82, 0.55), inset 0 1px 0 rgba(255, 240, 210, 0.55);
   }
 }
+
+/* === Achievements Panel === */
+.achievements-panel {
+  background: linear-gradient(140deg, rgba(40, 25, 15, 0.96), rgba(22, 13, 8, 0.98));
+  border: 1px solid rgba(201, 162, 82, 0.38);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255, 240, 210, 0.06);
+  max-width: 940px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.achievements-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(201, 162, 82, 0.35);
+  background: linear-gradient(120deg, rgba(201, 162, 82, 0.14), rgba(255, 244, 214, 0.06));
+  border-radius: 10px;
+  box-shadow: inset 0 1px 0 rgba(255, 240, 210, 0.08);
+}
+
+.achievements-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.close-btn {
+  appearance: none;
+  border: 1px solid rgba(201, 162, 82, 0.65);
+  background: linear-gradient(135deg, #7b5327, #4b2f16 70%);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'MedievalSharp', 'Cardo', 'Times New Roman', serif;
+  font-weight: 700;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 210, 0.45),
+    inset 0 -3px 6px rgba(0,0,0,0.45),
+    0 4px 10px rgba(0,0,0,0.35);
+  transition: all 0.16s ease;
+}
+
+.close-btn:hover {
+  border-color: rgba(255, 214, 142, 0.85);
+  background: linear-gradient(135deg, #8d632f, #5a3a1c);
+  transform: translateY(-1px);
+}
+
+.close-btn:active {
+  transform: translateY(1px);
+}
+
+.achievements-stats {
+  padding: 10px 12px;
+  background: rgba(255, 244, 214, 0.05);
+  border: 1px solid rgba(201, 162, 82, 0.28);
+  border-radius: 10px;
+  box-shadow: inset 0 1px 0 rgba(255, 240, 210, 0.06);
+}
+
+.overall-progress {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.progress-label {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.achievements-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.achievement-tab {
+  padding: 8px 14px;
+  border: 1px solid rgba(201, 162, 82, 0.35);
+  border-radius: 8px 8px 0 0;
+  background: linear-gradient(180deg, rgba(255, 241, 214, 0.08), rgba(108, 76, 38, 0.18));
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, transform 0.1s ease;
+  box-shadow: inset 0 1px 0 rgba(255, 240, 210, 0.3);
+}
+
+.achievement-tab:hover {
+  border-color: rgba(201, 162, 82, 0.5);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+  transform: translateY(-1px);
+}
+
+.achievement-tab.active {
+  background: linear-gradient(180deg, rgba(201, 162, 82, 0.32), rgba(117, 81, 41, 0.3));
+  border-color: rgba(201, 162, 82, 0.55);
+  color: #fef7e7;
+  box-shadow: 0 8px 14px rgba(0,0,0,0.35);
+}
+
+.achievements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 450px;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-top: 4px;
+}
+
+.achievement-item {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 244, 214, 0.05);
+  border: 1px solid rgba(201, 162, 82, 0.24);
+  border-radius: 10px;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+  box-shadow: inset 0 1px 0 rgba(255, 240, 210, 0.05);
+}
+
+.achievement-item:hover {
+  border-color: rgba(201, 162, 82, 0.45);
+  box-shadow: 0 8px 14px rgba(0,0,0,0.35);
+  background: rgba(201, 162, 82, 0.08);
+}
+
+.achievement-item.locked {
+  opacity: 0.6;
+  background: rgba(0, 0, 0, 0.25);
+  border-style: dashed;
+}
+
+.achievement-item.unlocked {
+  border-color: rgba(63, 132, 81, 0.45);
+  background: rgba(63, 132, 81, 0.12);
+}
+
+.achievement-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 240, 210, 0.24), rgba(201, 162, 82, 0.12));
+  border: 1px solid rgba(201, 162, 82, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-size: 1.2rem;
+  box-shadow: inset 0 1px 0 rgba(255, 240, 210, 0.25), 0 4px 10px rgba(0,0,0,0.35);
+}
+
+.achievement-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.achievement-name {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.achievement-description {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.achievement-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.progress-bar {
+  position: relative;
+  width: 100%;
+  height: 9px;
+  background: rgba(255, 244, 214, 0.14);
+  border: 1px solid rgba(201, 162, 82, 0.35);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255, 240, 210, 0.16);
+}
+
+.progress-fill {
+  position: absolute;
+  inset: 0;
+  width: var(--progress, 0%);
+  background: linear-gradient(135deg, #c9a252, #8a5a2a);
+  border-radius: 6px;
+  box-shadow: inset 0 1px 0 rgba(255, 240, 210, 0.35);
+  transition: width 0.25s ease;
+}
+
+.progress-text {
+  font-size: 0.85rem;
+  color: #e2d5b2;
+}
+
+.overall-progress .progress-text {
+  text-align: right;
+}
+
+.no-achievements {
+  text-align: center;
+  padding: 22px 0;
+  color: var(--muted);
+  font-style: italic;
+}
+
+@media (max-width: 720px) {
+  .achievements-panel { padding: 12px; }
+  .achievements-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .achievements-list { max-height: 360px; }
+  .achievement-item { grid-template-columns: 44px 1fr; }
+  .achievement-tab { width: 100%; text-align: center; border-radius: 8px; }
+  .overall-progress { grid-template-columns: 1fr; }
+}

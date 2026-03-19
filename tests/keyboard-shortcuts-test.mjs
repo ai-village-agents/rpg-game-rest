@@ -186,6 +186,22 @@ describe('KeyboardShortcuts', () => {
   });
 
   describe('exploration shortcuts', () => {
+    it('should dispatch VIEW_ACHIEVEMENTS on a during exploration', () => {
+      const ks = createKeyboardShortcuts(getState, dispatch);
+      currentState = { phase: 'exploration' };
+      domMock.fireKeydown('a');
+      assert.deepStrictEqual(dispatched, [{ type: 'VIEW_ACHIEVEMENTS' }]);
+      ks.destroy();
+    });
+
+    it('should dispatch VIEW_ACHIEVEMENTS on A (uppercase) during exploration', () => {
+      const ks = createKeyboardShortcuts(getState, dispatch);
+      currentState = { phase: 'exploration' };
+      domMock.fireKeydown('A');
+      assert.deepStrictEqual(dispatched, [{ type: 'VIEW_ACHIEVEMENTS' }]);
+      ks.destroy();
+    });
+
     it('should dispatch VIEW_INVENTORY on i during exploration', () => {
       const ks = createKeyboardShortcuts(getState, dispatch);
       currentState = { phase: 'exploration' };
@@ -383,6 +399,14 @@ describe('KeyboardShortcuts', () => {
       assert.deepStrictEqual(dispatched, []);
       ks.destroy();
     });
+
+    it('should list Achievements key in the exploration table', () => {
+      const ks = createKeyboardShortcuts(getState, dispatch);
+      domMock.fireKeydown('/');
+      const overlay = domMock.elements['keyboard-shortcuts-overlay'];
+      assert.ok(overlay?.innerHTML.includes('ks-key">A</td><td>Achievements'), 'Exploration table should include Achievements');
+      ks.destroy();
+    });
   });
 
   describe('null state handling', () => {
@@ -420,6 +444,9 @@ describe('KeyboardShortcuts', () => {
     });
 
     it('EXPLORATION_KEYS should have entries for both cases', () => {
+      assert.ok(EXPLORATION_KEYS['a']);
+      assert.ok(EXPLORATION_KEYS['A']);
+      assert.deepStrictEqual(EXPLORATION_KEYS['a'], EXPLORATION_KEYS['A']);
       assert.ok(EXPLORATION_KEYS['i']);
       assert.ok(EXPLORATION_KEYS['I']);
       assert.deepStrictEqual(EXPLORATION_KEYS['i'], EXPLORATION_KEYS['I']);
