@@ -56,6 +56,10 @@ body {
   padding: 12px;
 }
 
+.panel.panel-empty {
+  display: none;
+}
+
 #actions {
   column-count: 1;
   column-gap: 24px;
