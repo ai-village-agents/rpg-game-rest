@@ -1,6 +1,7 @@
 import { COORD_TO_ROOM } from './location-atmosphere.js';
 import { DEFAULT_WORLD_DATA, getRoomExits } from './map.js';
 import { getNPCsInRoom } from './npc-dialog.js';
+import { DEFAULT_AVATAR } from './state.js';
 
 const ROOM_LABELS = {
   nw: 'Northwest Grove',
@@ -155,7 +156,7 @@ export function renderAreaScene(state) {
       ${sceneElements}
       ${locks}
       ${npcs}
-      <div class="area-player-marker" style="${playerStyle}">🧍</div>
+      <div class="area-player-marker" style="${playerStyle}">${state.player?.avatar || DEFAULT_AVATAR}</div>
       <div class="area-scene-label">${esc(label)}</div>
     </div>
   `;

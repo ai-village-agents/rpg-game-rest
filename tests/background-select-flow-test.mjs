@@ -9,24 +9,35 @@ test('class selection moves to background selection phase', () => {
   assert(afterClass.player.classId === 'warrior', 'player keeps selected classId');
 });
 
-test('background selection applies bonuses and enters exploration', () => {
+test('background selection applies bonuses and moves to avatar-select phase', () => {
   const afterClass = handleSystemAction({ phase: 'class-select', log: [] }, { type: 'SELECT_CLASS', classId: 'warrior' });
   const baseAtk = afterClass.player.atk;
   const basePotions = afterClass.player.inventory?.potion || 0;
 
   const afterBackground = handleSystemAction(afterClass, { type: 'SELECT_BACKGROUND', backgroundId: 'soldier' });
 
-  assert(afterBackground.phase === 'exploration', 'should enter exploration after selecting background');
+  assert(afterBackground.phase === 'avatar-select', 'should enter avatar-select after selecting background');
   assert(afterBackground.player.backgroundId === 'soldier', 'player stores chosen backgroundId');
   assert(afterBackground.player.atk === baseAtk + 2, 'soldier background adds to attack');
   assert(afterBackground.player.inventory.potion === basePotions + 1, 'soldier background adds potion to inventory');
-  assert(afterBackground.visitedRooms !== undefined, 'visitedRooms initialized after background select');
-  assert(afterBackground.gameStats !== undefined, 'gameStats initialized after background select');
+});
+
+test('avatar selection enters exploration phase', () => {
+  const afterClass = handleSystemAction({ phase: 'class-select', log: [] }, { type: 'SELECT_CLASS', classId: 'warrior' });
+  const afterBackground = handleSystemAction(afterClass, { type: 'SELECT_BACKGROUND', backgroundId: 'soldier' });
+
+  const afterAvatar = handleSystemAction(afterBackground, { type: 'SELECT_AVATAR', avatar: '🧝' });
+
+  assert(afterAvatar.phase === 'exploration', 'should enter exploration after selecting avatar');
+  assert(afterAvatar.player.avatar === '🧝', 'player stores chosen avatar');
+  assert(afterAvatar.visitedRooms !== undefined, 'visitedRooms initialized after avatar select');
+  assert(afterAvatar.gameStats !== undefined, 'gameStats initialized after avatar select');
 });
 
 test('background bonuses adjust gold values', () => {
   const afterClass = handleSystemAction({ phase: 'class-select', log: [] }, { type: 'SELECT_CLASS', classId: 'rogue' });
   const afterBackground = handleSystemAction(afterClass, { type: 'SELECT_BACKGROUND', backgroundId: 'wanderer' });
+  const afterAvatar = handleSystemAction(afterBackground, { type: 'SELECT_AVATAR', avatar: '🧙' });
 
-  assert(afterBackground.player.gold === 15, 'wanderer background grants starting gold');
+  assert(afterAvatar.player.gold === 15, 'wanderer background grants starting gold');
 });

@@ -1,6 +1,6 @@
 import { CLASS_DEFINITIONS } from '../characters/classes.js';
 import { BACKGROUNDS } from '../data/backgrounds.js';
-import { initialState, initialStateWithClass, pushLog, loadFromLocalStorage, saveToLocalStorage } from '../state.js';
+import { initialState, initialStateWithClass, pushLog, loadFromLocalStorage, saveToLocalStorage, DEFAULT_AVATAR } from '../state.js';
 import { initQuestState } from '../quest-integration.js';
 import { createGameStats, recordBattleFled } from '../game-stats.js';
 import { initVisitedRooms } from '../minimap.js';
@@ -108,7 +108,7 @@ export function handleSystemAction(state, action) {
       questState: initQuestState(),
       ...state,
       player,
-      phase: 'exploration',
+      phase: 'avatar-select',
       log: [
         `You have chosen the path of the ${className}.`,
         `You carry the experience of a ${background.name}.`,
@@ -119,6 +119,33 @@ export function handleSystemAction(state, action) {
     };
 
     return next;
+  }
+
+  if (type === 'SELECT_AVATAR') {
+    const avatar = action.avatar || DEFAULT_AVATAR;
+    const classId = state.player?.classId;
+    const className = typeof classId === 'string' && classId
+      ? classId[0].toUpperCase() + classId.slice(1)
+      : 'Adventurer';
+    const backgroundId = state.player?.backgroundId;
+    const background = BACKGROUNDS[backgroundId] || { name: 'Unknown' };
+    
+    return {
+      ...state,
+      player: {
+        ...state.player,
+        avatar: avatar,
+      },
+      phase: 'exploration',
+      log: [
+        `You have chosen the path of the ${className}.`,
+        `You carry the experience of a ${background.name}.`,
+        `${getRoomDescription(state.world)} You may explore in any direction.`,
+      ],
+      visitedRooms: initVisitedRooms(1, 1),
+      gameStats: createGameStats(),
+      questState: initQuestState(),
+    };
   }
 
   if (type === 'NEW') {
