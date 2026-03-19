@@ -216,6 +216,33 @@ export function handleUIAction(state, action) {
           next2 = pushLog(next2, 'You have reached the level of mastery! Choose your specialization path.');
           return next2;
         }
+        if (state.inDungeonCombat && state.dungeonState?.inDungeon) {
+          const wasBossFight = state.dungeonBossFight;
+          let dungeonState = state.dungeonState;
+          if (wasBossFight) {
+            dungeonState = clearDungeonFloor(dungeonState);
+          }
+          const { inDungeonCombat, dungeonBossFight, ...rest } = state;
+
+          const isFinalBossCleared = wasBossFight
+            && dungeonState.currentFloor === TOTAL_FLOORS
+            && dungeonState.floorsCleared.includes(TOTAL_FLOORS);
+
+          let next2 = {
+            ...rest,
+            dungeonState,
+            phase: isFinalBossCleared ? 'game-complete' : 'dungeon',
+            player: { ...state.player, defending: false },
+            battleSummary: undefined,
+            levelUpState: undefined,
+            pendingLevelUps: undefined,
+          };
+          next2 = pushLog(next2, isFinalBossCleared
+            ? 'The Oblivion Lord is vanquished! Light returns to the realm!'
+            : 'You continue exploring the dungeon.');
+          return next2;
+        }
+
         const exits = getRoomExits(state.world);
         let next2 = {
           ...state,
