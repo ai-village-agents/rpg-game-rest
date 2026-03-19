@@ -21,6 +21,29 @@ import { createArenaState } from './arena-tournament-system.js';
 import { createEmptyStatistics } from './statistics-dashboard.js';
 import { createDungeonState } from './dungeon-floors.js';
 
+export const AVATAR_EMOJIS = [
+  { emoji: '🧍‍♀️', label: 'Woman' },
+  { emoji: '🧍🏻‍♀️', label: 'Woman Light' },
+  { emoji: '🧍🏼‍♀️', label: 'Woman Medium-Light' },
+  { emoji: '🧍🏽‍♀️', label: 'Woman Medium' },
+  { emoji: '🧍🏾‍♀️', label: 'Woman Medium-Dark' },
+  { emoji: '🧍🏿‍♀️', label: 'Woman Dark' },
+  { emoji: '🧍', label: 'Person' },
+  { emoji: '🧍🏻', label: 'Person Light' },
+  { emoji: '🧍🏼', label: 'Person Medium-Light' },
+  { emoji: '🧍🏽', label: 'Person Medium' },
+  { emoji: '🧍🏾', label: 'Person Medium-Dark' },
+  { emoji: '🧍🏿', label: 'Person Dark' },
+  { emoji: '🧍‍♂️', label: 'Man' },
+  { emoji: '🧍🏻‍♂️', label: 'Man Light' },
+  { emoji: '🧍🏼‍♂️', label: 'Man Medium-Light' },
+  { emoji: '🧍🏽‍♂️', label: 'Man Medium' },
+  { emoji: '🧍🏾‍♂️', label: 'Man Medium-Dark' },
+  { emoji: '🧍🏿‍♂️', label: 'Man Dark' },
+];
+
+export const DEFAULT_AVATAR = '🧍';
+
 export function initialState() {
   const playerBase = characters.player;
   const enemyBase = characters.slime;
@@ -113,6 +136,7 @@ export function initialStateWithClass(classId, characterName = '', difficulty = 
       level: 1,
       xp: 0,
       defending: false,
+      avatar: DEFAULT_AVATAR,
       inventory: { potion: 3 },
     },
     enemy: {

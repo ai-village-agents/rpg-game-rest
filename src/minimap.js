@@ -1,3 +1,5 @@
+import { DEFAULT_AVATAR } from './state.js';
+
 /**
  * Exploration Minimap UI
  *
@@ -323,7 +325,7 @@ export function getMinimapStyles() {
  * @param {string[]} visitedRooms - array of visited room IDs
  * @returns {string} HTML string for the minimap card
  */
-export function renderMinimap(worldState, visitedRooms) {
+export function renderMinimap(worldState, visitedRooms, avatar = DEFAULT_AVATAR) {
   if (!worldState) return '';
 
   const cells = buildMinimapData(worldState, visitedRooms);
@@ -346,7 +348,7 @@ export function renderMinimap(worldState, visitedRooms) {
              data-roomid="${esc(cell.roomId)}"
              data-row="${cell.row}"
              data-col="${cell.col}">
-          <span class="minimap-player">🧍</span>
+          <span class="minimap-player">${avatar}</span>
           <span class="minimap-danger-icon" aria-label="${esc(cell.dangerLabel)}">${cell.cellType !== 'unvisited' ? esc(cell.dangerIcon) : '?'}</span>
           <span class="minimap-cell-abbr">${cell.cellType !== 'unvisited' ? esc(abbr) : '?'}</span>
         </div>

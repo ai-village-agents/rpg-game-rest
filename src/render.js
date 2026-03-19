@@ -2,7 +2,7 @@ import { renderBountyBoardPanel } from './bounty-board-ui.js';
 import { renderReputationPanel } from './faction-reputation-system-ui.js';
 import { renderFastTravelButton, renderFastTravelModal, isFastTravelModalOpen, attachFastTravelHandlers, getFastTravelStyles } from './fast-travel-ui.js';
 import { renderTavernDicePanel } from './tavern-dice-ui.js';
-import { saveToLocalStorage, loadFromLocalStorage } from './state.js';
+import { saveToLocalStorage, loadFromLocalStorage, AVATAR_EMOJIS, DEFAULT_AVATAR } from './state.js';
 import { CLASS_DEFINITIONS } from './characters/classes.js';
 import { DEFAULT_WORLD_DATA, getRoomExits } from './map.js';
 import { getCategorizedInventory, getEquipmentDisplay, getItemDetails, getEquipmentComparison, INVENTORY_SCREENS, EQUIPMENT_SLOTS, getEquipmentBonuses } from './inventory.js';
@@ -689,6 +689,50 @@ export function render(state, dispatch) {
     return;
   }
 
+  // --- Avatar Select Phase ---
+  if (state.phase === 'avatar-select') {
+    const avatarButtons = AVATAR_EMOJIS.map((avatarOption) => `
+      <button
+        class="avatar-choice"
+        data-avatar="${esc(avatarOption.emoji)}"
+        title="${esc(avatarOption.label)}"
+        style="font-size: 2rem; padding: 8px; cursor: pointer;"
+      >${avatarOption.emoji}</button>
+    `).join('');
+
+    hud.innerHTML = `
+      <div class="card">
+        <h2>Choose Your Avatar</h2>
+        <div
+          class="avatar-grid"
+          style="
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            max-width: 300px;
+            margin: 0 auto;
+          "
+        >${avatarButtons}</div>
+      </div>
+    `;
+    actions.innerHTML = '';
+
+    hud.querySelectorAll('button[data-avatar]').forEach((button) => {
+      button.onclick = () => dispatch({
+        type: 'SELECT_AVATAR',
+        avatar: button.dataset.avatar || DEFAULT_AVATAR,
+      });
+    });
+
+    log.innerHTML = state.log
+      .slice()
+      .reverse()
+      .map((line) => formatLogEntryHtml(line))
+      .join('');
+    finalizeRender();
+    return;
+  }
+
   // --- Exploration Phase ---
   if (state.phase === 'exploration') {
     const exploreRoomId = RENDER_ROOM_ID_MAP[state.world?.roomRow]?.[state.world?.roomCol] ?? null;
@@ -723,7 +767,7 @@ export function render(state, dispatch) {
 
         ${isMinimapHidden(state.worldEvent)
           ? '<div class="card">The fog obscures your map...</div>'
-          : renderMinimap(state.world, state.visitedRooms || [])}
+          : renderMinimap(state.world, state.visitedRooms || [], state.player?.avatar || DEFAULT_AVATAR)}
 
         <div class="card">
           <h2>People Here</h2>
