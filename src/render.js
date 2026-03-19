@@ -56,6 +56,7 @@ import { renderComboDisplay } from './combo-system-ui.js';
 import { renderArenaPanel, getArenaStyles, renderActiveTournament } from './arena-tournament-system-ui.js';
 import { renderGuildPanel, renderCreateGuildForm, renderGuildBrowser, renderGuildHud } from './guild-system-ui.js';
 import { renderEnemyIntent } from './enemy-intent-ui.js';
+import { getEnemyPictureWithFallback } from './data/enemy-pictures.js';
 import { renderAtmospherePanel } from './location-atmosphere.js';
 import { renderAreaScene, getAreaSceneStyles } from './area-scene-renderer.js';
 import { renderCombatHpSection, getCombatHpBarStyles } from './combat-hp-bars.js';
@@ -906,6 +907,8 @@ export function render(state, dispatch) {
   // --- Combat Phases (player-turn, enemy-turn) ---
   if (state.phase === 'player-turn' || state.phase === 'enemy-turn') {
     const provisionBuffBar = renderProvisionBuffs(state);
+    const enemyDisplayName = esc(state.enemy?.displayName ?? state.enemy?.name ?? 'Unknown Enemy');
+    const enemyPicture = getEnemyPictureWithFallback(state.enemy?.id ?? state.enemy?.name ?? '');
     hud.innerHTML = `
       <div class="row">
         <div class="card">
@@ -929,9 +932,12 @@ export function render(state, dispatch) {
 
         <div class="card">
           <h2>Enemy</h2>
+          <div class="enemy-overview" style="display:flex;align-items:center;gap:12px;margin:4px 0 12px;">
+            <div class="enemy-picture" style="font-size:32px;line-height:1;">${enemyPicture}</div>
+            <div class="enemy-name" style="font-size:18px;font-weight:700;">${enemyDisplayName}</div>
+          </div>
+          ${renderCombatHpSection(state.enemy)}
           <div class="kv">
-            <div>Name</div><div><b>${esc((state.enemy.displayName ?? state.enemy.name))}</b></div>
-          </div>${renderCombatHpSection(state.enemy)}<div class="kv">
             <div>ATK / DEF</div><div><b>${state.enemy.atk}</b> / <b>${state.enemy.def}</b></div>
             <div>Defending</div><div><b>${state.enemy.defending ? 'Yes' : 'No'}</b></div>
             ${renderStatusEffectsRow(state.enemy.statusEffects ?? [])}
