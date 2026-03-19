@@ -87,6 +87,7 @@ export function handleDungeonAction(state, action) {
               statusEffects: [],
             },
             inDungeonCombat: true,
+            combatStats: null, // Reset combat stats for new encounter (Issue #63)
           },
           'You search the floor...'
         ),
@@ -186,6 +187,7 @@ if (state.dungeonState.currentFloor >= TOTAL_FLOORS) {
           },
           inDungeonCombat: true,
           dungeonBossFight: true,
+          combatStats: null, // Reset combat stats for new encounter (Issue #63)
         },
         'You challenge the floor boss!'
       ),

@@ -188,6 +188,7 @@ export function handleEncounterAction(state, action) {
             encounterCombatActive: true,
             currentEnemyId: enemyId,
             bestiary: recordEncounter(state.bestiary || { encountered: [], defeatedCounts: {} }, enemyId),
+            combatStats: null, // Reset combat stats for new encounter (Issue #63)
           };
 
           if (isEnemyAttacksFirst(next.worldEvent || state.worldEvent)) {
