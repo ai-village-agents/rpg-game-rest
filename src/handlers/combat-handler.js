@@ -20,7 +20,8 @@ export function handleCombatAction(state, action) {
   if (state.phase !== 'player-turn') return null;
 
   let cs = state.combatStats || null;
-  if (!cs && state.enemy) {
+  // Always create fresh combatStats on Turn 1 to ensure startTime is accurate (Issue #65 - duration bug)
+  if ((!cs || state.turn === 1) && state.enemy) {
     cs = createCombatStats(state.enemy?.displayName ?? state.enemy?.name ?? 'Unknown Enemy', state.enemy?.isBoss || false);
   }
 
@@ -181,7 +182,8 @@ export function handleCombatAction(state, action) {
  */
 export function handleEnemyTurnLogic(state) {
   let cs = state.combatStats || null;
-  if (!cs && state.enemy) {
+  // Always create fresh combatStats on Turn 1 to ensure startTime is accurate (Issue #65 - duration bug)
+  if ((!cs || state.turn === 1) && state.enemy) {
     cs = createCombatStats(state.enemy?.displayName ?? state.enemy?.name ?? 'Unknown Enemy', state.enemy?.isBoss || false);
   }
   const hpBefore = state.player?.hp ?? 0;
