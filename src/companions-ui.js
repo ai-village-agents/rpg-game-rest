@@ -1,6 +1,7 @@
 import {
   getAvailableCompanions,
   getCompanionBonuses,
+  isCompanionAtPlayerLocation,
 } from './companions.js';
 import { NPCS } from './data/npcs.js';
 
@@ -69,8 +70,13 @@ const renderRecruitedCompanion = (companion) => {
   `;
 };
 
-const renderAvailableCompanion = (npc) => {
+const renderAvailableCompanion = (npc, { canRecruit = true } = {}) => {
   const stats = npc.stats || {};
+  const locationLabel = npc.location || 'Unknown';
+  const actionLabel = canRecruit ? 'Recruit' : locationLabel;
+  const actionAttrs = canRecruit
+    ? `data-action="RECRUIT_COMPANION" data-companion-id="${npc.id}"`
+    : 'disabled';
 
   return `
     <div class="companion-card companion-card-available" data-companion-id="${npc.id}">
@@ -78,9 +84,14 @@ const renderAvailableCompanion = (npc) => {
         <div class="companion-name">${npc.name}</div>
         <div class="companion-meta">${stats.class} • Lv ${stats.level}</div>
       </div>
-      <div class="companion-location">Location: ${npc.location || 'Unknown'}</div>
+      <div class="companion-location">Location: ${locationLabel}</div>
       <div class="companion-actions">
-        <button class="companion-button" data-action="RECRUIT_COMPANION" data-companion-id="${npc.id}">Recruit</button>
+        <button class="companion-button" ${actionAttrs}>${actionLabel}</button>
+        ${
+          canRecruit
+            ? ''
+            : '<div class="companion-note">Travel to this location to recruit.</div>'
+        }
       </div>
     </div>
   `;
@@ -89,9 +100,23 @@ const renderAvailableCompanion = (npc) => {
 export const renderCompanionPanel = (state) => {
   const recruited = state?.companions || [];
 
-  const availableNpcCompanions =
-    getAvailableCompanions(state)
-    || Object.values(NPCS || {}).filter((npc) => npc.type === 'COMPANION');
+  const availableCompanionsWithLocation = getAvailableCompanions(state, true);
+  let availableHere = [];
+  let availableElsewhere = [];
+
+  if (Array.isArray(availableCompanionsWithLocation)) {
+    availableHere = availableCompanionsWithLocation;
+  } else if (availableCompanionsWithLocation) {
+    availableHere = availableCompanionsWithLocation.availableHere || [];
+    availableElsewhere = availableCompanionsWithLocation.availableElsewhere || [];
+  }
+
+  if (!availableCompanionsWithLocation) {
+    const fallback =
+      getAvailableCompanions(state)
+      || Object.values(NPCS || {}).filter((npc) => npc.type === 'COMPANION');
+    availableHere = fallback;
+  }
 
   const { attackBonus = 0, defenseBonus = 0 } = getCompanionBonuses(state) || {};
 
@@ -115,12 +140,26 @@ export const renderCompanionPanel = (state) => {
 
       <div class="companion-section">
         <h3 class="companion-section-title">Available Companions</h3>
-        <div class="companion-list">
-          ${
-            availableNpcCompanions.length
-              ? availableNpcCompanions.map(renderAvailableCompanion).join('')
-              : '<div class="companion-empty">No companions available right now.</div>'
-          }
+        <div class="companion-subsection">
+          <h4 class="companion-subsection-title">Available Here</h4>
+          <div class="companion-list">
+            ${
+              availableHere.length
+                ? availableHere.map((npc) => renderAvailableCompanion(npc, { canRecruit: isCompanionAtPlayerLocation(npc, state) })).join('')
+                : '<div class="companion-empty">No companions available at your current location.</div>'
+            }
+          </div>
+        </div>
+
+        <div class="companion-subsection">
+          <h4 class="companion-subsection-title">Travel to Recruit</h4>
+          <div class="companion-list">
+            ${
+              availableElsewhere.length
+                ? availableElsewhere.map((npc) => renderAvailableCompanion(npc, { canRecruit: false })).join('')
+                : '<div class="companion-empty">No companions waiting elsewhere.</div>'
+            }
+          </div>
         </div>
       </div>
 

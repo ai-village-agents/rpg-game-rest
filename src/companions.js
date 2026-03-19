@@ -2,6 +2,34 @@ import { pushLog } from './state.js';
 import { nextRng } from './combat.js';
 import { NPCS } from './data/npcs.js';
 
+const ROOM_TO_LOCATIONS = {
+  center: ['village_square', 'healer_hut', 'blacksmith_shop', 'barracks', 'alchemy_shop', 'training_grounds'],
+  n: ['village_gate', 'farm_north'],
+  s: ['rusty_anchor_inn', 'farm_south'],
+  e: ['eastern_fields'],
+  w: ['mage_tower'],
+  nw: ['northwest_grove'],
+  ne: ['northeast_ridge'],
+  sw: ['dungeon_depths', 'marsh'],
+  se: ['dock'],
+};
+
+export function getLocationsForCurrentRoom(state) {
+  const row = state?.world?.roomRow;
+  const col = state?.world?.roomCol;
+  const roomId = state?.world?.rooms?.[row]?.[col]?.id;
+  return ROOM_TO_LOCATIONS[roomId] || [];
+}
+
+export function isCompanionAtPlayerLocation(npc, state) {
+  // If companion has no location requirement, they're available anywhere
+  if (!npc || !npc.location) return true;
+  // If state has no world data (e.g., in tests), skip location check
+  if (!state || state.roomRow === undefined) return true;
+  const accessibleLocations = getLocationsForCurrentRoom(state);
+  return accessibleLocations.includes(npc.location);
+}
+
 function getCompanionList(state) {
   return Array.isArray(state.companions) ? state.companions : [];
 }
@@ -14,12 +42,21 @@ export function createCompanionState() {
   return { companions: [], maxCompanions: 2 };
 }
 
-export function getAvailableCompanions(state) {
+export function getAvailableCompanions(state, includeLocation = false) {
   const companions = getCompanionList(state);
   const recruitedIds = new Set(companions.map((companion) => companion.id));
-  return Object.values(NPCS).filter(
+  const available = Object.values(NPCS).filter(
     (npc) => npc.type === 'COMPANION' && !recruitedIds.has(npc.id)
   );
+
+  if (!includeLocation) {
+    return available;
+  }
+
+  const availableHere = available.filter((npc) => isCompanionAtPlayerLocation(npc, state));
+  const availableElsewhere = available.filter((npc) => !isCompanionAtPlayerLocation(npc, state));
+
+  return { availableHere, availableElsewhere };
 }
 
 export function isCompanionRecruited(state, companionId) {
@@ -35,6 +72,11 @@ export function recruitCompanion(state, companionId) {
   const companions = getCompanionList(state);
   if (companions.some((companion) => companion.id === companionId)) {
     return pushLog(state, `${npc.name} is already in your party.`);
+  }
+
+  if (!isCompanionAtPlayerLocation(npc, state)) {
+    const destination = npc.location || 'their location';
+    return pushLog(state, `You must travel to ${destination} to recruit ${npc.name}.`);
   }
 
   const maxCompanions = getMaxCompanions(state) || createCompanionState().maxCompanions;

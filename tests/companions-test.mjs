@@ -45,13 +45,33 @@ function assertEqual(actual, expected, msg) {
   if (actual !== expected) throw new Error(msg || 'Expected ' + expected + ', got ' + actual);
 }
 
-function freshState() {
+// Mock world state with rooms for companion location checks
+function createWorldState(roomId = 'center') {
+  // Map roomId to row/col coordinates
+  const roomCoords = {
+    center: [1, 1], n: [0, 1], s: [2, 1], e: [1, 2], w: [1, 0],
+    nw: [0, 0], ne: [0, 2], sw: [2, 0], se: [2, 2],
+  };
+  const [row, col] = roomCoords[roomId] || [1, 1];
+  return {
+    roomRow: row,
+    roomCol: col,
+    rooms: {
+      0: { 0: { id: 'nw' }, 1: { id: 'n' }, 2: { id: 'ne' } },
+      1: { 0: { id: 'w' }, 1: { id: 'center' }, 2: { id: 'e' } },
+      2: { 0: { id: 'sw' }, 1: { id: 's' }, 2: { id: 'se' } },
+    },
+  };
+}
+
+function freshState(roomId = 'center') {
   return {
     companions: [],
     maxCompanions: 2,
     enemy: { name: 'Slime', hp: 20, maxHp: 20, def: 2, atk: 5 },
     log: [],
     rngSeed: 12345,
+    world: createWorldState(roomId),
   };
 }
 
@@ -66,9 +86,10 @@ test('returns object with companions array and maxCompanions=2', () => {
 });
 
 // 2. recruitCompanion
+// Note: Fenris is at rusty_anchor_inn (room 's'), Lyra is at mage_tower (room 'w')
 console.log('\n--- recruitCompanion ---');
 test('recruits companion_fenris successfully', () => {
-  const state = recruit(freshState(), 'companion_fenris');
+  const state = recruit(freshState('s'), 'companion_fenris'); // 's' room has rusty_anchor_inn
   assertEqual(state.companions.length, 1, 'companion added');
   const fenris = state.companions[0];
   assertEqual(fenris.name, 'Fenris', 'name is Fenris');
@@ -79,14 +100,14 @@ test('recruits companion_fenris successfully', () => {
 });
 
 test('recruits companion_lyra', () => {
-  const state1 = recruit(freshState(), 'companion_fenris');
-  const state2 = recruit(state1, 'companion_lyra');
+  const state1 = recruit(freshState('s'), 'companion_fenris'); // Start at 's' for Fenris
+  const state2 = recruit({ ...state1, world: createWorldState('w') }, 'companion_lyra'); // Move to 'w' for Lyra
   assertEqual(state2.companions.length, 2, 'two companions recruited');
 });
 
 test('rejects recruiting when party full', () => {
   const state = {
-    ...freshState(),
+    ...freshState('s'), // Fenris is at 's' room
     companions: [{ id: 'companion_alpha' }, { id: 'companion_beta' }],
     maxCompanions: 2,
   };
@@ -104,7 +125,7 @@ test('rejects unknown companion ID', () => {
 });
 
 test('rejects duplicate recruitment', () => {
-  const state1 = recruit(freshState(), 'companion_fenris');
+  const state1 = recruit(freshState('s'), 'companion_fenris');
   const state2 = recruit(state1, 'companion_fenris');
   assertEqual(state2.companions.length, 1, 'duplicate not added');
 });
@@ -112,7 +133,7 @@ test('rejects duplicate recruitment', () => {
 // 3. dismissCompanion
 console.log('\n--- dismissCompanion ---');
 test('dismisses recruited companion', () => {
-  const state1 = recruit(freshState(), 'companion_fenris');
+  const state1 = recruit(freshState('s'), 'companion_fenris');
   const state2 = dismissCompanion(state1, 'companion_fenris');
   assertEqual(state2.companions.length, 0, 'companion removed');
 });
@@ -125,7 +146,7 @@ test('handles missing companion gracefully', () => {
 // 4. getCompanionById
 console.log('\n--- getCompanionById ---');
 test('returns companion when found', () => {
-  const state = recruit(freshState(), 'companion_fenris');
+  const state = recruit(freshState('s'), 'companion_fenris');
   const companion = getCompanionById(state, 'companion_fenris');
   assert(companion !== null, 'companion found');
   assertEqual(companion.id, 'companion_fenris', 'companion id matches');
@@ -139,19 +160,19 @@ test('returns null when not found', () => {
 // 5. companionAttack
 console.log('\n--- companionAttack ---');
 test('deals damage to enemy', () => {
-  const state = recruit(freshState(), 'companion_fenris');
+  const state = recruit(freshState('s'), 'companion_fenris');
   const result = companionAttack(state, 'companion_fenris', 12345);
   assert(result.state.enemy.hp < 20, 'enemy hp decreased');
 });
 
 test('returns updated seed', () => {
-  const state = recruit(freshState(), 'companion_fenris');
+  const state = recruit(freshState('s'), 'companion_fenris');
   const result = companionAttack(state, 'companion_fenris', 12345);
   assert(result.seed !== 12345, 'seed updated');
 });
 
 test('does nothing if companion is not alive', () => {
-  const state = recruit(freshState(), 'companion_fenris');
+  const state = recruit(freshState('s'), 'companion_fenris');
   const deadState = {
     ...state,
     companions: state.companions.map((c) => ({ ...c, alive: false })),
@@ -164,14 +185,14 @@ test('does nothing if companion is not alive', () => {
 // 6. companionTakeDamage
 console.log('\n--- companionTakeDamage ---');
 test('reduces companion hp', () => {
-  const state = recruit(freshState(), 'companion_fenris');
+  const state = recruit(freshState('s'), 'companion_fenris');
   const next = companionTakeDamage(state, 'companion_fenris', 5);
   const fenris = getCompanionById(next, 'companion_fenris');
   assertEqual(fenris.hp, 40, 'hp reduced');
 });
 
 test('sets alive=false when hp reaches 0', () => {
-  const state = recruit(freshState(), 'companion_fenris');
+  const state = recruit(freshState('s'), 'companion_fenris');
   const next = companionTakeDamage(state, 'companion_fenris', 999);
   const fenris = getCompanionById(next, 'companion_fenris');
   assertEqual(fenris.hp, 0, 'hp clamped to 0');
@@ -179,7 +200,7 @@ test('sets alive=false when hp reaches 0', () => {
 });
 
 test('adds fallen message to log', () => {
-  const state = recruit(freshState(), 'companion_fenris');
+  const state = recruit(freshState('s'), 'companion_fenris');
   const next = companionTakeDamage(state, 'companion_fenris', 999);
   assert(next.log.some((entry) => entry.includes('has fallen')),
     'log includes fallen message');
@@ -188,7 +209,7 @@ test('adds fallen message to log', () => {
 // 7. healCompanion
 console.log('\n--- healCompanion ---');
 test('restores hp up to maxHp', () => {
-  const state = recruit(freshState(), 'companion_fenris');
+  const state = recruit(freshState('s'), 'companion_fenris');
   const wounded = {
     ...state,
     companions: state.companions.map((c) => ({ ...c, hp: 30 })),
@@ -199,7 +220,7 @@ test('restores hp up to maxHp', () => {
 });
 
 test('does not exceed maxHp', () => {
-  const state = recruit(freshState(), 'companion_fenris');
+  const state = recruit(freshState('s'), 'companion_fenris');
   const wounded = {
     ...state,
     companions: state.companions.map((c) => ({ ...c, hp: 44 })),
@@ -212,26 +233,26 @@ test('does not exceed maxHp', () => {
 // 8. adjustLoyalty
 console.log('\n--- adjustLoyalty ---');
 test('increases loyalty', () => {
-  const state = recruit(freshState(), 'companion_fenris');
+  const state = recruit(freshState('s'), 'companion_fenris');
   const next = adjustLoyalty(state, 'companion_fenris', 10);
   const fenris = getCompanionById(next, 'companion_fenris');
   assertEqual(fenris.loyalty, 60, 'loyalty increased');
 });
 
 test('decreases loyalty', () => {
-  const state = recruit(freshState(), 'companion_fenris');
+  const state = recruit(freshState('s'), 'companion_fenris');
   const next = adjustLoyalty(state, 'companion_fenris', -10);
   const fenris = getCompanionById(next, 'companion_fenris');
   assertEqual(fenris.loyalty, 40, 'loyalty decreased');
 });
 
 test('clamps loyalty to 0-100 range', () => {
-  const stateHigh = recruit(freshState(), 'companion_fenris');
+  const stateHigh = recruit(freshState('s'), 'companion_fenris');
   const high = adjustLoyalty(stateHigh, 'companion_fenris', 60);
   const fenrisHigh = getCompanionById(high, 'companion_fenris');
   assertEqual(fenrisHigh.loyalty, 100, 'loyalty capped at 100');
 
-  const stateLow = recruit(freshState(), 'companion_fenris');
+  const stateLow = recruit(freshState('s'), 'companion_fenris');
   const low = adjustLoyalty(stateLow, 'companion_fenris', -80);
   const fenrisLow = getCompanionById(low, 'companion_fenris');
   assertEqual(fenrisLow.loyalty, 0, 'loyalty floored at 0');
@@ -246,23 +267,23 @@ test('returns {attackBonus: 0, defenseBonus: 0} with no companions', () => {
 });
 
 test('returns {attackBonus: 2, defenseBonus: 1} with 1 alive companion', () => {
-  const state = recruit(freshState(), 'companion_fenris');
+  const state = recruit(freshState('s'), 'companion_fenris');
   const bonuses = getCompanionBonuses(state);
   assertEqual(bonuses.attackBonus, 2, 'attack bonus 2');
   assertEqual(bonuses.defenseBonus, 1, 'defense bonus 1');
 });
 
 test('returns {attackBonus: 4, defenseBonus: 2} with 2 alive companions', () => {
-  const state1 = recruit(freshState(), 'companion_fenris');
-  const state2 = recruit(state1, 'companion_lyra');
+  const state1 = recruit(freshState('s'), 'companion_fenris');
+  const state2 = recruit({ ...state1, world: createWorldState('w') }, 'companion_lyra');
   const bonuses = getCompanionBonuses(state2);
   assertEqual(bonuses.attackBonus, 4, 'attack bonus 4');
   assertEqual(bonuses.defenseBonus, 2, 'defense bonus 2');
 });
 
 test('dead companions do not count', () => {
-  const state1 = recruit(freshState(), 'companion_fenris');
-  const state2 = recruit(state1, 'companion_lyra');
+  const state1 = recruit(freshState('s'), 'companion_fenris');
+  const state2 = recruit({ ...state1, world: createWorldState('w') }, 'companion_lyra');
   const withDead = {
     ...state2,
     companions: state2.companions.map((c) => (c.id === 'companion_lyra' ? { ...c, alive: false } : c)),
@@ -275,16 +296,16 @@ test('dead companions do not count', () => {
 // 10. companionAutoAct
 console.log('\n--- companionAutoAct ---');
 test('all alive companions attack enemy', () => {
-  const state1 = recruit(freshState(), 'companion_fenris');
-  const state2 = recruit(state1, 'companion_lyra');
+  const state1 = recruit(freshState('s'), 'companion_fenris');
+  const state2 = recruit({ ...state1, world: createWorldState('w') }, 'companion_lyra');
   const next = companionAutoAct(state2, 12345);
   assertEqual(next.enemy.hp, 6, 'enemy hp reduced by both companions');
   assert(Number.isFinite(next.rngSeed), 'rngSeed updated on state');
 });
 
 test('skips dead companions', () => {
-  const state1 = recruit(freshState(), 'companion_fenris');
-  const state2 = recruit(state1, 'companion_lyra');
+  const state1 = recruit(freshState('s'), 'companion_fenris');
+  const state2 = recruit({ ...state1, world: createWorldState('w') }, 'companion_lyra');
   const withDead = {
     ...state2,
     companions: state2.companions.map((c) => (c.id === 'companion_lyra' ? { ...c, alive: false } : c)),
@@ -311,8 +332,8 @@ test('renderCompanionBadge returns empty string with no companions', () => {
 });
 
 test('renderCompanionBadge shows count with recruited companions', () => {
-  const state1 = recruit(freshState(), 'companion_fenris');
-  const state2 = recruit(state1, 'companion_lyra');
+  const state1 = recruit(freshState('s'), 'companion_fenris');
+  const state2 = recruit({ ...state1, world: createWorldState('w') }, 'companion_lyra');
   const html = renderCompanionBadge(state2);
   assert(html.includes('companion-badge'), 'badge class present');
   assert(html.includes('2/2'), 'badge shows count');
