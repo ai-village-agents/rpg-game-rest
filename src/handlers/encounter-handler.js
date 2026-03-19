@@ -196,7 +196,7 @@ export function handleEncounterAction(state, action) {
             phase: 'player-turn',
             turn: 1,
             player: { ...state.player, defending: false, statusEffects: [] },
-            comboState: state.comboState ? createComboState() : undefined,
+            comboState: createComboState(),
             momentumState: state.momentumState ? createMomentumState() : undefined,
             intentState: initIntentState(),
             encounterCombatActive: true,

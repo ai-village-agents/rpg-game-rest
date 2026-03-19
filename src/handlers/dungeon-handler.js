@@ -87,7 +87,7 @@ export function handleDungeonAction(state, action) {
               defending: false,
               statusEffects: [],
             },
-            comboState: state.comboState ? createComboState() : undefined,
+            comboState: createComboState(),
             inDungeonCombat: true,
             combatStats: null, // Reset combat stats for new encounter (Issue #63)
           },
@@ -187,7 +187,7 @@ if (state.dungeonState.currentFloor >= TOTAL_FLOORS) {
             defending: false,
             statusEffects: [],
           },
-          comboState: state.comboState ? createComboState() : undefined,
+          comboState: createComboState(),
           inDungeonCombat: true,
           dungeonBossFight: true,
           combatStats: null, // Reset combat stats for new encounter (Issue #63)
