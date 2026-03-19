@@ -44,7 +44,7 @@ export const ENEMY_PICTURES = {
   'frost-archon': '👑❄️',
   'void-knight': '⚫⚔️',
   'thunder-titan': '⚡🗿',
-  'infernal-sorcerer': '🔥🧙♂️',
+  'infernal-sorcerer': '🔥🧙',
   'abyssal-warden': '🌊👿',
   'celestial-wyrm': '⭐🐉',
   'chaos-spawn': '🌀👹',
