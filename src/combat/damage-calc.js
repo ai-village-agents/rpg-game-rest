@@ -48,9 +48,13 @@ export function getElementMultiplier(attackElement, targetElement) {
 /**
  * Core damage calculation.
  *
- * Formula: damage = floor((ATK * power_mod - DEF * def_mod) * element_mult * crit_mult * variance)
+ * Formula:
+ *  effective_def = DEF * (defending ? 2.0 : 1.0)
+ *  def_mitigation = effective_def / (effective_def + DEF_CONSTANT)
+ *  damage = floor((ATK * power_mod * (1 - def_mitigation)) * element_mult * crit_mult * variance)
  *  - power_mod: ability power multiplier (1.0 for basic attack)
- *  - def_mod: 0.5 if defending, 1.0 otherwise
+ *  - DEF_CONSTANT: 20 (controls how much DEF mitigates damage)
+ *  - def_mitigation: percentage of damage prevented (0..~1)
  *  - element_mult: from element chart
  *  - crit_mult: 1.5 on critical hit (10% base + equipment critChance)
  *  - variance: random 0.9 - 1.1
@@ -79,7 +83,9 @@ export function calculateDamage({
   critChance = 0,
 }) {
   const powerMod = Math.max(0.1, abilityPower);
-  const defMod = targetDefending ? 2.0 : 1.0;  // Defending doubles effective DEF
+  const DEF_CONSTANT = 20;
+  const effectiveDef = targetDefending ? targetDef * 2.0 : targetDef; // Defending doubles effective DEF
+  const defMitigation = effectiveDef / (effectiveDef + DEF_CONSTANT);
   const elementMult = getElementMultiplier(element, targetElement);
 
   // Immune = 0 damage
@@ -100,7 +106,7 @@ export function calculateDamage({
   const variance = 0.9 + varianceSeed * 0.2;
 
   // Core formula
-  const rawDamage = (attackerAtk * powerMod) - (targetDef * defMod);
+  const rawDamage = attackerAtk * powerMod * (1 - defMitigation);
   const dmgMult = getDamageMultiplier(worldEvent);
   const finalDamage = Math.floor(rawDamage * elementMult * critMult * variance * dmgMult);
 
