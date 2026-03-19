@@ -499,6 +499,16 @@ export function render(state, dispatch) {
   }
 
   const finalizeRender = () => {
+    [hud, actions, log].forEach((panel) => {
+      if (!panel) return;
+      const isEmpty = (panel.innerHTML || '').trim() === '';
+      if (isEmpty) {
+        panel.classList.add('panel-empty');
+      } else {
+        panel.classList.remove('panel-empty');
+      }
+    });
+
     if (state.fastTravelModalOpen) {
       hud.innerHTML += renderFastTravelModal(state);
       attachFastTravelHandlers(dispatch);
