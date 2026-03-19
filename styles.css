@@ -314,6 +314,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .break-state-display { padding: 4px 10px; border-radius: 4px; font-size: 0.85em; font-weight: 700; }
 .break-active { background: rgba(162, 35, 47, 0.16); color: var(--bad); border: 1px solid rgba(162, 35, 47, 0.35); animation: break-pulse 1s ease-in-out infinite; }
 .break-active span { font-weight: 400; color: var(--muted); margin-left: 6px; font-size: 0.9em; }
+.shield-hint { font-size: 0.8em; color: var(--muted); flex-basis: 100%; margin-top: 2px; }
 
 /* Shield break animation */
 @keyframes break-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
