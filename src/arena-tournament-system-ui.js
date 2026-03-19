@@ -39,7 +39,8 @@ const TIER_ICONS = {
  * @returns {string} HTML string
  */
 export function renderArenaPanel(state, options = {}) {
-  const stats = getArenaStats(state);
+  const arenaState = state.arenaState ?? state;
+  const stats = getArenaStats(arenaState);
   const tierColor = TIER_COLORS[stats.tier] || '#ffffff';
   const tierIcon = TIER_ICONS[stats.tier] || '';
 
@@ -174,7 +175,10 @@ function renderTournamentList(state) {
  * @returns {string} HTML string
  */
 function renderTournamentCard(tournament, state) {
-  const canEnter = state && state.rating >= 0;
+  const arenaData = state && (state.arenaState ?? state);
+  const meetsRating = arenaData && arenaData.rating >= 0;
+  const meetsLevel = state && state.player && state.player.level >= tournament.minLevel;
+  const canEnter = meetsRating && meetsLevel;
 
   return `
     <div class="tournament-card" data-tournament="${escapeHtml(tournament.id)}">
@@ -193,7 +197,7 @@ function renderTournamentCard(tournament, state) {
         data-tournament-id="${escapeHtml(tournament.id)}"
         ${canEnter ? '' : 'disabled'}
       >
-        Enter Tournament
+        ${canEnter ? 'Enter Tournament' : !meetsLevel ? `Lvl ${tournament.minLevel} Req.` : 'Rating Too Low'}
       </button>
     </div>
   `;

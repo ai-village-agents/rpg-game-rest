@@ -2206,7 +2206,7 @@ if (state.phase === 'achievements') {
       hud.innerHTML = renderActiveTournament(activeTournamentData);
       actions.innerHTML = '<div class="buttons"><button id="btnCloseArena">Back to Arena</button></div>';
     } else {
-      hud.innerHTML = renderArenaPanel(state.arenaState, { showQuickMatch: true, showTournaments: true });
+      hud.innerHTML = renderArenaPanel(state, { showQuickMatch: true, showTournaments: true });
       actions.innerHTML = '<div class="buttons"><button id="btnArenaQuickMatch">Quick Match ⚔️</button><button id="btnArenaTournament">Tournaments 🏆</button><button id="btnCloseArena">Close</button></div>';
     }
 
