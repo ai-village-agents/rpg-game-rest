@@ -429,6 +429,7 @@ export function render(state, dispatch) {
       .weakness-icon { font-size: 1em; }
       .break-state-display { color: #ff4444; font-weight: bold; font-size: 0.9em; padding: 2px 6px; border: 1px solid #ff4444; border-radius: 3px; }
       .break-active { background: rgba(255,68,68,0.15); }
+      .shield-hint { font-size: 0.8em; color: #9aa6b2; flex-basis: 100%; margin-top: 2px; }
     `;
     document.head.appendChild(styleEl);
   }

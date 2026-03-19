@@ -56,12 +56,17 @@ export function renderShieldBreakHUD(enemy) {
   const shields = renderShieldDisplay(enemy);
   const weaknesses = renderWeaknessIcons(enemy.weaknesses || []);
   const breakState = renderBreakState(enemy);
+  const shieldHint =
+    enemy.maxShields > 0
+      ? `<div class="shield-hint">Shields reduce damage until broken; striking weaknesses breaks them faster.</div>`
+      : '';
 
   return (
-    `<div class="shield-break-hud">` +
+    `<div class="shield-break-hud" aria-label="Enemy elemental shields and weaknesses">` +
     `${shields}` +
     `${weaknesses}` +
     `${breakState}` +
+    `${shieldHint}` +
     `</div>`
   );
 }
