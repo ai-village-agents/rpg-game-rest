@@ -14,6 +14,7 @@ import { ensureNPCRelationshipManager, ReputationEvent, RelationshipLevel } from
 import { removeItemFromInventory } from '../items.js';
 import { getExplorationQuest } from '../data/exploration-quests.js';
 import { processQuestCompletionWithBonus, generateQuestCompletionMessages } from '../quest-relationship-bridge.js';
+import { recordQuestCompleted } from '../statistics-dashboard.js';
 import {
   tryTriggerWorldEvent,
   tickWorldEvent,
@@ -97,27 +98,31 @@ function applyQuestRelationshipEffects(nextState, completedQuests) {
   let managerUsed = false;
 
   for (const completed of completedQuests) {
-    if (!completed?.questId) continue;
-    const questDef = getExplorationQuest(completed.questId);
-    if (!questDef) continue;
+    if (completed?.questId) {
+      const questDef = getExplorationQuest(completed.questId);
+      if (questDef) {
+        const relationshipInfo = inferQuestRelationshipInfo(questDef, completed.questName);
+        if (relationshipInfo) {
+          const hasBeneficiaries = relationshipInfo.beneficiaryNpcs && relationshipInfo.beneficiaryNpcs.length > 0;
 
-    const relationshipInfo = inferQuestRelationshipInfo(questDef, completed.questName);
-    if (!relationshipInfo) continue;
+          if (relationshipInfo.npcId || hasBeneficiaries) {
+            if (!managerUsed) {
+              manager = ensureNPCRelationshipManager(manager);
+              state = { ...state, npcRelationshipManager: manager };
+              managerUsed = true;
+            }
 
-    const hasBeneficiaries = relationshipInfo.beneficiaryNpcs && relationshipInfo.beneficiaryNpcs.length > 0;
-    if (!relationshipInfo.npcId && !hasBeneficiaries) continue;
-
-    if (!managerUsed) {
-      manager = ensureNPCRelationshipManager(manager);
-      state = { ...state, npcRelationshipManager: manager };
-      managerUsed = true;
+            const result = processQuestCompletionWithBonus(manager, relationshipInfo);
+            const messages = generateQuestCompletionMessages(result);
+            for (const msg of messages) {
+              state = pushLog(state, msg);
+            }
+          }
+        }
+      }
     }
 
-    const result = processQuestCompletionWithBonus(manager, relationshipInfo);
-    const messages = generateQuestCompletionMessages(result);
-    for (const msg of messages) {
-      state = pushLog(state, msg);
-    }
+    state = recordQuestCompleted(state);
   }
 
   if (managerUsed && state.npcRelationshipManager !== manager) {

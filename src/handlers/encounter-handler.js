@@ -10,6 +10,7 @@ import {
   removeEncounterModifier,
   clearExpiredModifiers,
   getEncounterStats,
+  ENCOUNTER_TYPE,
   LOCATION_TYPE,
 } from '../random-encounter-system.js';
 import { getEnemy } from '../data/enemies.js';
@@ -21,6 +22,7 @@ import { recordEncounter } from '../bestiary.js';
 import { initCombatBattleLog } from '../combat-battle-log-integration.js';
 import { isEnemyAttacksFirst } from '../world-events.js';
 import { pushLog } from '../state.js';
+import { recordChestOpened } from '../statistics-dashboard.js';
 
 // Map from (row, col) to room ID
 const ROOM_GRID = [
@@ -132,13 +134,23 @@ export function handleEncounterAction(state, action) {
         details
       );
 
-      // Extract state from result object
-      return {
+      let nextState = {
         ...state,
         encounterState: result.state,
         currentEncounter: null,
         phase: state.previousPhase || 'exploration',
       };
+
+      const isTreasureCollected =
+        state.currentEncounter?.type === ENCOUNTER_TYPE.TREASURE &&
+        (outcome === 'collect' || outcome === 'collected');
+
+      if (isTreasureCollected) {
+        nextState = recordChestOpened(nextState);
+      }
+
+      // Extract state from result object
+      return nextState;
     }
 
     case 'FLEE_ENCOUNTER': {
