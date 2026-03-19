@@ -215,7 +215,7 @@ const html = renderMinimap(worldState, visitedRooms);
 test('returns string', () => assert(typeof html === 'string'));
 test('contains Minimap heading', () => assert(html.includes('Minimap')));
 test('shows visited count like (1/9)', () => assert(html.includes('1/9')));
-test('contains player indicator 🧍', () => assert(html.includes('🧍')));
+test('contains player indicator', () => assert(html.includes('🧝') || html.includes('🧍')));
 test('contains minimap-grid', () => assert(html.includes('minimap-grid')));
 test('contains fog of war ? for unvisited', () => assert(html.includes('?')));
 test('contains legend', () => assert(html.includes('minimap-legend')));

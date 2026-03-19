@@ -22,27 +22,27 @@ import { createEmptyStatistics } from './statistics-dashboard.js';
 import { createDungeonState } from './dungeon-floors.js';
 
 export const AVATAR_EMOJIS = [
-  { emoji: '🧍‍♀️', label: 'Woman' },
-  { emoji: '🧍🏻‍♀️', label: 'Woman Light' },
-  { emoji: '🧍🏼‍♀️', label: 'Woman Medium-Light' },
-  { emoji: '🧍🏽‍♀️', label: 'Woman Medium' },
-  { emoji: '🧍🏾‍♀️', label: 'Woman Medium-Dark' },
-  { emoji: '🧍🏿‍♀️', label: 'Woman Dark' },
-  { emoji: '🧍', label: 'Person' },
-  { emoji: '🧍🏻', label: 'Person Light' },
-  { emoji: '🧍🏼', label: 'Person Medium-Light' },
-  { emoji: '🧍🏽', label: 'Person Medium' },
-  { emoji: '🧍🏾', label: 'Person Medium-Dark' },
-  { emoji: '🧍🏿', label: 'Person Dark' },
-  { emoji: '🧍‍♂️', label: 'Man' },
-  { emoji: '🧍🏻‍♂️', label: 'Man Light' },
-  { emoji: '🧍🏼‍♂️', label: 'Man Medium-Light' },
-  { emoji: '🧍🏽‍♂️', label: 'Man Medium' },
-  { emoji: '🧍🏾‍♂️', label: 'Man Medium-Dark' },
-  { emoji: '🧍🏿‍♂️', label: 'Man Dark' },
+  { emoji: '🧝', label: 'Elf' },
+  { emoji: '🧝🏻', label: 'Elf Light' },
+  { emoji: '🧝🏼', label: 'Elf Medium-Light' },
+  { emoji: '🧝🏽', label: 'Elf Medium' },
+  { emoji: '🧝🏾', label: 'Elf Medium-Dark' },
+  { emoji: '🧝🏿', label: 'Elf Dark' },
+  { emoji: '🧙', label: 'Mage' },
+  { emoji: '🧙🏻', label: 'Mage Light' },
+  { emoji: '🧙🏼', label: 'Mage Medium-Light' },
+  { emoji: '🧙🏽', label: 'Mage Medium' },
+  { emoji: '🧙🏾', label: 'Mage Medium-Dark' },
+  { emoji: '🧙🏿', label: 'Mage Dark' },
+  { emoji: '🧛', label: 'Vampire' },
+  { emoji: '🧛🏻', label: 'Vampire Light' },
+  { emoji: '🧛🏼', label: 'Vampire Medium-Light' },
+  { emoji: '🧛🏽', label: 'Vampire Medium' },
+  { emoji: '🧛🏾', label: 'Vampire Medium-Dark' },
+  { emoji: '🧛🏿', label: 'Vampire Dark' },
 ];
 
-export const DEFAULT_AVATAR = '🧍';
+export const DEFAULT_AVATAR = '🧝';
 
 export function initialState() {
   const playerBase = characters.player;
