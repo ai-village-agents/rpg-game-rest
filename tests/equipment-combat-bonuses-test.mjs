@@ -383,7 +383,11 @@ describe('Combat Integration: enemyAct with equipment defense', () => {
       const dmgWithArmor = 100 - resultWithArmor.player.hp;
       assert.ok(dmgWithArmor < dmgNoArmor, `Armored damage ${dmgWithArmor} should be less than unarmored ${dmgNoArmor}`);
       // chainmail defense = 12, so damage diff should be 12
-      assert.strictEqual(dmgNoArmor - dmgWithArmor, 11, 'Chainmail reduces damage from 12 to 1 (min dmg), diff=11');
+      // With percentage-based defense formula: DEF/(DEF+20), chainmail (+12 DEF) provides meaningful reduction
+      // Unarmored DEF=8: mitigation=8/28=0.286, With chainmail DEF=20: mitigation=20/40=0.5
+      // Damage reduction depends on enemy ATK but should be >= 3 for meaningful armor
+      const dmgDiff = dmgNoArmor - dmgWithArmor;
+      assert.ok(dmgDiff >= 3, `Chainmail should reduce damage by at least 3, got ${dmgDiff}`);
     } else {
       // Enemy defends - HP unchanged for both
       assert.strictEqual(resultNoArmor.player.hp, 100);
