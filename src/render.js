@@ -601,7 +601,7 @@ export function render(state, dispatch) {
             <div>HP</div><div><b>${def.baseStats.hp}</b></div>
             <div>ATK</div><div><b>${def.baseStats.atk}</b></div>
             <div>DEF</div><div><b>${def.baseStats.def}</b></div>
-            <div>SPD</div><div><b>${def.baseStats.spd}</b></div>
+            <div title="Speed affects turn order in combat. Higher SPD fills your turn gauge faster, letting you act more frequently.">SPD</div><div><b>${def.baseStats.spd}</b></div>
             <div>INT</div><div><b>${def.baseStats.int}</b></div>
           </div>
           <button data-class="${esc(def.id)}">Choose ${esc(def.name)}</button>
@@ -1642,7 +1642,7 @@ if (state.phase === 'achievements') {
             <div>MP</div><div><b>${player?.mp ?? 0}/${player?.maxMp ?? 0}</b></div>
             <div>ATK</div><div><b>${baseAtk}</b>${eqBonuses.attack ? ` <span style="color:#4f4;">+${eqBonuses.attack}</span> = <b>${effectiveStats.atk}</b>` : ''}</div>
             <div>DEF</div><div><b>${baseDef}</b>${eqBonuses.defense ? ` <span style="color:#4f4;">+${eqBonuses.defense}</span> = <b>${effectiveStats.def}</b>` : ''}</div>
-            <div>SPD</div><div><b>${baseSpd}</b>${eqBonuses.speed ? ` <span style="color:#4f4;">+${eqBonuses.speed}</span> = <b>${effectiveStats.spd}</b>` : ''}</div>
+            <div title="Speed affects turn order in combat. Higher SPD fills your turn gauge faster, letting you act more frequently.">SPD</div><div><b>${baseSpd}</b>${eqBonuses.speed ? ` <span style="color:#4f4;">+${eqBonuses.speed}</span> = <b>${effectiveStats.spd}</b>` : ''}</div>
             <div>Gold</div><div><b>${player?.gold ?? 0}</b></div>
           </div>
         </div>
