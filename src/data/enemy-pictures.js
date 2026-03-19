@@ -21,13 +21,13 @@ export const ENEMY_PICTURES = {
   // Elemental spirits
   'fire-spirit': '🔥',
   'ice-spirit': '❄️',
-  'dark-cultist': '🧙‍♂️⚫',
+  'dark-cultist': '🧙⚫',
   
   // Monsters
   'stone-golem': '🗿',
   'thunder-hawk': '⚡🦅',
   'frost-revenant': '🧊👻',
-  'blood-fiend': '🧛‍♂️🩸',
+  'blood-fiend': '🧛🩸',
   'shadow-weaver': '🕸️👤',
   'storm-elemental': '🌪️',
   'plague-bearer': '🦠💀',
@@ -44,7 +44,7 @@ export const ENEMY_PICTURES = {
   'frost-archon': '👑❄️',
   'void-knight': '⚫⚔️',
   'thunder-titan': '⚡🗿',
-  'infernal-sorcerer': '🔥🧙‍♂️',
+  'infernal-sorcerer': '🔥🧙',
   'abyssal-warden': '🌊👿',
   'celestial-wyrm': '⭐🐉',
   'chaos-spawn': '🌀👹',
@@ -91,7 +91,7 @@ export function getEnemyPictureWithFallback(enemyId) {
   if (enemyId.includes('bandit')) return '🤠⚔️';
   if (enemyId.includes('ghost') || enemyId.includes('wraith') || enemyId.includes('spirit')) return '👻';
   if (enemyId.includes('knight')) return '⚔️';
-  if (enemyId.includes('mage') || enemyId.includes('sorcerer') || enemyId.includes('wizard')) return '🧙‍♂️';
+  if (enemyId.includes('mage') || enemyId.includes('sorcerer') || enemyId.includes('wizard')) return '🧙';
   if (enemyId.includes('archer')) return '🏹';
   
   return '👤';
