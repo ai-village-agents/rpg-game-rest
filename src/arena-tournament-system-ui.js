@@ -174,7 +174,7 @@ function renderTournamentList(state) {
  * @returns {string} HTML string
  */
 function renderTournamentCard(tournament, state) {
-  const canEnter = state && state.rating >= 0;
+  const canEnter = state && state.rating >= 0 && state.player.level >= tournament.minLevel;
 
   return `
     <div class="tournament-card" data-tournament="${escapeHtml(tournament.id)}">
@@ -193,7 +193,7 @@ function renderTournamentCard(tournament, state) {
         data-tournament-id="${escapeHtml(tournament.id)}"
         ${canEnter ? '' : 'disabled'}
       >
-        Enter Tournament
+        ${canEnter ? 'Enter Tournament' : `Lvl ${tournament.minLevel} Req.`}
       </button>
     </div>
   `;
