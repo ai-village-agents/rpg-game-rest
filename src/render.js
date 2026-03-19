@@ -349,51 +349,6 @@ function summarizeBonuses(bonuses) {
   return parts.length ? parts.join(', ') : 'No bonuses';
 }
 
-function renderMapPanel(state, dispatch) {
-  if (!state.world) return '';
-
-  const { roomRow, roomCol } = state.world;
-  const rooms = DEFAULT_WORLD_DATA.rooms;
-  const exits = getRoomExits(state.world);
-  const currentRoom = rooms[roomRow]?.[roomCol];
-  const roomName = currentRoom?.name ?? 'Unknown';
-
-  // Build 3x3 ASCII world overview grid
-  const gridRows = rooms.map((row, r) =>
-    row.map((room, c) => {
-      const isCurrent = r === roomRow && c === roomCol;
-      const label = room.name.split(' ').map(w => w[0]).join('').slice(0, 3).toUpperCase();
-      if (isCurrent) {
-        return `<span class="map-cur" title="${esc(room.name)}">[${esc(label)}]</span>`;
-      }
-      return `<span class="map-room" title="${esc(room.name)}">&nbsp;${esc(label)}&nbsp;</span>`;
-    }).join('<span class="map-sep">|</span>')
-  ).map(row => `<div class="map-row">${row}</div>`).join('<div class="map-div">---+---+---</div>');
-
-  const exitBtns = ['north', 'south', 'west', 'east']
-    .filter(d => exits.includes(d))
-    .map(d => {
-      const label = { north: 'N', south: 'S', west: 'W', east: 'E' }[d];
-      return `<button class="move-btn" data-dir="${d}">${label}</button>`;
-    }).join('');
-
-  const controlsHtml = state.phase === 'exploration'
-    ? `<div class="map-controls">${exitBtns}</div>`
-    : '';
-
-  return `
-    <div class="card map-panel">
-      <h2>World Map</h2>
-      <div class="map-grid">${gridRows}</div>
-      <div class="map-info">
-        <b>Location:</b> ${esc(roomName)}<br>
-        <b>Exits:</b> ${exits.length ? exits.join(', ') : 'none'}
-      </div>
-      ${controlsHtml}
-    </div>
-  `;
-}
-
 const RENDER_ROOM_ID_MAP = [['nw', 'n', 'ne'], ['w', 'center', 'e'], ['sw', 's', 'se']];
 
 export function render(state, dispatch) {
