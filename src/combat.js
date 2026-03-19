@@ -28,7 +28,7 @@ import {
   processCompanionDefeatPenalty,
   autoReviveCompanionsAfterCombat,
 } from './companion-combat.js';
-import { getEnemyShieldData, checkWeakness, applyShieldDamage, processBreakState, BREAK_DAMAGE_MULTIPLIER } from './shield-break.js';
+import { initializeEnemyShields, checkWeakness, applyShieldDamage, processBreakState, BREAK_DAMAGE_MULTIPLIER } from './shield-break.js';
 import { initCombatBattleLog, logPlayerAttack, logPlayerAbility, logDamageDealt, logDamageReceived, logHealing, logItemUsed, logStatusApplied, logStatusExpired, logTurnStart, logTurnEnd, logVictory, logDefeat } from './combat-battle-log-integration.js';
 import { applyDifficultyToEnemyHp, applyDifficultyToEnemyDamage, applyDifficultyToXpReward, applyDifficultyToGoldReward, DEFAULT_DIFFICULTY } from './difficulty.js';
 import { ACTION_TYPES, calculateMomentumGain, addMomentum, consumeOverdrive, applyMomentumDecay, getOverdriveAbility, calculateOverdriveDamage, canUseOverdrive, createMomentumState } from './momentum.js';
@@ -237,15 +237,15 @@ export function startNewEncounter(state, zoneLevel = 1) {
   const difficulty = state?.difficulty ?? DEFAULT_DIFFICULTY;
   const baseEnemyHp = enemyBase.maxHp ?? enemyBase.hp;
   const adjustedEnemyHp = applyDifficultyToEnemyHp(baseEnemyHp, difficulty);
+  const shieldData = initializeEnemyShields(enemyId);
   const enemy = {
     ...enemyBase,
     hp: adjustedEnemyHp,
     maxHp: adjustedEnemyHp,
     defending: false,
     statusEffects: [],
-    ...getEnemyShieldData(enemyId),
-    isBroken: false,
-    breakTurnsRemaining: 0,
+    ...shieldData,
+    currentShields: shieldData.maxShields,
   };
 
   let next = {

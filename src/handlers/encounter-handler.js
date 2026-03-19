@@ -14,7 +14,7 @@ import {
 } from '../random-encounter-system.js';
 import { getEnemy } from '../data/enemies.js';
 import { applyDifficultyToEnemyHp } from '../difficulty.js';
-import { getEnemyShieldData } from '../shield-break.js';
+import { initializeEnemyShields } from '../shield-break.js';
 import { initIntentState } from '../enemy-intent.js';
 import { createMomentumState } from '../momentum.js';
 import { recordEncounter } from '../bestiary.js';
@@ -168,6 +168,7 @@ export function handleEncounterAction(state, action) {
           const difficulty = state.difficulty || 'normal';
           const adjustedHp = applyDifficultyToEnemyHp(enemyBase.maxHp ?? enemyBase.hp, difficulty);
           
+          const shieldData = initializeEnemyShields(enemyId);
           let next = {
             ...state,
             enemy: {
@@ -176,9 +177,8 @@ export function handleEncounterAction(state, action) {
               maxHp: adjustedHp,
               defending: false,
               statusEffects: [],
-              ...getEnemyShieldData(enemyId),
-              isBroken: false,
-              breakTurnsRemaining: 0,
+              ...shieldData,
+              currentShields: shieldData.maxShields,
             },
             phase: 'player-turn',
             turn: 1,
