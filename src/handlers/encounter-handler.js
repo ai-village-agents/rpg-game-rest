@@ -18,6 +18,7 @@ import { applyDifficultyToEnemyHp } from '../difficulty.js';
 import { initializeEnemyShields } from '../shield-break.js';
 import { initIntentState } from '../enemy-intent.js';
 import { createMomentumState } from '../momentum.js';
+import { createComboState } from '../combo-system.js';
 import { recordEncounter } from '../bestiary.js';
 import { initCombatBattleLog } from '../combat-battle-log-integration.js';
 import { isEnemyAttacksFirst } from '../world-events.js';
@@ -195,6 +196,7 @@ export function handleEncounterAction(state, action) {
             phase: 'player-turn',
             turn: 1,
             player: { ...state.player, defending: false, statusEffects: [] },
+            comboState: state.comboState ? createComboState() : undefined,
             momentumState: state.momentumState ? createMomentumState() : undefined,
             intentState: initIntentState(),
             encounterCombatActive: true,

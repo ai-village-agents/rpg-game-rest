@@ -17,6 +17,7 @@ import {
 import { ENEMIES } from '../data/enemies.js';
 import { pushLog } from '../state.js';
 import { nextRng } from '../combat.js';
+import { createComboState } from '../combo-system.js';
 
 export function handleDungeonAction(state, action) {
   if (!action || !action.type) {
@@ -86,6 +87,7 @@ export function handleDungeonAction(state, action) {
               defending: false,
               statusEffects: [],
             },
+            comboState: state.comboState ? createComboState() : undefined,
             inDungeonCombat: true,
             combatStats: null, // Reset combat stats for new encounter (Issue #63)
           },
@@ -185,6 +187,7 @@ if (state.dungeonState.currentFloor >= TOTAL_FLOORS) {
             defending: false,
             statusEffects: [],
           },
+          comboState: state.comboState ? createComboState() : undefined,
           inDungeonCombat: true,
           dungeonBossFight: true,
           combatStats: null, // Reset combat stats for new encounter (Issue #63)
