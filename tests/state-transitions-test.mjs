@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import { handleStateTransitions } from '../src/state-transitions.js';
+import { createEmptyStatistics } from '../src/statistics-dashboard.js';
 
 test('handleStateTransitions - no level up, no victory transition', () => {
   const prevState = { phase: 'combat', log: [] };
@@ -16,6 +17,21 @@ test('handleStateTransitions - transitions victory to battle-summary', () => {
   const result = handleStateTransitions(prevState, nextState);
   assert.strictEqual(result.phase, 'battle-summary');
   assert.ok(result.battleSummary); 
+});
+
+test('handleStateTransitions - records combat gold into statistics when entering victory', () => {
+  const prevState = { phase: 'combat', log: [] };
+  const nextState = { 
+    phase: 'victory', 
+    log: [], 
+    goldGained: 25, 
+    statistics: createEmptyStatistics(),
+    player: { xp: 0, level: 1 }
+  };
+  const result = handleStateTransitions(prevState, nextState);
+  assert.strictEqual(result.statistics.economy.goldEarned, 25);
+  assert.strictEqual(result.statistics.economy.goldFromCombat, 25);
+  assert.strictEqual(result.phase, 'battle-summary');
 });
 
 test('handleStateTransitions - level up during victory transition', () => {
@@ -76,4 +92,3 @@ test('handleStateTransitions - does not transition to battle-summary if previous
     const result = handleStateTransitions(prevState, nextState);
     assert.strictEqual(result.phase, 'victory');
 });
-
