@@ -106,6 +106,13 @@ export class KeyboardShortcuts {
 
     const phase = state.phase;
 
+    // Close help modal with Escape (Issue #63)
+    if (key === 'Escape' && state.showHelp) {
+      event.preventDefault();
+      this._dispatch({ type: 'CLOSE_HELP' });
+      return;
+    }
+
     // Combat shortcuts (only during player's turn)
     if (phase === 'player-turn') {
       const combatAction = COMBAT_KEYS[key];
