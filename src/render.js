@@ -703,7 +703,7 @@ export function render(state, dispatch) {
       const bonusSummary = summarizeBonuses(bg.bonuses);
       return `
         <div class="card">
-          <h2>${esc(bg.name)}</h2>
+      <h2>${bg.emoji} ${esc(bg.name)}</h2>
           <div>${esc(bg.description)}</div>
           <div class="bonus-summary"><b>Bonuses:</b> ${esc(bonusSummary)}</div>
           <button data-background="${esc(bg.id)}">Choose ${esc(bg.name)}</button>

@@ -2,6 +2,7 @@ export const BACKGROUNDS = {
   soldier: {
     id: 'soldier',
     name: 'Soldier',
+    emoji: '🛡️',
     description: 'Trained in arms and discipline.',
     bonuses: {
       hp: 5,
@@ -14,6 +15,7 @@ export const BACKGROUNDS = {
   scholar: {
     id: 'scholar',
     name: 'Scholar',
+    emoji: '📚',
     description: 'Learned and observant.',
     bonuses: {
       mp: 6,
@@ -25,6 +27,7 @@ export const BACKGROUNDS = {
   wanderer: {
     id: 'wanderer',
     name: 'Wanderer',
+    emoji: '🧭',
     description: 'Used to the open road.',
     bonuses: {
       hp: 3,
@@ -36,6 +39,7 @@ export const BACKGROUNDS = {
   artisan: {
     id: 'artisan',
     name: 'Artisan',
+    emoji: '🔨',
     description: 'Skilled with tools and trade.',
     bonuses: {
       atk: 1,
