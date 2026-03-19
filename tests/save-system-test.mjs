@@ -30,12 +30,12 @@ describe('Save System Constants', () => {
   });
 
   it('AUTO_SAVE_TRIGGERS should contain expected triggers', () => {
-    const expected = ['room_change', 'combat_victory', 'quest_complete', 'item_acquired', 'level_up'];
+    const expected = ['room_change', 'combat_victory', 'quest_complete', 'item_acquired', 'level_up', 'tutorial_dismiss'];
     assert.deepStrictEqual(saveSystem.AUTO_SAVE_TRIGGERS, expected);
   });
 
   it('AUTO_SAVE_TRIGGERS should have 5 items', () => {
-    assert.strictEqual(saveSystem.AUTO_SAVE_TRIGGERS.length, 5);
+    assert.strictEqual(saveSystem.AUTO_SAVE_TRIGGERS.length, 6);
   });
 });
 

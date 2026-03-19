@@ -32,6 +32,7 @@ import { createGuild, addMember, removeMember, changeMemberRank, depositGold, wi
 import { renderGuildPanel, renderCreateGuildForm, renderGuildBrowser, renderGuildHud } from '../guild-system-ui.js';
 import { processMatchResult, createTournament, recordTournamentMatchResult, getTournamentRewards, resetSeason, generateOpponent, getNextPlayerMatch, simulateNPCMatches, TOURNAMENTS } from '../arena-tournament-system.js';
 import { dismissSporeling } from '../sporeling-integration.js';
+import { emit } from '../engine.js';
 
 function getRoomDescription(worldState) {
   const room = getCurrentRoom(worldState);
@@ -1105,13 +1106,15 @@ export function handleUIAction(state, action) {
   if (action.type === 'TUTORIAL_DISMISS') {
     if (!state.tutorialState || !state.tutorialState.currentHint) return null;
     const stepId = state.tutorialState.currentHint.id;
-    return {
+    const next = {
       ...state,
       tutorialState: completeTutorialStep(
         dismissCurrentHint(state.tutorialState),
         stepId
       ),
     };
+    emit('tutorial_dismiss', { state: next });
+    return next;
   }
 
   if (action.type === 'TUTORIAL_DISABLE') {
