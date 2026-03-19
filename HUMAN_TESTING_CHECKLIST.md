@@ -43,6 +43,7 @@
 - [ ] HP/MP display correctly during combat
 - [ ] Victory screen shows rewards
 - [ ] XP gained after combat
+- [ ] Potion summary coherence check: Use exactly 1 potion during a fight, then win. On the Battle Summary panel, “Potions Used” must display 1. Verify there is exactly one heal entry in the combat log and that the in-combat “Healed” chip equals the actual HP restored. If you see any mismatch, first perform an Incognito hard refresh (Ctrl+Shift+R) and retry to rule out cached assets.
 
 ## 6. Arena & Tournament
 - [ ] Visit Arena location
