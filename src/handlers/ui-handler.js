@@ -52,7 +52,6 @@ export function handleUIAction(state, action) {
   }
 
   if (type === 'GO_BACK') {
-    console.log('[DEBUG] GO_BACK handler called. Current phase:', state.phase);
     const closeActions = {
       inventory: 'CLOSE_INVENTORY',
       quests: 'CLOSE_QUESTS',
@@ -79,9 +78,7 @@ export function handleUIAction(state, action) {
     }
 
     const closeType = closeActions[state.phase];
-    console.log('[DEBUG] GO_BACK: closeType for phase', state.phase, 'is', closeType);
     if (closeType) {
-      console.log('[DEBUG] GO_BACK: Dispatching', closeType);
       return handleUIAction(state, { type: closeType });
     }
 

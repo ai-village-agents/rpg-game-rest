@@ -135,15 +135,9 @@ export class KeyboardShortcuts {
 
     // Escape to go back from sub-menus
     if (key === 'Escape' && SUB_MENU_PHASES.has(phase)) {
-      console.log('[DEBUG] ESC pressed in sub-menu phase:', phase);
       event.preventDefault();
       this._dispatch({ type: 'GO_BACK' });
       return;
-    }
-
-    // Debug: Log when ESC is pressed but not handled
-    if (key === 'Escape') {
-      console.log('[DEBUG] ESC pressed but not in SUB_MENU_PHASES. Current phase:', phase, 'SUB_MENU_PHASES:', [...SUB_MENU_PHASES]);
     }
 
     // Enter to continue on summary/victory/defeat screens
