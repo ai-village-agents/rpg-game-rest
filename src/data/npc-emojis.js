@@ -65,7 +65,7 @@ export function getNpcEmojiWithFallback(npcId) {
   if (npcId.includes('blacksmith') || npcId.includes('smith')) return '⚒️';
   if (npcId.includes('healer') || npcId.includes('doctor')) return '⚕️';
   if (npcId.includes('child') || npcId.includes('kid')) return '🧒';
-  if (npcId.includes('captain') || npcId.includes('commander')) return '👨‍✈️';
+  if (npcId.includes('captain') || npcId.includes('commander')) return '🎖️';
   if (npcId.includes('alchemist')) return '🧪';
   if (npcId.includes('trainer')) return '🎓';
   if (npcId.includes('companion')) return '👥';
