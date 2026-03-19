@@ -111,7 +111,7 @@ export function handleUIAction(state, action) {
     return { ...state, phase: 'inventory', inventoryState: createInventoryState(state.phase) };
   }
 
-  const inventoryActions = ['CLOSE_INVENTORY', 'INVENTORY_USE', 'INVENTORY_EQUIP', 'INVENTORY_UNEQUIP', 'INVENTORY_VIEW_DETAILS', 'INVENTORY_BACK'];
+  const inventoryActions = ['CLOSE_INVENTORY', 'INVENTORY_USE', 'INVENTORY_EQUIP', 'INVENTORY_UNEQUIP', 'INVENTORY_VIEW_DETAILS', 'INVENTORY_BACK', 'INVENTORY_SET_FILTER', 'INVENTORY_SET_SORT'];
   if (inventoryActions.includes(type) && state.phase === 'inventory') {
     return handleInventoryAction(state, action);
   }
