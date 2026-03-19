@@ -218,7 +218,7 @@ function renderExplorationButtons(state) {
       </div>
     </div>
     <div class="button-group">
-      <h3 class="group-label">Game Systems</h3>
+      <h3 class="group-label">Activities</h3>
       <div class="buttons">
         <button id="btnCrafting">Crafting 🔨</button>
         <button id="btnEnchanting">Enchanting ✨</button>
@@ -691,12 +691,14 @@ export function render(state, dispatch) {
 
   // --- Exploration Phase ---
   if (state.phase === 'exploration') {
-    const mapHtml = renderMapPanel(state, dispatch);
     const exploreRoomId = RENDER_ROOM_ID_MAP[state.world?.roomRow]?.[state.world?.roomCol] ?? null;
     const exploreNpcs = exploreRoomId ? getNPCsInRoom(exploreRoomId) : [];
     const npcListHtml = exploreNpcs.length > 0
       ? exploreNpcs.map(n => `<button class="npc-talk-btn" data-npcid="${esc(n.id)}">${esc(n.name)}</button>`).join('')
       : '<em>No one is here.</em>';
+    const currentXp = state.player.xp ?? 0;
+    const nextLevelXp = xpForNextLevel(state.player.level ?? 1);
+    const xpLine = nextLevelXp === 0 ? 'MAX LEVEL' : `${currentXp} / ${nextLevelXp} XP`;
     hud.innerHTML = `
       ${renderWorldEventBanner(state.worldEvent || null)}
       ${renderAtmospherePanel(state)}
@@ -708,7 +710,7 @@ export function render(state, dispatch) {
             <div>Class</div><div><b>${esc(state.player.classId ? state.player.classId[0].toUpperCase() + state.player.classId.slice(1) : 'Adventurer')}</b></div>
             <div>HP</div><div><b>${hpLine(state.player)}</b></div>
             <div>Level</div><div><b>${state.player.level ?? 1}</b></div>
-            <div>XP</div><div><b>${state.player.xp ?? 0}</b></div>
+            <div>XP</div><div><b>${xpLine}</b></div>
           </div>
         </div>
 
@@ -718,8 +720,6 @@ export function render(state, dispatch) {
             ${inventorySummary(state.player)}
           </div>
         </div>
-
-        ${mapHtml}
 
         ${isMinimapHidden(state.worldEvent)
           ? '<div class="card">The fog obscures your map...</div>'
@@ -731,11 +731,6 @@ export function render(state, dispatch) {
         </div>
       </div>
     `;
-
-    // Attach map movement button listeners
-    hud.querySelectorAll('.move-btn').forEach((btn) => {
-      btn.onclick = () => dispatch({ type: 'EXPLORE', direction: btn.dataset.dir });
-    });
 
     actions.innerHTML = renderExplorationButtons(state);
 
