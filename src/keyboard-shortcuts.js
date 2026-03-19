@@ -81,6 +81,9 @@ export class KeyboardShortcuts {
     const tag = target?.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || target?.isContentEditable) return;
 
+    // Allow browser shortcuts (Cmd+key on Mac, Ctrl+key on Windows/Linux)
+    if (event.metaKey || event.ctrlKey) return;
+
     const key = event.key;
 
     // Toggle shortcut help overlay with /
