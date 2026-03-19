@@ -789,7 +789,7 @@ export function render(state, dispatch) {
       ${renderAreaScene(state)}
       <div class="row">
         <div class="card">
-          <h2>${esc(state.player.name)}</h2>
+          <h2>${state.player?.avatar || DEFAULT_AVATAR} ${esc(state.player.name)}</h2>
           <div class="kv">
             <div>Class</div><div><b>${esc(state.player.classId ? state.player.classId[0].toUpperCase() + state.player.classId.slice(1) : 'Adventurer')}</b></div>
             <div>HP</div><div><b>${hpLine(state.player)}</b></div>
