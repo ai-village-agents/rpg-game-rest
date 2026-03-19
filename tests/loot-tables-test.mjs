@@ -258,12 +258,13 @@ assert(emptyLootState.lootedItems.length === 0, 'Empty loot produces empty loote
 assert(emptyLootState.player.inventory.potion === 2, 'Empty loot preserves existing inventory');
 
 // Single item loot
-const singleLoot = [{ itemId: 'ironSword', name: 'Iron Sword', rarity: 'Uncommon' }];
+// Use a consumable to test basic inventory addition (weapons may be auto-equipped)
+const singleLoot = [{ itemId: 'elixir', name: 'Elixir', rarity: 'Rare' }];
 const singleLootState = applyLootToState(baseState, singleLoot);
-assert(singleLootState.player.inventory.ironSword === 1, 'Single loot adds new item to inventory');
+assert(singleLootState.player.inventory.elixir === 1, 'Single loot adds new item to inventory');
 assert(singleLootState.player.inventory.potion === 2, 'Single loot preserves existing items');
 assert(singleLootState.lootedItems.length === 1, 'lootedItems has 1 entry');
-assert(singleLootState.lootedItems[0].itemId === 'ironSword', 'lootedItems contains correct item');
+assert(singleLootState.lootedItems[0].itemId === 'elixir', 'lootedItems contains correct item');
 
 // Stacking loot
 const stackLoot = [{ itemId: 'potion', name: 'Healing Potion', rarity: 'Common' }];
@@ -289,10 +290,11 @@ assert(baseState.lootedItems === undefined, 'Original state has no lootedItems')
 const nullState = applyLootToState(baseState, null);
 assert(nullState.lootedItems.length === 0, 'null loot sets empty lootedItems');
 
-// Missing inventory in state
+// Missing inventory in state - use consumable to avoid auto-equip
 const noInvState = { player: { hp: 50 } };
-const noInvResult = applyLootToState(noInvState, singleLoot);
-assert(noInvResult.player.inventory.ironSword === 1, 'Handles missing inventory gracefully');
+const noInvLoot = [{ itemId: 'elixir', name: 'Elixir', rarity: 'Rare' }];
+const noInvResult = applyLootToState(noInvState, noInvLoot);
+assert(noInvResult.player.inventory.elixir === 1, 'Handles missing inventory gracefully');
 
 // ============================================================
 console.log('\nThematic drop table validation:');

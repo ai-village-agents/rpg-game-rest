@@ -354,7 +354,7 @@ function scanFile(filePath) {
         if (match.char === '\uFEFF' && i === 0 && j === 0) {
           continue;
         }
-        // Allow ZWJ when it's part of an emoji sequence (e.g., 👩‍🔬, 🧍‍♀️)
+        // Allow ZWJ when it's part of an emoji sequence (e.g., skin tone variants, gender modifiers)
         if (match.char === '\u200D' && isZwjInEmojiContext(line, j)) {
           continue;
         }
