@@ -822,15 +822,20 @@ export function enemyAct(state) {
       // Get RNG value for enemy crit check
       const { seed: enemyCritSeed, value: enemyCritRngValue } = nextRng(state.rngSeed);
       state = { ...state, rngSeed: enemyCritSeed };
-      const { damage: baseDamage, critical: enemyCrit } = computeDamage({
+      const { damage: calculatedDamage, critical: enemyCrit } = calculateDamage({
         attackerAtk: state.enemy.atk,
         targetDef: defenderStats.def,
         targetDefending: state.player.defending,
-        worldEvent: state.worldEvent || null,
-        targetIsCursed: isCursed(state.player),
-        critChance: state.enemy.critChance ?? 0,
+        element: 'physical',
+        targetElement: null,
         rngValue: enemyCritRngValue,
+        abilityPower: 1.0,
+        worldEvent: state.worldEvent || null,
+        critChance: state.enemy.critChance ?? 0,
       });
+      const curseMult = isCursed(state.player) ? 1.25 : 1;
+      const brokenMult = state.player?.isBroken ? BREAK_DAMAGE_MULTIPLIER : 1;
+      const baseDamage = Math.max(1, Math.floor(calculatedDamage * brokenMult * curseMult));
       const difficulty = state.difficulty ?? DEFAULT_DIFFICULTY;
       const damage = applyDifficultyToEnemyDamage(baseDamage, difficulty);
 
