@@ -64,6 +64,29 @@ import { createRewardsState, renderRewardsHtml, getRewardsStyles } from './comba
 import { renderStatsDashboardPhase, renderStatsDashboardActions, attachStatsDashboardHandlers, initStatsDashboard, getStatsDashboardIntegrationStyles } from './statistics-dashboard-integration.js';
 import { renderEncounterPopup, getEncounterStyles } from './random-encounter-system-ui.js';
 import { renderDefeatScreen, renderDefeatActions, getDefeatScreenStyles } from './defeat-screen-ui.js';
+
+function renderMainQuestBanner(state) {
+  const deepestFloor = state?.dungeonState?.deepestFloor ?? 0;
+  const floorsCleared = state?.dungeonState?.floorsCleared ?? [];
+  let progressLine = 'Start your journey at the Southwest Marsh';
+
+  if (deepestFloor > 0) {
+    progressLine = `Progress: Floor ${deepestFloor} / 15 reached`;
+  } else if (floorsCleared.length > 0) {
+    progressLine = `Floors cleared: ${floorsCleared.length}`;
+  }
+
+  return `
+    <div class="main-quest-banner">
+      <div class="quest-label">MAIN QUEST</div>
+      <div class="quest-content">
+        <div class="quest-title">⚔️ Reach the Oblivion Throne on Floor 15 of the Ancient Dungeon and defeat the Oblivion Lord</div>
+        <div class="quest-progress">${esc(progressLine)}</div>
+      </div>
+    </div>
+  `;
+}
+
 let _victoryAnimStartTime = 0;
 
 /** Track previous log for floating text diff */
@@ -116,12 +139,54 @@ export function getContinueButtonStyles() {
   `;
 }
 
+export function getExplorationStyles() {
+  return `
+    .main-quest-banner {
+      border: 2px solid #f0c040;
+      background: rgba(20, 15, 5, 0.85);
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.9em;
+    }
+
+    .main-quest-banner .quest-label {
+      color: #f0c040;
+      font-weight: bold;
+      font-size: 0.75em;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+
+    .main-quest-banner .quest-content {
+      flex: 1;
+    }
+
+    .main-quest-banner .quest-title {
+      color: #e8d5a0;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .main-quest-banner .quest-progress {
+      color: #a89060;
+      font-size: 0.85em;
+    }
+  `;
+}
+
 export function getStyles() {
   return [
     getStatusEffectStyles(),
     getMinimapStyles(),
     getStatsPanelStyles(),
     getContinueButtonStyles(),
+    getExplorationStyles(),
     getCraftingStyles(),
     getProvisionsStyles(),
     getTalentTreeStyles(),
@@ -389,6 +454,13 @@ export function render(state, dispatch) {
     const styleEl = document.createElement('style');
     styleEl.id = 'continue-button-styles';
     styleEl.textContent = getContinueButtonStyles();
+    document.head.appendChild(styleEl);
+  }
+
+  if (!document.getElementById('exploration-styles')) {
+    const styleEl = document.createElement('style');
+    styleEl.id = 'exploration-styles';
+    styleEl.textContent = getExplorationStyles();
     document.head.appendChild(styleEl);
   }
 
@@ -711,6 +783,7 @@ export function render(state, dispatch) {
     const xpLine = nextLevelXp === 0 ? 'MAX LEVEL' : `${currentXp} / ${nextLevelXp} XP`;
     hud.innerHTML = `
       ${renderWorldEventBanner(state.worldEvent || null)}
+      ${renderMainQuestBanner(state)}
       ${renderAtmospherePanel(state)}
       ${renderAreaScene(state)}
       <div class="row">
