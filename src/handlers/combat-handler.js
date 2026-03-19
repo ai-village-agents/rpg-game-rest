@@ -6,7 +6,7 @@ import * as achievements from '../achievements.js';
 import { companionAutoAct } from '../companions.js';
 import { createCombatStats, recordPlayerAttack, recordPlayerDefend, recordAbilityUse, recordItemUse, recordPotionUse, recordDamageReceived as csRecordDamageReceived, recordFleeAttempt, recordWeaknessHit, recordCompanionAction, recordTurn, finalizeCombatStats, formatCombatStatsDisplay } from '../combat-stats-tracker.js';
 import { updateBountyProgress } from '../bounty-board.js';
-import { recordDamageDealt as recordDashboardDamageDealt, recordDamageReceived as recordDashboardDamageReceived, recordEnemyDefeated, recordHealing } from '../statistics-dashboard.js';
+import { recordDamageDealt as recordDashboardDamageDealt, recordDamageReceived as recordDashboardDamageReceived, recordEnemyDefeated, recordHealing, recordItemFound } from '../statistics-dashboard.js';
 
 /**
  * Handles combat-related actions dispatched during 'player-turn'.
@@ -297,6 +297,12 @@ function applyCraftingMaterialDrops(state) {
     const name = item?.name || drop.materialId;
     const label = qty > 1 ? `${name} x${qty}` : name;
     lootedItems.push({ id: drop.materialId, name: label });
+    for (let i = 0; i < qty; i++) {
+      const itemType = item?.type || 'other';
+      const rarity = item?.rarity || 'common';
+      const tracked = recordItemFound(state, itemType, rarity);
+      state.statistics = tracked.statistics;
+    }
   }
 
   state.player = { ...state.player, inventory };
