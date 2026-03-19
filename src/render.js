@@ -218,7 +218,7 @@ function renderExplorationButtons(state) {
       </div>
     </div>
     <div class="button-group">
-      <h3 class="group-label">Game Systems</h3>
+      <h3 class="group-label">Activities</h3>
       <div class="buttons">
         <button id="btnCrafting">Crafting 🔨</button>
         <button id="btnEnchanting">Enchanting ✨</button>
