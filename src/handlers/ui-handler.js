@@ -51,6 +51,42 @@ export function handleUIAction(state, action) {
     return { ...state, showHelp: false };
   }
 
+  if (type === 'GO_BACK') {
+    const closeActions = {
+      inventory: 'CLOSE_INVENTORY',
+      quests: 'CLOSE_QUESTS',
+      journal: 'CLOSE_JOURNAL',
+      crafting: 'CLOSE_CRAFTING',
+      talents: 'CLOSE_TALENTS',
+      settings: 'CLOSE_SETTINGS',
+      stats: 'CLOSE_STATS',
+      achievements: 'CLOSE_ACHIEVEMENTS',
+      companions: 'CLOSE_COMPANIONS',
+      factions: 'CLOSE_FACTIONS',
+      sporeling: 'CLOSE_SPORELING',
+      dialog: 'DIALOG_CLOSE',
+      arena: 'CLOSE_ARENA',
+      bestiary: 'CLOSE_BESTIARY',
+      'tavern-dice': 'CLOSE_TAVERN',
+      tavern: 'CLOSE_TAVERN',
+      provisions: 'CLOSE_PROVISIONS',
+    };
+
+    if (state.phase === 'shop') {
+      const { shopState: _ss, ...rest } = state;
+      return { ...rest, phase: 'exploration' };
+    }
+
+    const closeType = closeActions[state.phase];
+    if (closeType) {
+      return handleUIAction(state, { type: closeType });
+    }
+
+    if (state.previousPhase && state.previousPhase !== state.phase) {
+      return { ...state, phase: state.previousPhase || 'exploration' };
+    }
+  }
+
   // Journal
   if (type === 'OPEN_JOURNAL') {
     if (isPreAdventure) return null;
@@ -506,7 +542,7 @@ export function handleUIAction(state, action) {
 
   if (type === 'CLOSE_TALENTS') {
     if (state.phase !== 'talents') return null;
-    const returnPhase = state.previousPhase || 'exploration';
+    const returnPhase = (state.previousPhase && state.previousPhase !== 'talents') ? state.previousPhase : 'exploration';
     return { ...state, phase: returnPhase };
   }
 
@@ -914,7 +950,8 @@ export function handleUIAction(state, action) {
   }
   if (type === 'CLOSE_BESTIARY') {
     if (state.phase !== 'bestiary') return null;
-    return { ...state, phase: state.previousPhase || 'exploration' };
+    const returnPhase = (state.previousPhase && state.previousPhase !== 'bestiary') ? state.previousPhase : 'exploration';
+    return { ...state, phase: returnPhase };
   }
   if (type === 'SORT_BESTIARY') {
     const sort = action.sort || BESTIARY_SORT_DEFAULT;

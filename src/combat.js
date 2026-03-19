@@ -32,7 +32,7 @@ import { initializeEnemyShields, checkWeakness, applyShieldDamage, processBreakS
 import { initCombatBattleLog, logPlayerAttack, logPlayerAbility, logDamageDealt, logDamageReceived, logHealing, logItemUsed, logStatusApplied, logStatusExpired, logTurnStart, logTurnEnd, logVictory, logDefeat } from './combat-battle-log-integration.js';
 import { applyDifficultyToEnemyHp, applyDifficultyToEnemyDamage, applyDifficultyToXpReward, applyDifficultyToGoldReward, DEFAULT_DIFFICULTY } from './difficulty.js';
 import { ACTION_TYPES, calculateMomentumGain, addMomentum, consumeOverdrive, applyMomentumDecay, getOverdriveAbility, calculateOverdriveDamage, canUseOverdrive, createMomentumState } from './momentum.js';
-import { registerHit, checkComboDecay, resetCombo, isComboBreaker, getChainBonus, getComboMultiplier } from './combo-system.js';
+import { registerHit, checkComboDecay, resetCombo, isComboBreaker, getChainBonus, getComboMultiplier, createComboState } from './combo-system.js';
 import { initIntentState, updateIntentState } from './enemy-intent.js';
 
 // Minimal deterministic RNG (Park-Miller LCG)
@@ -259,6 +259,7 @@ export function startNewEncounter(state, zoneLevel = 1) {
     turn: 1,
     player: { ...state.player, defending: false, statusEffects: [] },
     momentumState: state.momentumState ? createMomentumState() : undefined,
+    comboState: createComboState(),
     intentState: initIntentState(),
   };
   if (isEnemyAttacksFirst(next.worldEvent || state.worldEvent)) {

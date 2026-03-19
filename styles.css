@@ -226,6 +226,8 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .bad { color: var(--bad); }
 .good { color: var(--good); }
 
+.npc-talk-btn { margin: 0 6px 6px 0; }
+
 #log {
   max-height: 320px;
   overflow: auto;

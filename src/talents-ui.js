@@ -39,7 +39,7 @@ export function renderTalentTree(state, sortMethod = 'tier', filterText = '') {
         <option value="tier"${activeSortMethod === 'tier' ? ' selected' : ''}>Tier</option>
         <option value="points"${activeSortMethod === 'points' ? ' selected' : ''}>Points Invested</option>
       </select>
-      <input type="text" class="talent-filter" placeholder="Filter by name..." value="${escapeAttribute(activeFilterText)}" />
+      <input type="text" id="talentFilterInput" class="talent-filter" placeholder="Filter by name..." value="${escapeAttribute(activeFilterText)}" />
       <button class="talent-filter-apply">Apply Filter</button>
       <button class="talent-filter-clear">Clear Filter</button>
     </div>

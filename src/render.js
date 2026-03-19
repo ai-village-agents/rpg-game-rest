@@ -1796,6 +1796,8 @@ if (state.phase === 'achievements') {
   }
 
   if (state.phase === 'talents') {
+    const activeElement = document.activeElement;
+    const restoreFilterFocus = activeElement && activeElement.id === 'talentFilterInput';
     const talentRenderState = {
       ...state,
       player: { ...(state.player || {}), talents: state.talentState }
@@ -1805,6 +1807,13 @@ if (state.phase === 'achievements') {
     actions.innerHTML = '<div class="buttons"><button id="btnCloseTalents">Close Talents</button></div>';
     attachTalentHandlers(hud, dispatch);
     document.getElementById('btnCloseTalents').onclick = () => dispatch({ type: 'CLOSE_TALENTS' });
+    if (restoreFilterFocus) {
+      const filterInput = document.getElementById('talentFilterInput');
+      if (filterInput) {
+        filterInput.focus();
+        filterInput.setSelectionRange(filterInput.value.length, filterInput.value.length);
+      }
+    }
     log.innerHTML = state.log.slice().reverse().map(line => formatLogEntryHtml(line)).join('');
     finalizeRender();
     return;
