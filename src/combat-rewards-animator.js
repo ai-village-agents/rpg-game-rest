@@ -61,6 +61,7 @@ export const createRewardsState = (state) => {
 
   const goldGained = normalizeNumber(rewards.goldGained ?? state?.goldGained, 0);
   const lootItems = normalizeArray(rewards.lootItems ?? state?.lootItems);
+  const autoEquipped = normalizeArray(state?.autoEquipped);
 
   const turnsUsed = normalizeNumber(combat.turnsUsed ?? state?.turnsUsed, 0);
   const damageDealt = normalizeNumber(combat.damageDealt ?? state?.damageDealt, 0);
@@ -93,6 +94,7 @@ export const createRewardsState = (state) => {
     xpForLevel,
     goldGained,
     lootItems,
+    autoEquipped,
     battleRating,
     turnsUsed,
     damageDealt,
@@ -193,6 +195,7 @@ export const renderRewardsHtml = (rewardsState, animationPhase) => {
   const xpForLevel = Math.max(1, normalizeNumber(rewardsState?.xpForLevel, 1));
   const goldGained = normalizeNumber(rewardsState?.goldGained, 0);
   const lootItems = normalizeArray(rewardsState?.lootItems);
+  const autoEquipped = normalizeArray(rewardsState?.autoEquipped);
   const battleRating = rewardsState?.battleRating ?? { grade: 'D', title: 'Pyrrhic Victory', score: 0 };
   const enemyName = escapeHtml(normalizeString(rewardsState?.enemyName, 'Enemy'));
   const leveledUp = Boolean(rewardsState?.leveledUp);
@@ -205,6 +208,7 @@ export const renderRewardsHtml = (rewardsState, animationPhase) => {
   const xpVisible = maxIndex >= 1;
   const goldVisible = maxIndex >= 2;
   const lootVisible = maxIndex >= 3;
+  const autoEquipVisible = maxIndex >= 4;
 
   const lootHtml = lootItems
     .map((item, index) => {
@@ -212,6 +216,18 @@ export const renderRewardsHtml = (rewardsState, animationPhase) => {
       const delay = `${index * 0.12}s`;
       return `
         <li class="rewards-loot-item" style="animation-delay: ${delay};">${label}</li>
+      `;
+    })
+    .join('');
+
+  const autoEquipHtml = autoEquipped
+    .map((eq, index) => {
+      const slot = escapeHtml(eq.slot ? eq.slot.charAt(0).toUpperCase() + eq.slot.slice(1) : 'Item');
+      const name = escapeHtml(eq.name ?? eq.itemId ?? 'Unknown');
+      const replaced = eq.replacedName ? ` (replaced ${escapeHtml(eq.replacedName)})` : '';
+      const delay = `${index * 0.12}s`;
+      return `
+        <li class="rewards-autoequip-item" style="animation-delay: ${delay};">${name} [${slot}]${replaced}</li>
       `;
     })
     .join('');
@@ -264,6 +280,13 @@ export const renderRewardsHtml = (rewardsState, animationPhase) => {
         <div class="rewards-section-title">Loot</div>
         <ul class="rewards-loot-list">${lootHtml || '<li class="rewards-loot-item">None</li>'}</ul>
       </div>
+
+      ${autoEquipped.length > 0 ? `
+      <div class="rewards-section rewards-autoequip ${autoEquipVisible ? 'is-visible rewards-slide-up' : ''}">
+        <div class="rewards-section-title">Auto-Equipped</div>
+        <ul class="rewards-autoequip-list">${autoEquipHtml}</ul>
+      </div>
+      ` : ''}
     </section>
   `;
 };
@@ -398,6 +421,24 @@ export const getRewardsStyles = () => `
   padding: 8px 10px;
   border-radius: 8px;
   color: var(--rewards-loot);
+  opacity: 0;
+  transform: translateY(20px);
+  animation: rewards-loot-item 0.4s ease-out forwards;
+}
+
+.rewards-autoequip-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.rewards-autoequip-item {
+  background: rgba(255, 215, 0, 0.12);
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  margin-bottom: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: #ffd700;
   opacity: 0;
   transform: translateY(20px);
   animation: rewards-loot-item 0.4s ease-out forwards;
