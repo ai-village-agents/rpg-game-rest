@@ -132,6 +132,72 @@ const PHOENIX_USAGE_LIMIT = 13;
 let totalPhoenixOccurrences = 0;
 
 /**
+ * Check if a character is part of an emoji sequence.
+ * Returns true if the character is an emoji base, variation selector,
+ * skin tone modifier, regional indicator, or other emoji-related codepoint.
+ */
+function isEmojiRelated(char) {
+  if (!char) return false;
+  const cp = char.codePointAt(0);
+  if (cp === undefined) return false;
+
+  // Common emoji ranges
+  return (
+    (cp >= 0x1F300 && cp <= 0x1F9FF) || // Misc Symbols, Emoticons, Symbols & Pictographs
+    (cp >= 0x1FA00 && cp <= 0x1FAFF) || // Chess, Extended-A symbols
+    (cp >= 0x2600 && cp <= 0x26FF) ||   // Misc Symbols
+    (cp >= 0x2700 && cp <= 0x27BF) ||   // Dingbats
+    (cp >= 0xFE00 && cp <= 0xFE0F) ||   // Variation Selectors
+    (cp >= 0x1F1E0 && cp <= 0x1F1FF) || // Regional Indicators (flags)
+    cp === 0x200D ||                     // ZWJ itself
+    cp === 0x2640 || cp === 0x2642 ||   // Female/Male signs
+    cp === 0x2695 || cp === 0x2696 ||   // Medical/Legal symbols
+    cp === 0x2708 || cp === 0x2764 ||   // Airplane, Heart
+    (cp >= 0x1F3FB && cp <= 0x1F3FF)    // Skin tone modifiers
+  );
+}
+
+/**
+ * Check if a Zero Width Joiner at position j in the line is part of an emoji sequence.
+ */
+function isZwjInEmojiContext(line, j) {
+  // Get surrounding characters (accounting for surrogate pairs)
+  const before = [];
+  const after = [];
+
+  // Collect up to 3 code points before
+  let idx = j - 1;
+  while (idx >= 0 && before.length < 3) {
+    // Check for surrogate pair (high surrogate is at idx-1)
+    if (idx > 0 && line.charCodeAt(idx - 1) >= 0xD800 && line.charCodeAt(idx - 1) <= 0xDBFF) {
+      before.unshift(line.substring(idx - 1, idx + 1));
+      idx -= 2;
+    } else {
+      before.unshift(line[idx]);
+      idx -= 1;
+    }
+  }
+
+  // Collect up to 3 code points after
+  idx = j + 1;
+  while (idx < line.length && after.length < 3) {
+    if (line.charCodeAt(idx) >= 0xD800 && line.charCodeAt(idx) <= 0xDBFF && idx + 1 < line.length) {
+      after.push(line.substring(idx, idx + 2));
+      idx += 2;
+    } else {
+      after.push(line[idx]);
+      idx += 1;
+    }
+  }
+
+  // Check if there's an emoji-related character on both sides
+  const hasEmojiBefore = before.some(c => isEmojiRelated(c));
+  const hasEmojiAfter = after.some(c => isEmojiRelated(c));
+
+  return hasEmojiBefore && hasEmojiAfter;
+}
+
+/**
  * Check if pattern is in defensive/security context
  */
 function isDefensiveContext(fullContent, lineText, matchedText, matchIndex, lineNumber) {
@@ -284,7 +350,12 @@ function scanFile(filePath) {
       const char = line[j];
       const match = CONFIG.zeroWidthChars.find(zw => zw.char === char);
       if (match) {
+        // Allow BOM at start of file
         if (match.char === '\uFEFF' && i === 0 && j === 0) {
+          continue;
+        }
+        // Allow ZWJ when it's part of an emoji sequence (e.g., 👩‍🔬, 🧍‍♀️)
+        if (match.char === '\u200D' && isZwjInEmojiContext(line, j)) {
           continue;
         }
         results.issues.push({
