@@ -341,36 +341,70 @@ function createDialogState(npc, relationshipLevel) {
   return dialogState;
 }
 
-function advanceDialog(dialogState) {
+function advanceDialog(dialogState, gameState) {
+  console.log('[advanceDialog] before', {
+    dialogState,
+    lineIndex: dialogState.lineIndex,
+    lines: dialogState.lines,
+    dialogIndex: dialogState.dialogIndex,
+    dialogIds: dialogState.dialogIds,
+  });
+
+  let nextState;
+
   if (dialogState.done) {
-    return { ...dialogState };
+    nextState = { ...dialogState };
+  } else {
+    const { lineIndex, lines, dialogIndex, dialogIds } = dialogState;
+    const linesLength = Array.isArray(lines) ? lines.length : 0;
+    const atEndOfLines = linesLength === 0 || lineIndex >= linesLength - 1;
+
+    if (lineIndex + 1 < linesLength) {
+      nextState = {
+        ...dialogState,
+        lineIndex: lineIndex + 1,
+      };
+    } else if (dialogIndex + 1 < dialogIds.length) {
+      const nextDialogIndex = dialogIndex + 1;
+      const nextLines = DIALOG_LINES[dialogIds[nextDialogIndex]] || [];
+
+      nextState = {
+        ...dialogState,
+        dialogIndex: nextDialogIndex,
+        lineIndex: 0,
+        lines: nextLines,
+      };
+    } else {
+      if (atEndOfLines) {
+        let targetGameState = null;
+        if (gameState && typeof gameState === 'object') {
+          targetGameState = gameState;
+        } else if (typeof globalThis !== 'undefined' && globalThis && typeof globalThis.gameState === 'object') {
+          targetGameState = globalThis.gameState;
+        }
+        if (targetGameState) {
+          targetGameState.screen = 'exploration';
+        }
+        dialogState.npc = null;
+
+        return {
+          ...dialogState,
+          npc: null,
+          done: true,
+        };
+      }
+    }
   }
 
-  const { lineIndex, lines, dialogIndex, dialogIds } = dialogState;
+  console.log('[advanceDialog] after', {
+    dialogState: nextState,
+    lineIndex: nextState.lineIndex,
+    lines: nextState.lines,
+    dialogIndex: nextState.dialogIndex,
+    dialogIds: nextState.dialogIds,
+  });
 
-  if (lineIndex + 1 < lines.length) {
-    return {
-      ...dialogState,
-      lineIndex: lineIndex + 1,
-    };
-  }
-
-  if (dialogIndex + 1 < dialogIds.length) {
-    const nextDialogIndex = dialogIndex + 1;
-    const nextLines = DIALOG_LINES[dialogIds[nextDialogIndex]] || [];
-
-    return {
-      ...dialogState,
-      dialogIndex: nextDialogIndex,
-      lineIndex: 0,
-      lines: nextLines,
-    };
-  }
-
-  return {
-    ...dialogState,
-    done: true,
-  };
+  return nextState;
 }
 
 function getCurrentDialogLine(dialogState) {
