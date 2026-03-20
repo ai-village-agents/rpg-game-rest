@@ -66,6 +66,7 @@ export function handleStateTransitions(prevState, nextState) {
   if (next.phase === 'victory' && prevState.phase !== 'battle-summary' && prevState.phase !== 'level-up') {
     if ((next.goldGained ?? 0) > 0) {
       next = recordDashboardGoldEarned(next, next.goldGained, 'combat');
+      console.log("State after recording gold:", JSON.stringify(next.statistics.economy, null, 2));
     }
     next = { ...next, phase: 'battle-summary', battleSummary: createBattleSummary(next) };
   }
