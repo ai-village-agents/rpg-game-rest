@@ -64,6 +64,8 @@ import { renderCombatHpSection, getCombatHpBarStyles } from './combat-hp-bars.js
 import { renderNotificationToasts, getNotificationToastStyles } from './notification-toast.js';
 import { createRewardsState, renderRewardsHtml, getRewardsStyles } from './combat-rewards-animator.js';
 import { renderStatsDashboardPhase, renderStatsDashboardActions, attachStatsDashboardHandlers, initStatsDashboard, getStatsDashboardIntegrationStyles } from './statistics-dashboard-integration.js';
+import { createStatisticsDashboardElement, updateStatisticsDashboard } from './statistics-dashboard-ui.js';
+import { createStatisticsDashboardElement, updateStatisticsDashboard } from './statistics-dashboard-ui.js';
 import { renderEncounterPopup, getEncounterStyles } from './random-encounter-system-ui.js';
 import { renderDefeatScreen, renderDefeatActions, getDefeatScreenStyles } from './defeat-screen-ui.js';
 
@@ -1159,6 +1161,34 @@ export function render(state, dispatch) {
         ${bs.combatStatsDisplay ? '<div class="card">' + renderCombatStatsHtml(bs.combatStatsDisplay) + '</div>' : ''}
       </div>
     `;
+    const hudElement = document.getElementById('hud');
+    if (hudElement) {
+      let dashboardElement = document.getElementById('statisticsDashboardAfterBattle');
+      if (!dashboardElement) {
+        dashboardElement = createStatisticsDashboardElement(state);
+        if (dashboardElement) {
+          dashboardElement.id = 'statisticsDashboardAfterBattle';
+          hudElement.appendChild(dashboardElement);
+        }
+      }
+      if (dashboardElement) {
+        updateStatisticsDashboard(dashboardElement, state);
+      }
+    }
+    const hudElement = document.getElementById('hud');
+    if (hudElement) {
+      let dashboardElement = document.getElementById('statisticsDashboardAfterBattle');
+      if (!dashboardElement) {
+        dashboardElement = createStatisticsDashboardElement(state);
+        if (dashboardElement) {
+          dashboardElement.id = 'statisticsDashboardAfterBattle';
+          hudElement.appendChild(dashboardElement);
+        }
+      }
+      if (dashboardElement) {
+        updateStatisticsDashboard(dashboardElement, state);
+      }
+    }
     actions.innerHTML = '<div class="buttons"><button id="btnContinueAfterBattle">Continue →</button></div>';
     document.getElementById('btnContinueAfterBattle').onclick = () => dispatch({ type: 'CONTINUE_AFTER_BATTLE' });
     log.innerHTML = state.log.slice().reverse().map(line => formatLogEntryHtml(line)).join('');
