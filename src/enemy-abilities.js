@@ -193,24 +193,6 @@ export function executeEnemyAbility(state, abilityId) {
       nextState,
       `${(nextState.enemy.displayName ?? nextState.enemy.name)} uses ${ability.name}!${suffix}`
     );
-  } else if (ability.targetType === 'all-allies') {
-    if (effect) {
-      nextState = {
-        ...nextState,
-        enemy: addStatusEffect(nextState.enemy, effect),
-      };
-      if (effect.name && Number.isFinite(effect.duration)) {
-        extras.push(`${effect.name} ${effect.duration} turns`);
-      } else if (effect.name) {
-        extras.push(effect.name);
-      }
-    }
-
-    const suffix = extras.length > 0 ? ` (${extras.join(') (')})` : '';
-    nextState = pushLog(
-      nextState,
-      `${(nextState.enemy.displayName ?? nextState.enemy.name)} uses ${ability.name}!${suffix}`
-    );
   }
 
   if (nextState.player.hp <= 0) {
