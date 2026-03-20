@@ -65,7 +65,6 @@ import { renderNotificationToasts, getNotificationToastStyles } from './notifica
 import { createRewardsState, renderRewardsHtml, getRewardsStyles } from './combat-rewards-animator.js';
 import { renderStatsDashboardPhase, renderStatsDashboardActions, attachStatsDashboardHandlers, initStatsDashboard, getStatsDashboardIntegrationStyles } from './statistics-dashboard-integration.js';
 import { createStatisticsDashboardElement, updateStatisticsDashboard } from './statistics-dashboard-ui.js';
-import { createStatisticsDashboardElement, updateStatisticsDashboard } from './statistics-dashboard-ui.js';
 import { renderEncounterPopup, getEncounterStyles } from './random-encounter-system-ui.js';
 import { renderDefeatScreen, renderDefeatActions, getDefeatScreenStyles } from './defeat-screen-ui.js';
 
