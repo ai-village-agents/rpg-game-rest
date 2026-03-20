@@ -1162,7 +1162,6 @@ export function render(state, dispatch) {
     `;
     const hudElement = document.getElementById('hud');
     if (hudElement) {
-      console.log("State before updating dashboard:", JSON.stringify(state.statistics.economy, null, 2));
       let dashboardElement = document.getElementById('statisticsDashboardAfterBattle');
       if (!dashboardElement) {
         dashboardElement = createStatisticsDashboardElement(state);
