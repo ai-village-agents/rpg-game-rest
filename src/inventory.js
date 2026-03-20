@@ -243,7 +243,8 @@ export function getCategorizedInventory(inventory) {
     if (count <= 0) continue;
     const item = allItems[itemId];
     if (!item) {
-      categories.unknown.push({ id: itemId, name: itemId, count });
+      const item = craftingMaterials[itemId] || craftedItems[itemId] || { name: itemId };
+      categories.unknown.push({ id: itemId, name: item.name, count });
       continue;
     }
     const entry = {
@@ -284,9 +285,17 @@ export function getEquipmentDisplay(equipment) {
       continue;
     }
     const item = items[itemId];
-    display[slot] = item
-      ? { id: item.id, name: item.name, rarity: item.rarity, stats: item.stats || {} }
-      : { id: itemId, name: itemId, rarity: 'Common', stats: {} };
+    if (item) {
+      display[slot] = { id: item.id, name: item.name, rarity: item.rarity, stats: item.stats || {} };
+    } else {
+      const item = craftingMaterials[itemId] || craftedItems[itemId] || { name: itemId, rarity: 'Common', stats: {} };
+      display[slot] = {
+        id: itemId,
+        name: item.name,
+        rarity: item.rarity || 'Common',
+        stats: item.stats || {},
+      };
+    }
   }
   return display;
 }
