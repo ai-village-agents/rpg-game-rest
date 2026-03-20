@@ -46,6 +46,9 @@ export function handleSystemAction(state, action) {
     }
 
     const selectedName = typeof action.name === 'string' ? action.name.trim() : '';
+    if (!selectedName) {
+      return pushLog(state, 'Please enter a character name before choosing a class.');
+    }
     const difficulty = Object.values(DIFFICULTY_LEVELS).includes(action.difficulty)
       ? action.difficulty
       : DIFFICULTY_LEVELS.NORMAL;

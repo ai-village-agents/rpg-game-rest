@@ -72,7 +72,7 @@ const renderRecruitedCompanion = (companion) => {
 
 const renderAvailableCompanion = (npc, { canRecruit = true } = {}) => {
   const stats = npc.stats || {};
-  const locationLabel = npc.location || 'Unknown';
+  const locationLabel = (npc.location || 'Unknown').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
   const actionLabel = canRecruit ? 'Recruit' : locationLabel;
   const actionAttrs = canRecruit
     ? `data-action="RECRUIT_COMPANION" data-companion-id="${npc.id}"`

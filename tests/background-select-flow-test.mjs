@@ -3,14 +3,14 @@ import { handleSystemAction } from '../src/handlers/system-handler.js';
 
 test('class selection moves to background selection phase', () => {
   const start = { phase: 'class-select', log: [] };
-  const afterClass = handleSystemAction(start, { type: 'SELECT_CLASS', classId: 'warrior' });
+  const afterClass = handleSystemAction(start, { type: 'SELECT_CLASS', classId: 'warrior', name: 'TestHero' });
 
   assert(afterClass.phase === 'background-select', 'should enter background-select phase after choosing class');
   assert(afterClass.player.classId === 'warrior', 'player keeps selected classId');
 });
 
 test('background selection applies bonuses and moves to avatar-select phase', () => {
-  const afterClass = handleSystemAction({ phase: 'class-select', log: [] }, { type: 'SELECT_CLASS', classId: 'warrior' });
+  const afterClass = handleSystemAction({ phase: 'class-select', log: [] }, { type: 'SELECT_CLASS', classId: 'warrior', name: 'TestHero' });
   const baseAtk = afterClass.player.atk;
   const basePotions = afterClass.player.inventory?.potion || 0;
 
@@ -23,7 +23,7 @@ test('background selection applies bonuses and moves to avatar-select phase', ()
 });
 
 test('avatar selection enters exploration phase', () => {
-  const afterClass = handleSystemAction({ phase: 'class-select', log: [] }, { type: 'SELECT_CLASS', classId: 'warrior' });
+  const afterClass = handleSystemAction({ phase: 'class-select', log: [] }, { type: 'SELECT_CLASS', classId: 'warrior', name: 'TestHero' });
   const afterBackground = handleSystemAction(afterClass, { type: 'SELECT_BACKGROUND', backgroundId: 'soldier' });
 
   const afterAvatar = handleSystemAction(afterBackground, { type: 'SELECT_AVATAR', avatar: '🧝' });
@@ -35,7 +35,7 @@ test('avatar selection enters exploration phase', () => {
 });
 
 test('background bonuses adjust gold values', () => {
-  const afterClass = handleSystemAction({ phase: 'class-select', log: [] }, { type: 'SELECT_CLASS', classId: 'rogue' });
+  const afterClass = handleSystemAction({ phase: 'class-select', log: [] }, { type: 'SELECT_CLASS', classId: 'rogue', name: 'TestRogue' });
   const afterBackground = handleSystemAction(afterClass, { type: 'SELECT_BACKGROUND', backgroundId: 'wanderer' });
   const afterAvatar = handleSystemAction(afterBackground, { type: 'SELECT_AVATAR', avatar: '🧙' });
 

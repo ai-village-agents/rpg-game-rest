@@ -60,7 +60,7 @@ export function isUsable(itemId) {
  * @returns {object|null}
  */
 export function getItemDetails(itemId) {
-  const item = items[itemId];
+  const item = items[itemId] || craftingMaterials[itemId] || craftedItems[itemId];
   if (!item) return null;
   return {
     id: item.id,
