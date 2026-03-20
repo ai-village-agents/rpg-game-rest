@@ -15,6 +15,7 @@ const ROOM_NPCS = {
       greeting: "Welcome to the Wayfarer's Rest! Rest your weary feet, traveler.",
       dialog: ['inn_1'],
     },
+    { id: 'elara', name: 'Elara', greeting: "Hello, traveler. I have an urgent message that needs delivering to the Southwest Marsh.", dialog: ['elara_1'] },
   ],
   n: [
     {
@@ -81,6 +82,7 @@ const ROOM_NPCS = {
       greeting: "Eye of newt and wing of bat... Oh! A visitor! Don't mind the cauldron, dearie.",
       dialog: ['witch_1'],
     },
+    { id: 'roric', name: 'Roric', greeting: "A visitor to the marsh? It's dangerous out here. What brings you?", dialog: ['roric_1'] },
   ],
   se: [
     {
@@ -146,6 +148,7 @@ const DIALOG_LINES = {
     'The old sailors say the sea serpent wakes when the land troubles grow. Maybe just superstition...',
   ],
 };
+  elara_1: ["I need someone to deliver a message to Roric in the Southwest Marsh.", "He's a trusted ally — find him and tell him Elara sent you."],
 
 const RELATIONSHIP_GREETINGS = {
   village_elder: {
