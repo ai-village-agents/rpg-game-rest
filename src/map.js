@@ -6,6 +6,8 @@ const ROOM_HEIGHT = 12;
 export const ROOM_MID_X = Math.floor(ROOM_WIDTH / 2);
 export const ROOM_MID_Y = Math.floor(ROOM_HEIGHT / 2);
 
+const ENTRY_OFFSETS = [0, -1, 1, -2, 2, -3, 3];
+
 const DIRECTIONS = {
   north: { dx: 0, dy: -1, roomRow: -1, roomCol: 0 },
   south: { dx: 0, dy: 1, roomRow: 1, roomCol: 0 },
@@ -177,6 +179,49 @@ export class WorldMap {
     return row[x] === 1;
   }
 
+  _isBoundaryForDirection(x, y, directionKey) {
+    if (directionKey === 'north') return y === 0;
+    if (directionKey === 'south') return y === this.roomHeight - 1;
+    if (directionKey === 'west') return x === 0;
+    if (directionKey === 'east') return x === this.roomWidth - 1;
+    return false;
+  }
+
+  _resolveEntryPosition(directionKey, targetRoom) {
+    if (!targetRoom) return null;
+
+    const preferMidX = Number.isFinite(this.state?.x) ? this.state.x : ROOM_MID_X;
+    const preferMidY = Number.isFinite(this.state?.y) ? this.state.y : ROOM_MID_Y;
+
+    const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+    if (directionKey === 'north' || directionKey === 'south') {
+      const entryY = directionKey === 'north' ? this.roomHeight - 2 : 1;
+      const bases = [preferMidX, ROOM_MID_X];
+      for (const base of bases) {
+        for (const offset of ENTRY_OFFSETS) {
+          const candidateX = clamp(base + offset, 0, this.roomWidth - 1);
+          if (!this._isBlocked(targetRoom, candidateX, entryY)) {
+            return { x: candidateX, y: entryY };
+          }
+        }
+      }
+    } else if (directionKey === 'east' || directionKey === 'west') {
+      const entryX = directionKey === 'west' ? this.roomWidth - 2 : 1;
+      const bases = [preferMidY, ROOM_MID_Y];
+      for (const base of bases) {
+        for (const offset of ENTRY_OFFSETS) {
+          const candidateY = clamp(base + offset, 0, this.roomHeight - 1);
+          if (!this._isBlocked(targetRoom, entryX, candidateY)) {
+            return { x: entryX, y: candidateY };
+          }
+        }
+      }
+    }
+
+    return null;
+  }
+
   move(directionKey) {
     const direction = DIRECTIONS[directionKey];
     if (!direction) {
@@ -189,6 +234,9 @@ export class WorldMap {
 
     if (this._isInsideRoom(targetX, targetY)) {
       if (this._isBlocked(room, targetX, targetY)) {
+        if (this._isBoundaryForDirection(targetX, targetY, directionKey)) {
+          return this._attemptTransition(directionKey);
+        }
         return { moved: false, blocked: 'collision', transitioned: false, state: this.snapshot() };
       }
       this.state = { ...this.state, x: targetX, y: targetY };
@@ -208,24 +256,16 @@ export class WorldMap {
       return { moved: false, blocked: 'edge', transitioned: false, state: this.snapshot() };
     }
 
-    // Move to the opposite edge of the next room.
-    let nextX = this.state.x;
-    let nextY = this.state.y;
-    if (directionKey === 'north') nextY = this.roomHeight - 1;
-    if (directionKey === 'south') nextY = 0;
-    if (directionKey === 'west') nextX = this.roomWidth - 1;
-    if (directionKey === 'east') nextX = 0;
-
-    // Clamp against obstacles on the edge tile; if blocked, stop at boundary.
-    if (this._isBlocked(targetRoom, nextX, nextY)) {
+    const entry = this._resolveEntryPosition(directionKey, targetRoom);
+    if (!entry) {
       return { moved: false, blocked: 'collision', transitioned: false, state: this.snapshot() };
     }
 
     this.state = {
       roomRow: nextRoomRow,
       roomCol: nextRoomCol,
-      x: nextX,
-      y: nextY,
+      x: entry.x,
+      y: entry.y,
     };
 
     return { moved: true, blocked: null, transitioned: true, state: this.snapshot() };
@@ -269,53 +309,16 @@ export function travelToAdjacentRoom(worldState, directionKey, worldData = DEFAU
     return { moved: false, blocked: 'edge', transitioned: false, worldState, room: null };
   }
 
-  let entryX = ROOM_MID_X;
-  let entryY = ROOM_MID_Y;
-  if (directionKey === 'north') {
-    entryX = ROOM_MID_X;
-    entryY = world.roomHeight - 2;
-  } else if (directionKey === 'south') {
-    entryX = ROOM_MID_X;
-    entryY = 1;
-  } else if (directionKey === 'west') {
-    entryX = world.roomWidth - 2;
-    entryY = ROOM_MID_Y;
-  } else if (directionKey === 'east') {
-    entryX = 1;
-    entryY = ROOM_MID_Y;
-  }
-
-  const offsets = [0, -1, 1, -2, 2];
-  let resolvedEntry = null;
-  if (directionKey === 'north' || directionKey === 'south') {
-    for (const offset of offsets) {
-      const candidateX = entryX + offset;
-      if (candidateX < 0 || candidateX >= world.roomWidth) continue;
-      if (!world._isBlocked(targetRoom, candidateX, entryY)) {
-        resolvedEntry = { x: candidateX, y: entryY };
-        break;
-      }
-    }
-  } else {
-    for (const offset of offsets) {
-      const candidateY = entryY + offset;
-      if (candidateY < 0 || candidateY >= world.roomHeight) continue;
-      if (!world._isBlocked(targetRoom, entryX, candidateY)) {
-        resolvedEntry = { x: entryX, y: candidateY };
-        break;
-      }
-    }
-  }
-
-  if (!resolvedEntry) {
+  const entry = world._resolveEntryPosition(directionKey, targetRoom);
+  if (!entry) {
     return { moved: false, blocked: 'collision', transitioned: false, worldState, room: null };
   }
 
   world.state = {
     roomRow: nextRoomRow,
     roomCol: nextRoomCol,
-    x: resolvedEntry.x,
-    y: resolvedEntry.y,
+    x: entry.x,
+    y: entry.y,
   };
 
   return { moved: true, blocked: null, transitioned: true, worldState: world.snapshot(), room: world.getCurrentRoom() };
