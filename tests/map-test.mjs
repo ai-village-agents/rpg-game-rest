@@ -74,7 +74,8 @@ console.log('\n--- Persisted state validation ---');
 
 console.log('\n--- Movement within room ---');
 {
-  // Place near west wall but not on it.
+  // Place near west wall - in new nav logic, hitting perimeter tile attempts room transition.
+  // Room (1,1) has a room to the west (1,0), so moving west from x:1 will transition.
   const world = new WorldMap(DEFAULT_WORLD_DATA, {
     roomRow: 1,
     roomCol: 1,
@@ -84,9 +85,17 @@ console.log('\n--- Movement within room ---');
 
   const before = world.snapshot();
   const west = world.move('west');
-  assert(!west.moved, 'Cannot move into perimeter wall');
-  assert(west.blocked === 'collision', 'Wall collision reported');
-  assert(deepEqual(world.snapshot(), before), 'State unchanged on blocked move');
+  // New behavior: perimeter hit triggers transition to adjacent room
+  assert(west.moved, 'Moves into adjacent room when hitting perimeter');
+  assert(west.transitioned, 'Transitions to west room when hitting perimeter');
+
+  // Reset world for further tests
+  const world2 = new WorldMap(DEFAULT_WORLD_DATA, { roomRow: 1, roomCol: 0, x: 1, y: 1 });
+  // Moving west from column 0 (no room to west) should be blocked with 'edge'
+  const world2snap = world2.snapshot();
+  const westBlocked = world2.move('west');
+  assert(!westBlocked.moved, 'Cannot move past world edge');
+  assert(deepEqual(world2.snapshot(), world2snap), 'State unchanged on blocked edge move');
 
   const south = world.move('south');
   assert(south.moved, 'Can move south into open tile');
@@ -117,7 +126,7 @@ console.log('\n--- Room transitions ---');
   assert(res.worldState.roomRow === 0, 'Room row decremented when moving north');
   assert(res.worldState.roomCol === 1, 'Room col unchanged when moving north');
   assert(res.worldState.x === MID_X, 'X preserved across transition');
-  assert(res.worldState.y === ROOM_H - 1, 'Y set to opposite edge on transition');
+  assert(res.worldState.y === ROOM_H - 2, 'Y set one inside opposite edge on transition');
   assert(res.room !== null && typeof res.room.name === 'string', 'movePlayer returns current room object');
 
   // Edge of world: attempt to go north again from top row should fail.
