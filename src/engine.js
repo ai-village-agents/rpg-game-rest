@@ -75,7 +75,7 @@ export function saveToSlot(state, slotIndex = 0) {
   }
 }
 
-export function loadFromSlot(slotIndex = 0) {
+export function loadFromSlot(slotIndex = 0, skipValidation = false) {
   if (slotIndex < 0 || slotIndex >= MAX_SAVE_SLOTS) {
     console.error('Invalid save slot:', slotIndex);
     return null;
@@ -85,7 +85,7 @@ export function loadFromSlot(slotIndex = 0) {
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object') return null;
-    if (parsed.player) {
+    if (parsed.player && !skipValidation) {
       if (parsed.player.maxHP === 0 || parsed.player.maxHP === undefined) {
         emit('game:loadFailed', { slotIndex, reason: 'corrupt save - player has no HP' });
         console.error('Load failed: corrupt save - player has no HP');
