@@ -163,6 +163,8 @@ export function createArenaState() {
     matchHistory: [],
     achievements: [],
     lastMatchTime: null,
+    hasSeenIntro: false,
+    showIntro: true,
     seasonStats: {
       season: 1,
       rating: 1000,
