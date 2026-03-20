@@ -71,6 +71,7 @@ export function renderDungeonPanel(state) {
         <div>Difficulty</div><div><b>${floor.difficultyMultiplier}x</b></div>
         <div>Encounter Rate</div><div><b>${Math.round(floor.encounterRate * 100)}%</b></div>
         <div>Stairs Found</div><div><b>${ds.stairsFound ? '✅ Yes' : '❌ No'}</b></div>
+        ${ds.stairsFound ? '' : `<div class="dungeon-hint">Hint: Use 'Search Floor' to find stairs to descend.</div>`}
         <div>Floor Cleared</div><div><b>${cleared ? '✅ Yes' : '❌ No'}</b></div>
         ${floor.bossFloor ? `<div>Boss</div><div><b>${bossId || 'Unknown'} ${cleared ? '(Defeated)' : '(Alive)'}</b></div>` : ''}
       </div>
@@ -154,6 +155,7 @@ export function getDungeonStyles() {
     .dungeon-progress-bar { width: 100%; height: 8px; background: #333; border-radius: 4px; margin: 6px 0 2px; overflow: hidden; }
     .dungeon-progress-fill { height: 100%; border-radius: 4px; transition: width 0.3s ease; }
     .dungeon-progress-text { font-size: 0.85em; color: #aaa; text-align: center; }
+    .dungeon-hint { grid-column: 1 / -1; color: #8a8a8a; font-size: 0.85em; margin: -2px 0 2px; }
     .boss-btn { background: #8B0000 !important; border-color: #CD3700 !important; }
     .boss-btn:hover { background: #CD3700 !important; }
     .merchant-btn { background: #2D0A4E !important; border-color: #7B2FBE !important; }

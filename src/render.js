@@ -180,6 +180,40 @@ export function getExplorationStyles() {
       color: #a89060;
       font-size: 0.85em;
     }
+
+    .xp-progress-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .xp-progress {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .xp-progress-bar {
+      flex: 1;
+      height: 8px;
+      background: #333;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .xp-progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #3a7bd5, #00d2ff);
+      transition: width 0.25s ease;
+    }
+
+    .xp-progress-percent {
+      min-width: 36px;
+      text-align: right;
+      font-weight: bold;
+      color: var(--muted, #9aa6b2);
+    }
   `;
 }
 
@@ -212,6 +246,19 @@ function hpLine(entity) {
   const pct = Math.round((entity.hp / entity.maxHp) * 100);
   const status = entity.hp <= 0 ? 'bad' : (pct <= 25 ? 'bad' : (pct >= 75 ? 'good' : ''));
   return `<span class="${status}">${entity.hp}</span> / ${entity.maxHp}`;
+}
+
+function renderXpProgressBar(currentXp, nextLevelXp) {
+  if (!nextLevelXp || nextLevelXp <= 0) return '';
+  const pct = Math.min(100, Math.max(0, Math.round((currentXp / nextLevelXp) * 100)));
+  return `
+    <div class="xp-progress">
+      <div class="xp-progress-bar">
+        <div class="xp-progress-fill" style="width:${pct}%;"></div>
+      </div>
+      <div class="xp-progress-percent">${pct}%</div>
+    </div>
+  `;
 }
 
 function esc(s) {
@@ -806,7 +853,11 @@ export function render(state, dispatch) {
           <div class="kv">
             <div>HP</div><div><b>${hpLine(state.player)}</b></div>
             <div>Level</div><div><b>${state.player.level ?? 1}</b></div>
-            <div>XP</div><div><b>${xpLine}</b></div>
+            <div>XP</div>
+            <div class="xp-progress-wrapper">
+              <div><b>${xpLine}</b></div>
+              ${renderXpProgressBar(currentXp, nextLevelXp)}
+            </div>
           </div>
         </div>
 
