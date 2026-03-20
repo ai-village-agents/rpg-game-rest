@@ -65,7 +65,7 @@ import { renderNotificationToasts, getNotificationToastStyles } from './notifica
 import { createRewardsState, renderRewardsHtml, getRewardsStyles } from './combat-rewards-animator.js';
 import { renderStatsDashboardPhase, renderStatsDashboardActions, attachStatsDashboardHandlers, initStatsDashboard, getStatsDashboardIntegrationStyles } from './statistics-dashboard-integration.js';
 import { createStatisticsDashboardElement, updateStatisticsDashboard } from './statistics-dashboard-ui.js';
-import { renderEncounterPopup, getEncounterStyles } from './random-encounter-system-ui.js';
+import { renderEncounterPopup, renderEncounterStatsPanel, getEncounterStyles } from './random-encounter-system-ui.js';
 import { renderDefeatScreen, renderDefeatActions, getDefeatScreenStyles } from './defeat-screen-ui.js';
 
 function renderMainQuestBanner(state) {
@@ -2393,12 +2393,23 @@ if (state.phase === 'achievements') {
   }
 
   if (state.phase === 'random-encounter' && state.currentEncounter) {
+    actions.innerHTML = '';
+    log.innerHTML = '';
+
     const encounter = state.currentEncounter;
-    const popupHtml = renderEncounterPopup(encounter);
+    let popupHtml = '';
+    try {
+      popupHtml = renderEncounterPopup(encounter);
+    } catch (err) {
+      console.error('Failed to render encounter popup', err);
+    }
     const encounterStyles = getEncounterStyles();
     
     const root = document.getElementById('game-content') || document.getElementById('hud');
-    if (!root) return;
+    if (!root) {
+      finalizeRender();
+      return;
+    }
     root.innerHTML = '<style>' + encounterStyles + '</style>' + popupHtml;
     
     // Wire up action buttons
@@ -2429,6 +2440,29 @@ if (state.phase === 'achievements') {
     if (avoidBtn) avoidBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'avoid' } });
     if (talkBtn) talkBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'talk' } });
     if (ignoreBtn) ignoreBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'ignore' } });
+    finalizeRender();
+    return;
+  }
+
+  if (state.phase === 'encounter-stats') {
+    actions.innerHTML = '';
+    log.innerHTML = '';
+    
+    const statsHtml = renderEncounterStatsPanel(state);
+    const statsStyles = getEncounterStyles();
+    
+    const root = document.getElementById('game-content') || document.getElementById('hud');
+    if (!root) {
+      finalizeRender();
+      return;
+    }
+    root.innerHTML = '<style>' + statsStyles + '</style>' + statsHtml;
+    
+    // Add a close button handler
+    const closeBtn = root.querySelector('[data-action="close-encounter-stats"]');
+    if (closeBtn) closeBtn.onclick = () => dispatch({ type: 'CLOSE_ENCOUNTER_STATS' });
+    
+    finalizeRender();
     return;
   }
 
