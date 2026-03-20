@@ -16,6 +16,7 @@ import { handleStateTransitions } from './state-transitions.js';
 import { initAudio } from './audio-system.js';
 import { createTutorialState } from './tutorial.js';
 import { createEncounterState } from './random-encounter-system.js';
+import { recordPlayTime } from './statistics-dashboard.js';
 import {
   createDailyChallengeState,
   initializeDailyChallenges,
@@ -42,6 +43,7 @@ if (IS_BROWSER) {
     showDailyChallenges: false,
     encounterState: createEncounterState(),
   };
+  let _lastTimeTracked = Date.now();
 
   function appendLogLine(nextState, line) {
     const currentLog = Array.isArray(nextState.log) ? nextState.log : [];
@@ -221,6 +223,15 @@ if (IS_BROWSER) {
   // Initial Render
   render(state, dispatch);
   renderDailyChallengesUI(state, dispatch);
+  setInterval(() => {
+    const now = Date.now();
+    const elapsedSeconds = Math.round((now - _lastTimeTracked) / 1000);
+    _lastTimeTracked = now;
+    if (elapsedSeconds > 0 && state.statistics) {
+      const activity = ['player-turn', 'enemy-turn', 'victory', 'defeat'].includes(state.phase) ? 'combat' : 'exploration';
+      state = recordPlayTime(state, elapsedSeconds, activity);
+    }
+  }, 30000);
 
   // Initialize context-sensitive keyboard shortcuts (combat 1-4, exploration menus, etc.)
   createKeyboardShortcuts(() => state, dispatch);
