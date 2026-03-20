@@ -24,6 +24,7 @@ import { createTutorialState } from '../tutorial.js';
 import { createWeatherState } from '../weather.js';
 import { createDailyChallengeState } from '../daily-challenge-system.js';
 import { createEmptyStatistics } from '../statistics-dashboard.js';
+import { validateName } from '../character-creation.js';
 
 function getRoomDescription(worldState) {
   const room = getCurrentRoom(worldState);
@@ -37,6 +38,11 @@ export function handleSystemAction(state, action) {
   if (type === 'SELECT_CLASS') {
     if (!CLASS_DEFINITIONS[action.classId]) {
       return pushLog(state, 'Unknown class selected.');
+    }
+
+    const nameValidation = validateName(action.name);
+    if (!nameValidation.isValid) {
+      return pushLog(state, nameValidation.error);
     }
 
     const selectedName = typeof action.name === 'string' ? action.name.trim() : '';

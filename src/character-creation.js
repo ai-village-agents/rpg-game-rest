@@ -93,3 +93,38 @@ export function validateAppearance(appearance) {
     errors: errors,
   };
 }
+
+/**
+ * Validates a character name.
+ * @param {string} name - The character name to validate.
+ * @returns {object} Object with isValid boolean and error message.
+ */
+export function validateName(name) {
+  if (!name || typeof name !== 'string') {
+    return {
+      isValid: false,
+      error: 'Character name is required.'
+    };
+  }
+
+  const trimmedName = name.trim();
+  
+  if (trimmedName.length === 0) {
+    return {
+      isValid: false,
+      error: 'Character name cannot be empty or whitespace.'
+    };
+  }
+
+  if (trimmedName.length > 30) {
+    return {
+      isValid: false,
+      error: 'Character name must be 30 characters or less.'
+    };
+  }
+
+  return {
+    isValid: true,
+    error: null
+  };
+}
