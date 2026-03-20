@@ -180,7 +180,7 @@ function processTurnStart(state, actorKey) {
   return applyVictoryDefeat(nextState);
 }
 
-function applyVictoryDefeat(state) {
+export function applyVictoryDefeat(state) {
   if (state.enemy.hp <= 0) {
     const difficulty = state.difficulty ?? DEFAULT_DIFFICULTY;
     const xpGained = applyDifficultyToXpReward(state.enemy.xpReward ?? 0, difficulty);

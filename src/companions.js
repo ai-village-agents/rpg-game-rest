@@ -1,5 +1,5 @@
 import { pushLog } from './state.js';
-import { nextRng } from './combat.js';
+import { applyVictoryDefeat, nextRng } from './combat.js';
 import { NPCS } from './data/npcs.js';
 
 const ROOM_TO_LOCATIONS = {
@@ -138,6 +138,9 @@ export function companionAttack(state, companionId, rngSeed) {
   };
   nextState = pushLog(nextState, `${companion.name} attacks for ${damage} damage.`);
 
+  if (nextHp <= 0) {
+    nextState = applyVictoryDefeat(nextState);
+  }
   return { state: nextState, seed };
 }
 
