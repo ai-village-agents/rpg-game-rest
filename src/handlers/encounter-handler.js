@@ -205,6 +205,20 @@ export function handleEncounterAction(state, action) {
             combatStats: null, // Reset combat stats for new encounter (Issue #63)
           };
 
+          const activeCompanions = Array.isArray(state.companions?.active)
+            ? state.companions.active
+            : Array.isArray(state.companions)
+              ? state.companions
+              : null;
+
+          if (activeCompanions && activeCompanions.length > 0) {
+            // Initialize active companions for the combat encounter
+            next = {
+              ...next,
+              companions: activeCompanions.map((companion) => ({ ...companion })),
+            };
+          }
+
           if (isEnemyAttacksFirst(next.worldEvent || state.worldEvent)) {
             next = { ...next, phase: 'enemy-turn' };
             next = pushLog(next, 'The enemy strikes first!');
