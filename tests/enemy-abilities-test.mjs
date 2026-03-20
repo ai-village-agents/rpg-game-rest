@@ -249,6 +249,16 @@ console.log('\n--- executeEnemyAbility ---');
   assert(result.enemy.mp === state.enemy.mp - 4, 'regenerate deducts 4 MP');
 }
 
+{
+  const state = makeEnemyTurnState({ abilities: ['war-cry'], mp: 10 });
+  const result = executeEnemyAbility(state, 'war-cry');
+  const atkUp = (result.enemy.statusEffects ?? []).find(e => e.type === 'atk-up');
+  assert(result.enemy.mp === state.enemy.mp - 5, 'war-cry deducts 5 MP');
+  assert(atkUp !== undefined, 'war-cry applies atk-up to enemy');
+  assert(result.player.hp === state.player.hp, 'war-cry does not damage player');
+  assert(result.log.some(l => l.includes('War Cry')), 'war-cry logs usage');
+}
+
 // ══════════════════════════════════════════════════════════════════════
 // SECTION 4: enemyAct integration
 // ══════════════════════════════════════════════════════════════════════

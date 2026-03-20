@@ -6,7 +6,7 @@
  */
 
 import { getAbility } from './combat/abilities.js';
-import { calculateDamage } from './combat/damage-calc.js';
+import { calculateDamage, calculateHeal } from './combat/damage-calc.js';
 import { clamp, pushLog } from './state.js';
 import { nextRng, getPlayerStatusResist } from './combat.js';
 
@@ -98,6 +98,7 @@ export function executeEnemyAbility(state, abilityId) {
 
   const effect = ability.statusEffect ?? null;
   const extras = [];
+  const displayName = nextState.enemy.displayName ?? nextState.enemy.name;
 
   if (ability.targetType === 'single-enemy' || ability.targetType === 'all-enemies') {
     const { seed, value: rngValue } = nextRng(nextState.rngSeed);
@@ -160,14 +161,25 @@ export function executeEnemyAbility(state, abilityId) {
     const suffix = extras.length > 0 ? ` (${extras.join(') (')})` : '';
     nextState = pushLog(
       nextState,
-      `${(nextState.enemy.displayName ?? nextState.enemy.name)} uses ${ability.name} for ${damage} damage!${suffix}`
+      `${displayName} uses ${ability.name} for ${damage} damage!${suffix}`
     );
-  } else if (ability.targetType === 'self') {
+  } else if (
+    ability.targetType === 'self' ||
+    ability.targetType === 'all-allies' ||
+    ability.targetType === 'single-ally'
+  ) {
+    let updatedEnemy = nextState.enemy;
+
+    if (ability.healPower && ability.healPower > 0) {
+      const healAmount = calculateHeal(ability.healPower, updatedEnemy.atk ?? 0);
+      const healedHp = clamp(updatedEnemy.hp + healAmount, 0, updatedEnemy.maxHp);
+      const actualHeal = healedHp - updatedEnemy.hp;
+      updatedEnemy = { ...updatedEnemy, hp: healedHp };
+      extras.push(`Heals ${actualHeal} HP`);
+    }
+
     if (effect) {
-      nextState = {
-        ...nextState,
-        enemy: addStatusEffect(nextState.enemy, effect),
-      };
+      updatedEnemy = addStatusEffect(updatedEnemy, effect);
       if (effect.name && Number.isFinite(effect.duration)) {
         extras.push(`${effect.name} ${effect.duration} turns`);
       } else if (effect.name) {
@@ -175,10 +187,12 @@ export function executeEnemyAbility(state, abilityId) {
       }
     }
 
+    nextState = { ...nextState, enemy: updatedEnemy };
+
     const suffix = extras.length > 0 ? ` (${extras.join(') (')})` : '';
     nextState = pushLog(
       nextState,
-      `${(nextState.enemy.displayName ?? nextState.enemy.name)} uses ${ability.name}!${suffix}`
+      `${displayName} uses ${ability.name}!${suffix}`
     );
   }
 
