@@ -6,15 +6,6 @@ export const SKIN_TONES = ['light', 'fair', 'medium', 'tan', 'dark', 'deep'];
 export const PORTRAITS = ['warrior_m1', 'warrior_f1', 'mage_m1', 'mage_f1', 'rogue_m1', 'rogue_f1', 'default'];
 
 /**
- * Validates that a character name contains at least one non-whitespace character.
- * @param {string} name - The character name to validate.
- * @returns {boolean} True if the name is valid; otherwise false.
- */
-export function validateName(name) {
-  return typeof name === 'string' && name.trim().length > 0;
-}
-
-/**
  * Creates a new character object.
  * @param {string} name - The character's name.
  * @param {string} characterClass - The character's class (e.g., 'warrior', 'mage', 'rogue').
@@ -25,12 +16,13 @@ export function validateName(name) {
  * @returns {object} The new character object.
  */
 export function createCharacter(name, characterClass, appearance = {}) {
-  if (!validateName(name)) {
-    return { error: 'Character name cannot be empty.' };
+  const nameValidation = validateName(name);
+  if (!nameValidation.isValid) {
+    return { error: nameValidation.error };
   }
 
   const character = {
-    name: name,
+    name: name.trim(),
     class: characterClass,
     level: 1,
     xp: 0,
