@@ -65,7 +65,7 @@ import { renderNotificationToasts, getNotificationToastStyles } from './notifica
 import { createRewardsState, renderRewardsHtml, getRewardsStyles } from './combat-rewards-animator.js';
 import { renderStatsDashboardPhase, renderStatsDashboardActions, attachStatsDashboardHandlers, initStatsDashboard, getStatsDashboardIntegrationStyles } from './statistics-dashboard-integration.js';
 import { createStatisticsDashboardElement, updateStatisticsDashboard } from './statistics-dashboard-ui.js';
-import { renderEncounterPopup, getEncounterStyles } from './random-encounter-system-ui.js';
+import { renderEncounterPopup, getEncounterStyles, renderEncounterStatsPanel } from './random-encounter-system-ui.js';
 import { renderDefeatScreen, renderDefeatActions, getDefeatScreenStyles } from './defeat-screen-ui.js';
 
 function renderMainQuestBanner(state) {
@@ -2393,42 +2393,70 @@ if (state.phase === 'achievements') {
   }
 
   if (state.phase === 'random-encounter' && state.currentEncounter) {
-    const encounter = state.currentEncounter;
-    const popupHtml = renderEncounterPopup(encounter);
-    const encounterStyles = getEncounterStyles();
-    
-    const root = document.getElementById('game-content') || document.getElementById('hud');
-    if (!root) return;
-    root.innerHTML = '<style>' + encounterStyles + '</style>' + popupHtml;
-    
-    // Wire up action buttons
-    const fightBtn = root.querySelector('[data-action="fight"]');
-    const fleeBtn = root.querySelector('[data-action="flee"]');
-    const collectBtn = root.querySelector('[data-action="collect"]');
-    const acceptBtn = root.querySelector('[data-action="accept"]');
-    const declineBtn = root.querySelector('[data-action="decline"]');
-    const restBtn = root.querySelector('[data-action="rest"]');
-    const continueBtn = root.querySelector('[data-action="continue"]');
-    const shopBtn = root.querySelector('[data-action="shop"]');
-    const leaveBtn = root.querySelector('[data-action="leave"]');
-    const disarmBtn = root.querySelector('[data-action="disarm"]');
-    const avoidBtn = root.querySelector('[data-action="avoid"]');
-    const talkBtn = root.querySelector('[data-action="talk"]');
-    const ignoreBtn = root.querySelector('[data-action="ignore"]');
-    
-    if (fightBtn) fightBtn.onclick = () => dispatch({ type: 'ENGAGE_ENCOUNTER' });
-    if (fleeBtn) fleeBtn.onclick = () => dispatch({ type: 'FLEE_ENCOUNTER' });
-    if (collectBtn) collectBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'collect' } });
-    if (leaveBtn) leaveBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'leave' } });
-    if (acceptBtn) acceptBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'accept' } });
-    if (declineBtn) declineBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'decline' } });
-    if (restBtn) restBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'rest' } });
-    if (continueBtn) continueBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'continue' } });
-    if (shopBtn) shopBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'shop' } });
-    if (disarmBtn) disarmBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'disarm' } });
-    if (avoidBtn) avoidBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'avoid' } });
-    if (talkBtn) talkBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'talk' } });
-    if (ignoreBtn) ignoreBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'ignore' } });
+    hud.innerHTML = '';
+    actions.innerHTML = '';
+    log.innerHTML = '';
+    try {
+      const encounter = state.currentEncounter;
+      const popupHtml = renderEncounterPopup(encounter);
+      const encounterStyles = getEncounterStyles();
+      hud.innerHTML = '<style>' + encounterStyles + '</style>' + popupHtml;
+
+      // Wire up action buttons
+      const fightBtn = hud.querySelector('[data-action="fight"]');
+      const fleeBtn = hud.querySelector('[data-action="flee"]');
+      const collectBtn = hud.querySelector('[data-action="collect"]');
+      const acceptBtn = hud.querySelector('[data-action="accept"]');
+      const declineBtn = hud.querySelector('[data-action="decline"]');
+      const restBtn = hud.querySelector('[data-action="rest"]');
+      const continueBtn = hud.querySelector('[data-action="continue"]');
+      const shopBtn = hud.querySelector('[data-action="shop"]');
+      const leaveBtn = hud.querySelector('[data-action="leave"]');
+      const disarmBtn = hud.querySelector('[data-action="disarm"]');
+      const avoidBtn = hud.querySelector('[data-action="avoid"]');
+      const talkBtn = hud.querySelector('[data-action="talk"]');
+      const ignoreBtn = hud.querySelector('[data-action="ignore"]');
+
+      if (fightBtn) fightBtn.onclick = () => dispatch({ type: 'ENGAGE_ENCOUNTER' });
+      if (fleeBtn) fleeBtn.onclick = () => dispatch({ type: 'FLEE_ENCOUNTER' });
+      if (collectBtn) collectBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'collect' } });
+      if (leaveBtn) leaveBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'leave' } });
+      if (acceptBtn) acceptBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'accept' } });
+      if (declineBtn) declineBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'decline' } });
+      if (restBtn) restBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'rest' } });
+      if (continueBtn) continueBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'continue' } });
+      if (shopBtn) shopBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'shop' } });
+      if (disarmBtn) disarmBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'disarm' } });
+      if (avoidBtn) avoidBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'avoid' } });
+      if (talkBtn) talkBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'talk' } });
+      if (ignoreBtn) ignoreBtn.onclick = () => dispatch({ type: 'RESOLVE_ENCOUNTER', payload: { outcome: 'ignore' } });
+    } catch (err) {
+      console.error('[random-encounter render] Error rendering encounter popup:', err);
+      hud.innerHTML = '<div class="card"><h2>⚔️ Encounter</h2><p>An unexpected encounter! Prepare yourself.</p><div class="buttons"><button id="btnEncounterFight">Fight</button><button id="btnEncounterFlee">Flee</button></div></div>';
+      const btnFight = document.getElementById('btnEncounterFight');
+      const btnFlee = document.getElementById('btnEncounterFlee');
+      if (btnFight) btnFight.onclick = () => dispatch({ type: 'ENGAGE_ENCOUNTER' });
+      if (btnFlee) btnFlee.onclick = () => dispatch({ type: 'FLEE_ENCOUNTER' });
+    }
+    finalizeRender();
+    return;
+  }
+
+  if (state.phase === 'encounter-stats') {
+    hud.innerHTML = `
+      <div class="card">
+        <h2>📊 Encounter Statistics</h2>
+        ${renderEncounterStatsPanel(state.encounterState || {})}
+        <div style="margin-top: 1rem;">
+          <button id="btnCloseEncounterStats">Close</button>
+        </div>
+      </div>
+    `;
+    actions.innerHTML = '';
+    log.innerHTML = state.log.slice().reverse().map((line) => formatLogEntryHtml(line)).join('');
+    const closeBtn = document.getElementById('btnCloseEncounterStats');
+    if (closeBtn) closeBtn.onclick = () => dispatch({ type: 'CLOSE_ENCOUNTER_STATS' });
+    finalizeRender();
     return;
   }
 
