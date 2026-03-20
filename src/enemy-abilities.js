@@ -28,9 +28,22 @@ function nextSeed(seed) {
   return { seed: next, value: next / RNG_MOD };
 }
 
-function addStatusEffect(target, effect) {
+function addStatusEffect(state, targetKey, effect) {
+  const target = state?.[targetKey];
+  if (!target || !effect) return state;
   const statusEffects = target.statusEffects ?? [];
-  return { ...target, statusEffects: [...statusEffects, { ...effect }] };
+  const updatedState = {
+    ...state,
+    [targetKey]: { ...target, statusEffects: [...statusEffects, { ...effect }] },
+  };
+  const targetName = target.displayName ?? target.name ?? targetKey ?? 'target';
+  console.log('[enemy-abilities] Applying status effect', {
+    target: targetName,
+    effect: effect.name ?? effect.type,
+    duration: effect.duration,
+    totalEffects: updatedState[targetKey].statusEffects.length,
+  });
+  return updatedState;
 }
 
 /**
@@ -139,12 +152,13 @@ export function executeEnemyAbility(state, abilityId) {
       } else {
         nextState = {
           ...nextState,
-          player: addStatusEffect({
+          player: {
             ...nextState.player,
             hp: newPlayerHp,
             defending: false,
-          }, effect),
+          },
         };
+        nextState = addStatusEffect(nextState, 'player', effect);
         extras.push(effect.name);
       }
     } else {
@@ -162,12 +176,13 @@ export function executeEnemyAbility(state, abilityId) {
       nextState,
       `${(nextState.enemy.displayName ?? nextState.enemy.name)} uses ${ability.name} for ${damage} damage!${suffix}`
     );
-  } else if (ability.targetType === 'self') {
+  } else if (
+    ability.targetType === 'self' ||
+    ability.targetType === 'all-allies' ||
+    ability.targetType === 'single-ally'
+  ) {
     if (effect) {
-      nextState = {
-        ...nextState,
-        enemy: addStatusEffect(nextState.enemy, effect),
-      };
+      nextState = addStatusEffect(nextState, 'enemy', effect);
       if (effect.name && Number.isFinite(effect.duration)) {
         extras.push(`${effect.name} ${effect.duration} turns`);
       } else if (effect.name) {

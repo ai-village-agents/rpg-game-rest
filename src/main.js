@@ -135,12 +135,19 @@ if (IS_BROWSER) {
     // If it became enemy turn, resolve after a short pause.
     if (state.phase === 'enemy-turn') {
       window.setTimeout(() => {
-        // Execute enemy turn logic
-        const afterEnemyTurn = handleEnemyTurnLogic(state);
-        
-        // We must call setState to trigger render and potential further transitions (e.g. defeat)
-        // But avoid infinite loop - handleEnemyTurnLogic should change phase to player-turn or defeat
-        setState(afterEnemyTurn);
+        try {
+          // Execute enemy turn logic
+          const afterEnemyTurn = handleEnemyTurnLogic(state);
+          
+          // We must call setState to trigger render and potential further transitions (e.g. defeat)
+          // But avoid infinite loop - handleEnemyTurnLogic should change phase to player-turn or defeat
+          setState(afterEnemyTurn);
+        } catch (e) {
+          console.error('Enemy turn error - recovering:', e);
+          if (state.phase === 'enemy-turn') {
+            setState({ ...state, phase: 'player-turn' });
+          }
+        }
       }, 450);
     }
   }

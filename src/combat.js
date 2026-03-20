@@ -180,7 +180,7 @@ function processTurnStart(state, actorKey) {
   return applyVictoryDefeat(nextState);
 }
 
-function applyVictoryDefeat(state) {
+export function applyVictoryDefeat(state) {
   if (state.enemy.hp <= 0) {
     const difficulty = state.difficulty ?? DEFAULT_DIFFICULTY;
     const xpGained = applyDifficultyToXpReward(state.enemy.xpReward ?? 0, difficulty);
@@ -769,8 +769,13 @@ export function playerUseItem(state, itemId) {
 }
 
 export function enemyAct(state) {
+  console.log("[enemyAct] phase:", state.phase);
   if (state.phase !== 'enemy-turn') return state;
-  if (state.enemy.hp <= 0 || state.player.hp <= 0) return applyVictoryDefeat(state);
+  if (state.enemy.hp <= 0 || state.player.hp <= 0) {
+    state = applyVictoryDefeat(state);
+    console.log("[enemyAct] phase:", state.phase);
+    return state;
+  }
 
   // Update enemy intent prediction at the start of every enemy turn
   if (state.intentState) {
@@ -825,12 +830,15 @@ export function enemyAct(state) {
     state = executeEnemyAbility(state, result.abilityId);
     state = { ...state, turn: state.turn + 1 };
     state = applyVictoryDefeat(state);
+    console.log("[enemyAct] phase:", state.phase);
+    if (state.phase === 'victory' || state.phase === 'defeat') return state;
   } else if (result.action === 'attack') {
     // Select target: player or companion
     const targetResult = selectEnemyTarget(state, state.rngSeed ?? 1);
     state = { ...state, rngSeed: targetResult.seed };
 
     if (targetResult.targetType === 'companion' && targetResult.targetId) {
+      console.log('[enemyAct] attacking companion:', targetResult.targetId);
       // Enemy attacks a companion
       state = enemyAttackCompanion(state, targetResult.targetId, state.enemy.atk);
       state = {
@@ -838,6 +846,7 @@ export function enemyAct(state) {
         enemy: { ...state.enemy, defending: false },
         turn: state.turn + 1,
       };
+      console.log('[enemyAct] after enemyAttackCompanion');
     } else {
       // Blind: 50% miss chance on enemy attacks
       if (isBlinded(state.enemy)) {
@@ -896,6 +905,8 @@ export function enemyAct(state) {
       }
     }
     state = applyVictoryDefeat(state);
+    console.log("[enemyAct] phase:", state.phase);
+    if (state.phase === 'victory' || state.phase === 'defeat') return state;
   }
 
   if (state.phase === 'victory' || state.phase === 'defeat') return state;
@@ -908,6 +919,7 @@ export function enemyAct(state) {
   if (state.momentumState) {
     state = { ...state, momentumState: applyMomentumDecay(state.momentumState, false) };
   }
+  console.log("[enemyAct] phase:", state.phase);
   return { ...state, phase: 'player-turn' };
 }
 
