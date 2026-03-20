@@ -154,18 +154,42 @@ export function createProvisionState() {
 }
 
 function getInventoryItem(state, itemId) {
-  return state?.player?.inventory?.find((item) => item.id === itemId) || null;
+  const inventory = state?.player?.inventory;
+  if (Array.isArray(inventory)) {
+    const entry = inventory.find((item) => item.id === itemId);
+    return { quantity: entry?.quantity ?? 0 };
+  }
+  if (inventory && typeof inventory === "object") {
+    return { quantity: Number(inventory[itemId] || 0) };
+  }
+  return null;
 }
 
 function removeInventoryItem(state, itemId, quantity) {
-  const inventory = state.player.inventory;
-  const index = inventory.findIndex((item) => item.id === itemId);
-  if (index === -1) return false;
-  inventory[index].quantity -= quantity;
-  if (inventory[index].quantity <= 0) {
-    inventory.splice(index, 1);
+  const inventory = state?.player?.inventory;
+  if (Array.isArray(inventory)) {
+    const index = inventory.findIndex((item) => item.id === itemId);
+    if (index === -1) return false;
+    inventory[index].quantity -= quantity;
+    if (inventory[index].quantity <= 0) {
+      inventory.splice(index, 1);
+    }
+    return true;
   }
-  return true;
+  if (inventory && typeof inventory === "object") {
+    const current = Number(inventory[itemId] || 0);
+    if (Number.isNaN(current) || current < quantity) {
+      return false;
+    }
+    const nextQuantity = current - quantity;
+    if (nextQuantity <= 0) {
+      delete inventory[itemId];
+    } else {
+      inventory[itemId] = nextQuantity;
+    }
+    return true;
+  }
+  return false;
 }
 
 function applyInstantEffects(state, effect) {

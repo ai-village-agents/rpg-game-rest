@@ -828,13 +828,19 @@ export function render(state, dispatch) {
 
   // --- Exploration Phase ---
   if (state.phase === 'exploration') {
+    if (!state.player || typeof state.player !== 'object') {
+      console.error('Exploration render without player; returning to title.');
+      dispatch({ type: 'RETURN_TO_TITLE' });
+      return;
+    }
+    const player = state.player;
     const exploreRoomId = RENDER_ROOM_ID_MAP[state.world?.roomRow]?.[state.world?.roomCol] ?? null;
     const exploreNpcs = exploreRoomId ? getNPCsInRoom(exploreRoomId) : [];
     const npcListHtml = exploreNpcs.length > 0
       ? exploreNpcs.map(n => `<button class="npc-talk-btn" data-npcid="${esc(n.id)}">${getNpcEmojiWithFallback(n.id)} ${esc(n.name)}</button>`).join("")
       : "<em>No one is here.</em>";
-    const currentXp = state.player.xp ?? 0;
-    const nextLevelXp = xpForNextLevel(state.player.level ?? 1);
+    const currentXp = player.xp ?? 0;
+    const nextLevelXp = xpForNextLevel(player.level ?? 1);
     const xpLine = nextLevelXp === 0 ? 'MAX LEVEL' : `${currentXp} / ${nextLevelXp} XP`;
     hud.innerHTML = `
       ${renderWorldEventBanner(state.worldEvent || null)}
@@ -844,15 +850,15 @@ export function render(state, dispatch) {
       <div class="row">
         <div class="card">
           <div class="character-card-header">
-            <div class="character-avatar-large" aria-label="Player avatar">${state.player?.avatar || DEFAULT_AVATAR}</div>
+            <div class="character-avatar-large" aria-label="Player avatar">${player?.avatar || DEFAULT_AVATAR}</div>
             <div class="character-meta">
-              <h2>${esc(state.player.name)}</h2>
-              <div class="character-class"><b>${esc(state.player.classId ? state.player.classId[0].toUpperCase() + state.player.classId.slice(1) : 'Adventurer')}</b></div>
+              <h2>${esc(player.name)}</h2>
+              <div class="character-class"><b>${esc(player.classId ? player.classId[0].toUpperCase() + player.classId.slice(1) : 'Adventurer')}</b></div>
             </div>
           </div>
           <div class="kv">
-            <div>HP</div><div><b>${hpLine(state.player)}</b></div>
-            <div>Level</div><div><b>${state.player.level ?? 1}</b></div>
+            <div>HP</div><div><b>${hpLine(player)}</b></div>
+            <div>Level</div><div><b>${player.level ?? 1}</b></div>
             <div>XP</div>
             <div class="xp-progress-wrapper">
               <div><b>${xpLine}</b></div>
@@ -864,13 +870,13 @@ export function render(state, dispatch) {
         <div class="card">
           <h2>Inventory</h2>
           <div class="kv">
-            ${inventorySummary(state.player)}
+            ${inventorySummary(player)}
           </div>
         </div>
 
         ${isMinimapHidden(state.worldEvent)
           ? '<div class="card">The fog obscures your map...</div>'
-          : renderMinimap(state.world, state.visitedRooms || [], state.player?.avatar || DEFAULT_AVATAR)}
+          : renderMinimap(state.world, state.visitedRooms || [], player?.avatar || DEFAULT_AVATAR)}
 
         <div class="card">
           <h2>People Here</h2>

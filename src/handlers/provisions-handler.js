@@ -136,10 +136,67 @@ export function handleProvisionAction(state, action) {
       };
     }
 
-    const inventory = state.player.inventory || [];
+    const inventory = state.player.inventory;
+    const getQty = (inv, id) => {
+      if (Array.isArray(inv)) {
+        return inv.find((i) => i.id === id)?.quantity ?? 0;
+      }
+      if (inv && typeof inv === 'object') {
+        const value = Number(inv[id] ?? 0);
+        return Number.isNaN(value) ? 0 : value;
+      }
+      return 0;
+    };
+
+    if (Array.isArray(inventory)) {
+      for (const ingredient of recipe.ingredients) {
+        if (getQty(inventory, ingredient.itemId) < ingredient.quantity) {
+          return {
+            ...state,
+            provisionsUI: {
+              ...state.provisionsUI,
+              message: `Missing ingredient: ${ingredient.itemId} (need ${ingredient.quantity}).`,
+            },
+          };
+        }
+      }
+
+      let newInventory = inventory.map((i) => ({ ...i }));
+      for (const ingredient of recipe.ingredients) {
+        const idx = newInventory.findIndex((i) => i.id === ingredient.itemId);
+        if (idx !== -1) {
+          newInventory[idx].quantity -= ingredient.quantity;
+          if (newInventory[idx].quantity <= 0) {
+            newInventory.splice(idx, 1);
+          }
+        }
+      }
+
+      const existingResult = newInventory.find((i) => i.id === recipe.result.itemId);
+      if (existingResult) {
+        existingResult.quantity += recipe.result.quantity;
+      } else {
+        const provisionData = PROVISIONS[recipe.result.itemId];
+        newInventory.push({
+          id: recipe.result.itemId,
+          name: provisionData ? provisionData.name : recipe.result.itemId,
+          type: 'provision',
+          quantity: recipe.result.quantity,
+        });
+      }
+
+      const msg = `Cooked ${recipe.name}! Received ${recipe.result.quantity}x ${recipe.result.itemId}.`;
+      let next = {
+        ...state,
+        player: { ...state.player, inventory: newInventory },
+        provisionsUI: { ...state.provisionsUI, message: msg },
+      };
+      return pushLog(next, msg);
+    }
+
+    const sourceInventory = (inventory && typeof inventory === 'object') ? inventory : {};
     for (const ingredient of recipe.ingredients) {
-      const item = inventory.find((i) => i.id === ingredient.itemId);
-      if (!item || item.quantity < ingredient.quantity) {
+      if (getQty(sourceInventory, ingredient.itemId) < ingredient.quantity) {
         return {
           ...state,
           provisionsUI: {
@@ -150,29 +207,19 @@ export function handleProvisionAction(state, action) {
       }
     }
 
-    let newInventory = inventory.map((i) => ({ ...i }));
+    const newInventory = { ...sourceInventory };
     for (const ingredient of recipe.ingredients) {
-      const idx = newInventory.findIndex((i) => i.id === ingredient.itemId);
-      if (idx !== -1) {
-        newInventory[idx].quantity -= ingredient.quantity;
-        if (newInventory[idx].quantity <= 0) {
-          newInventory.splice(idx, 1);
-        }
+      const current = getQty(newInventory, ingredient.itemId);
+      const remaining = current - ingredient.quantity;
+      if (remaining <= 0) {
+        delete newInventory[ingredient.itemId];
+      } else {
+        newInventory[ingredient.itemId] = remaining;
       }
     }
 
-    const existingResult = newInventory.find((i) => i.id === recipe.result.itemId);
-    if (existingResult) {
-      existingResult.quantity += recipe.result.quantity;
-    } else {
-      const provisionData = PROVISIONS[recipe.result.itemId];
-      newInventory.push({
-        id: recipe.result.itemId,
-        name: provisionData ? provisionData.name : recipe.result.itemId,
-        type: 'provision',
-        quantity: recipe.result.quantity,
-      });
-    }
+    const currentResult = getQty(newInventory, recipe.result.itemId);
+    newInventory[recipe.result.itemId] = currentResult + recipe.result.quantity;
 
     const msg = `Cooked ${recipe.name}! Received ${recipe.result.quantity}x ${recipe.result.itemId}.`;
     let next = {
