@@ -1,17 +1,16 @@
-// Item utility module - handles item usage, inventory management
-// Compatible with both old and new item systems
-// Created by DeepSeek-V3.2 (Villager) on Day 338
-
 import { items } from './data/items.js';
+import { canonicalizeInventory, canonicalizeItemId } from './item-id.js';
 
 export function useItem(itemId, character, state) {
-  const item = items[itemId];
+  const canonicalItemId = canonicalizeItemId(itemId);
+  const inventory = canonicalizeInventory(character?.inventory || {});
+  const item = items[canonicalItemId];
   if (!item) {
-    return { success: false, message: `Item ${itemId} not found.` };
+    return { success: false, message: `Item ${canonicalItemId} not found.` };
   }
   
   // Check if character has item
-  const count = character.inventory?.[itemId] || 0;
+  const count = inventory[canonicalItemId] || 0;
   if (count <= 0) {
     return { success: false, message: `You don't have any ${item.name}.` };
   }
@@ -61,65 +60,69 @@ export function useItem(itemId, character, state) {
   }
   
   // Reduce item count
-  result.effects.inventory = {
-    ...character.inventory,
-    [itemId]: count - 1
-  };
+  result.effects.inventory = removeItemFromInventory(inventory, canonicalItemId, 1);
   
   return result;
 }
 
 export function addItemToInventory(inventory, itemId, quantity = 1) {
-  const current = inventory[itemId] || 0;
+  const canonicalInventory = canonicalizeInventory(inventory || {});
+  const canonicalItemId = canonicalizeItemId(itemId);
+  const amount = Number(quantity);
+  if (!Number.isFinite(amount) || amount <= 0 || !canonicalItemId) {
+    return canonicalInventory;
+  }
+  const current = canonicalInventory[canonicalItemId] || 0;
   return {
-    ...inventory,
-    [itemId]: current + quantity
+    ...canonicalInventory,
+    [canonicalItemId]: current + amount
   };
 }
 
 export function removeItemFromInventory(inventory, itemId, quantity = 1) {
-  const current = inventory[itemId] || 0;
-  if (current < quantity) {
-    return inventory; // Not enough items
+  const canonicalInventory = canonicalizeInventory(inventory || {});
+  const canonicalItemId = canonicalizeItemId(itemId);
+  const amount = Number(quantity);
+  if (!Number.isFinite(amount) || amount <= 0 || !canonicalItemId) {
+    return canonicalInventory;
   }
-  const newCount = current - quantity;
-  const newInventory = { ...inventory };
+  const current = canonicalInventory[canonicalItemId] || 0;
+  if (current < amount) {
+    return canonicalInventory; // Not enough items
+  }
+  const newCount = current - amount;
+  const newInventory = { ...canonicalInventory };
   if (newCount === 0) {
-    delete newInventory[itemId];
+    delete newInventory[canonicalItemId];
   } else {
-    newInventory[itemId] = newCount;
+    newInventory[canonicalItemId] = newCount;
   }
   return newInventory;
 }
 
 export function getItemCount(inventory, itemId) {
-  return inventory[itemId] || 0;
+  const canonicalInventory = canonicalizeInventory(inventory || {});
+  const canonicalItemId = canonicalizeItemId(itemId);
+  if (!canonicalItemId) return 0;
+  return canonicalInventory[canonicalItemId] || 0;
 }
 
 export function hasItem(inventory, itemId, quantity = 1) {
-  return (inventory[itemId] || 0) >= quantity;
+  const canonicalInventory = canonicalizeInventory(inventory || {});
+  const canonicalItemId = canonicalizeItemId(itemId);
+  const required = Number(quantity);
+  if (!Number.isFinite(required) || required <= 0 || !canonicalItemId) {
+    return false;
+  }
+  return (canonicalInventory[canonicalItemId] || 0) >= required;
 }
 
 // Backward compatibility: converts old inventory format to new
 export function normalizeInventory(oldInventory) {
-  if (!oldInventory) return {};
-  
-  // If it's already in new format (object with item IDs), return as-is
-  if (typeof oldInventory === 'object' && !Array.isArray(oldInventory)) {
-    // Check if it's already normalized (has known item IDs)
-    const hasKnownItem = Object.keys(oldInventory).some(key => items[key]);
-    if (hasKnownItem) return oldInventory;
-    
-    // Convert old format { potion: 2 } to new format
-    const normalized = {};
-    if (oldInventory.potion !== undefined) {
-      normalized.potion = oldInventory.potion;
-    }
-    // Add other legacy items if they exist
-    return normalized;
+  if (!oldInventory || typeof oldInventory !== 'object' || Array.isArray(oldInventory)) {
+    return {};
   }
-  
-  return {};
+  return canonicalizeInventory(oldInventory);
 }
 
 // Get display name for inventory item

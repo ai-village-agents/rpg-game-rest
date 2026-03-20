@@ -25,6 +25,7 @@ import { createWeatherState } from '../weather.js';
 import { createDailyChallengeState } from '../daily-challenge-system.js';
 import { createEmptyStatistics } from '../statistics-dashboard.js';
 import { validateName } from '../character-creation.js';
+import { canonicalizeInventory } from '../item-id.js';
 
 function getRoomDescription(worldState) {
   const room = getCurrentRoom(worldState);
@@ -167,10 +168,11 @@ export function handleSystemAction(state, action) {
       loaded = { ...loaded, rngSeed: Date.now() % 2147483647 };
     }
     if (loaded) {
+      const fallbackInventory = { potion: 2, megaEther: 0, herbBundle: 1, scroll: 0 };
       const migratedState = {
         ...loaded,
         rngSeed: loaded.rngSeed !== undefined ? loaded.rngSeed : Date.now() % 2147483647,
-        player: { ...(loaded.player || {}), inventory: loaded.player?.inventory || { potion: 2, megaEther: 0, herbBundle: 1, scroll: 0 } },
+        player: { ...(loaded.player || {}), inventory: canonicalizeInventory(loaded.player?.inventory || fallbackInventory) },
         arenaState: loaded.arenaState !== undefined ? loaded.arenaState : createArenaState(),
         npcRelationshipManager: ensureNPCRelationshipManager(loaded.npcRelationshipManager),
         dailyChallengeState: loaded.dailyChallengeState !== undefined ? loaded.dailyChallengeState : createDailyChallengeState(),
@@ -255,9 +257,10 @@ export function handleSystemAction(state, action) {
     const slotIndex = action.slotIndex;
     const loaded = loadFromSlot(slotIndex);
     if (loaded) {
+      const fallbackInventory = { potion: 2, megaEther: 0, herbBundle: 1, scroll: 0 };
       const migratedState = {
         ...loaded,
-        player: { ...(loaded.player || {}), inventory: loaded.player?.inventory || { potion: 2, megaEther: 0, herbBundle: 1, scroll: 0 } },
+        player: { ...(loaded.player || {}), inventory: canonicalizeInventory(loaded.player?.inventory || fallbackInventory) },
         statistics: loaded.statistics !== undefined ? loaded.statistics : createEmptyStatistics(),
         rngSeed: loaded.rngSeed !== undefined ? loaded.rngSeed : Date.now() % 2147483647,
         arenaState: loaded.arenaState !== undefined ? loaded.arenaState : createArenaState(),

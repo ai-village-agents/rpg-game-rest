@@ -110,16 +110,16 @@ assert(potionResult.effects.inventory.potion === 1, 'Potion count reduced by 1')
 const hiPotionResult = useItem('hiPotion', { ...baseCharacter, inventory: { hiPotion: 1 } }, {});
 assert(hiPotionResult.effects.hp === 50, 'Hi-Potion heals up to max HP');
 assert(hiPotionResult.effects.healed === 40, 'Hi-Potion healing amount reported');
-assert(hiPotionResult.effects.inventory.hiPotion === 0, 'Hi-Potion consumed');
+assert(hiPotionResult.effects.inventory.hiPotion === undefined, 'Hi-Potion consumed');
 
 const etherResult = useItem('ether', { ...baseCharacter, inventory: { ether: 1 } }, {});
 assert(etherResult.effects.mp === 20, 'Ether restores MP up to max');
 assert(etherResult.effects.restoredMP === 15, 'Ether restored MP amount reported');
-assert(etherResult.effects.inventory.ether === 0, 'Ether consumed');
+assert(etherResult.effects.inventory.ether === undefined, 'Ether consumed');
 
 const antidoteResult = useItem('antidote', { ...baseCharacter, inventory: { antidote: 1 } }, {});
 assert(Array.isArray(antidoteResult.effects.cureStatus) && antidoteResult.effects.cureStatus.includes('poison'), 'Antidote cleanses poison');
-assert(antidoteResult.effects.inventory.antidote === 0, 'Antidote consumed');
+assert(antidoteResult.effects.inventory.antidote === undefined, 'Antidote consumed');
 
 // ── Test: Backward Compatibility ────────────────────────────────────
 console.log('\n--- Backward Compatibility ---');
