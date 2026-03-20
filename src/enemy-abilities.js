@@ -29,8 +29,17 @@ function nextSeed(seed) {
 }
 
 function addStatusEffect(target, effect) {
+  if (!target || !effect) return target;
   const statusEffects = target.statusEffects ?? [];
-  return { ...target, statusEffects: [...statusEffects, { ...effect }] };
+  const updatedTarget = { ...target, statusEffects: [...statusEffects, { ...effect }] };
+  const targetName = target.displayName ?? target.name ?? 'target';
+  console.log('[enemy-abilities] Applying status effect', {
+    target: targetName,
+    effect: effect.name ?? effect.type,
+    duration: effect.duration,
+    totalEffects: updatedTarget.statusEffects.length,
+  });
+  return updatedTarget;
 }
 
 /**
@@ -162,7 +171,11 @@ export function executeEnemyAbility(state, abilityId) {
       nextState,
       `${(nextState.enemy.displayName ?? nextState.enemy.name)} uses ${ability.name} for ${damage} damage!${suffix}`
     );
-  } else if (ability.targetType === 'self') {
+  } else if (
+    ability.targetType === 'self' ||
+    ability.targetType === 'all-allies' ||
+    ability.targetType === 'single-ally'
+  ) {
     if (effect) {
       nextState = {
         ...nextState,
