@@ -386,7 +386,12 @@ export const NPCS = {
     name: 'Elara',
     type: 'QUEST_GIVER',
     location: 'center',
-    dialog: 'elara_dialog'
+    dialog: 'elara_dialog',
+    personality: {
+      friendliness: 0.7,
+      formality: 0.5,
+      patience: 0.8
+    }
   },
 
   roric: {
@@ -394,7 +399,12 @@ export const NPCS = {
     name: 'Roric',
     type: 'VILLAGER',
     location: 'sw',
-    dialog: 'roric_dialog'
+    dialog: 'roric_dialog',
+    personality: {
+      friendliness: 0.7,
+      formality: 0.5,
+      patience: 0.8
+    }
   }
 };
 
