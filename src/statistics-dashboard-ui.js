@@ -129,6 +129,50 @@ const DASHBOARD_STYLES = `
   border-radius: 4px;
   color: #90cdf4;
 }
+
+.stats-section-details {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid #4a5568;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.stats-section-details[open] {
+  box-shadow: 0 0 12px rgba(144, 205, 244, 0.2);
+}
+
+.stats-section-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #90cdf4;
+  cursor: pointer;
+  padding: 12px;
+  list-style: none;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.stats-section-summary::-webkit-details-marker {
+  display: none;
+}
+
+.stats-section-summary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(144, 205, 244, 0.4);
+}
+
+.stats-section-details .stats-section {
+  margin-bottom: 0;
+  background: transparent;
+  padding: 12px;
+}
+
+.stats-section-content {
+  padding: 0 12px 12px;
+}
 `;
 
 /**
@@ -414,17 +458,68 @@ export function renderTimeSection(time) {
 export function renderStatisticsDashboard(state) {
   const summary = getStatisticsSummary(state);
   const topEnemies = getTopEnemiesDefeated(state, 5);
+  const sections = [
+    {
+      key: 'combat',
+      title: 'Combat Statistics',
+      icon: SECTION_ICONS.combat,
+      content: renderCombatSection(summary.combat)
+    },
+    {
+      key: 'enemies',
+      title: 'Enemies Defeated',
+      icon: SECTION_ICONS.enemies,
+      content: renderEnemiesSection(summary.enemies, topEnemies)
+    },
+    {
+      key: 'economy',
+      title: 'Economy',
+      icon: SECTION_ICONS.economy,
+      content: renderEconomySection(summary.economy)
+    },
+    {
+      key: 'items',
+      title: 'Items',
+      icon: SECTION_ICONS.items,
+      content: renderItemsSection(summary.items)
+    },
+    {
+      key: 'quests',
+      title: 'Quests',
+      icon: SECTION_ICONS.quests,
+      content: renderQuestsSection(summary.quests)
+    },
+    {
+      key: 'exploration',
+      title: 'Exploration',
+      icon: SECTION_ICONS.exploration,
+      content: renderExplorationSection(summary.exploration)
+    },
+    {
+      key: 'time',
+      title: 'Time Played',
+      icon: SECTION_ICONS.time,
+      content: renderTimeSection(summary.time)
+    }
+  ];
+  const sectionsHtml = sections
+    .filter(({ content }) => content && content.trim())
+    .map(({ key, title, icon, content }) => `
+      <details class="stats-section-details" data-section="${key}" open>
+        <summary class="stats-section-summary">
+          <span class="stats-section-icon">${icon}</span>
+          <span>${title}</span>
+        </summary>
+        <div class="stats-section-content">
+          ${content}
+        </div>
+      </details>
+    `).join('');
   
   return `
     <div class="stats-dashboard">
       <div class="stats-dashboard-title">📊 Statistics Dashboard</div>
-      ${renderCombatSection(summary.combat)}
-      ${renderEnemiesSection(summary.enemies, topEnemies)}
-      ${renderEconomySection(summary.economy)}
-      ${renderItemsSection(summary.items)}
-      ${renderQuestsSection(summary.quests)}
-      ${renderExplorationSection(summary.exploration)}
-      ${renderTimeSection(summary.time)}
+      ${sectionsHtml}
     </div>
   `;
 }
