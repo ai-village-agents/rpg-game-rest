@@ -188,8 +188,13 @@ export function handleEnemyTurnLogic(state) {
   }
   const hpBefore = state.player?.hp ?? 0;
   const next = enemyAct(state);
-  const dmgReceived = Math.max(0, hpBefore - (next.player?.hp ?? hpBefore));
-  applyCraftingMaterialDrops(next);
+  let safeNext = next;
+  if (next?.phase === 'enemy-turn') {
+    console.error('BUG: enemyAct returned enemy-turn, forcing player-turn');
+    safeNext = { ...next, phase: 'player-turn' };
+  }
+  const dmgReceived = Math.max(0, hpBefore - (safeNext.player?.hp ?? hpBefore));
+  applyCraftingMaterialDrops(safeNext);
 
   if (cs) {
     csRecordDamageReceived(cs, dmgReceived);
@@ -197,7 +202,7 @@ export function handleEnemyTurnLogic(state) {
   }
   
   if (dmgReceived > 0) {
-    let withGs = { ...next, gameStats: recordDamageReceived(next.gameStats || createGameStats(), dmgReceived), combatStats: cs };
+    let withGs = { ...safeNext, gameStats: recordDamageReceived(safeNext.gameStats || createGameStats(), dmgReceived), combatStats: cs };
     if (dmgReceived > 0) {
       withGs.statistics = recordDashboardDamageReceived({ statistics: withGs.statistics }, dmgReceived).statistics;
     }
@@ -225,10 +230,10 @@ export function handleEnemyTurnLogic(state) {
   }
   
   // Companions auto-act after enemy turn (if still in combat)
-  if (next.phase === 'player-turn' || next.phase === 'enemy-turn') {
-    const enemyHpBeforeCompanion = next.enemy?.hp ?? 0;
-    const playerHpBeforeCompanion = next.player?.hp ?? 0;
-    let withCompanion = companionAutoAct(next);
+  if (safeNext.phase === 'player-turn' || safeNext.phase === 'enemy-turn') {
+    const enemyHpBeforeCompanion = safeNext.enemy?.hp ?? 0;
+    const playerHpBeforeCompanion = safeNext.player?.hp ?? 0;
+    let withCompanion = companionAutoAct(safeNext);
     if (cs) {
       const enemyHpAfterCompanion = withCompanion.enemy?.hp ?? enemyHpBeforeCompanion;
       const playerHpAfterCompanion = withCompanion.player?.hp ?? playerHpBeforeCompanion;
@@ -244,7 +249,7 @@ export function handleEnemyTurnLogic(state) {
     }
     return { ...withCompanion, combatStats: cs };
   }
-  let finalized = next;
+  let finalized = safeNext;
   if (cs && (finalized.phase === 'victory' || finalized.phase === 'defeat')) {
     finalizeCombatStats(cs, finalized.phase, finalized.player?.hp ?? 0, finalized.player?.maxHp ?? 100);
     finalized = { ...finalized, combatStatsSummary: formatCombatStatsDisplay(cs) };
