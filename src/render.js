@@ -1174,20 +1174,6 @@ export function render(state, dispatch) {
         updateStatisticsDashboard(dashboardElement, state);
       }
     }
-    const hudElement = document.getElementById('hud');
-    if (hudElement) {
-      let dashboardElement = document.getElementById('statisticsDashboardAfterBattle');
-      if (!dashboardElement) {
-        dashboardElement = createStatisticsDashboardElement(state);
-        if (dashboardElement) {
-          dashboardElement.id = 'statisticsDashboardAfterBattle';
-          hudElement.appendChild(dashboardElement);
-        }
-      }
-      if (dashboardElement) {
-        updateStatisticsDashboard(dashboardElement, state);
-      }
-    }
     actions.innerHTML = '<div class="buttons"><button id="btnContinueAfterBattle">Continue →</button></div>';
     document.getElementById('btnContinueAfterBattle').onclick = () => dispatch({ type: 'CONTINUE_AFTER_BATTLE' });
     log.innerHTML = state.log.slice().reverse().map(line => formatLogEntryHtml(line)).join('');
