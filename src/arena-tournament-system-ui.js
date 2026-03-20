@@ -43,6 +43,7 @@ export function renderArenaPanel(state, options = {}) {
   const stats = getArenaStats(arenaState);
   const tierColor = TIER_COLORS[stats.tier] || '#ffffff';
   const tierIcon = TIER_ICONS[stats.tier] || '';
+  const introHtml = arenaState && arenaState.showIntro ? renderArenaIntroModal() : '';
 
   const html = `
     <div class="arena-panel" data-tier="${escapeHtml(stats.tier)}">
@@ -53,6 +54,8 @@ export function renderArenaPanel(state, options = {}) {
           <span class="tier-name">${escapeHtml(formatTierName(stats.tier))}</span>
         </div>
       </div>
+
+      ${introHtml}
 
       <div class="arena-rating">
         <div class="rating-display">
@@ -78,6 +81,26 @@ export function renderArenaPanel(state, options = {}) {
   `;
 
   return html;
+}
+
+/**
+ * Renders the arena introduction modal shown on first entry
+ * @returns {string} HTML string
+ */
+export function renderArenaIntroModal() {
+  return `
+    <div class="arena-intro-callout" role="dialog" aria-labelledby="arena-intro-title">
+      <div class="arena-intro-header">
+        <h3 id="arena-intro-title">Arena Primer</h3>
+        <button class="arena-intro-close" data-action="dismiss-arena-intro" aria-label="Dismiss arena primer">&times;</button>
+      </div>
+      <div class="arena-intro-body">
+        <p><strong>What the Arena Is:</strong> The arena is where you challenge elite opponents, grow your reputation, and earn valuable rewards.</p>
+        <p><strong>Betting on Yourself:</strong> Each battle lets you stake gold on your own victory. Win to claim your wager back with bonus payouts—lose and the stake is forfeited.</p>
+        <p><strong>Match Types:</strong> Jump into quick matches for single duels or enter tournaments that feature formats like single elimination brawls, endurance gauntlets, and round-robin leagues.</p>
+      </div>
+    </div>
+  `;
 }
 
 /**
@@ -673,6 +696,49 @@ export function getArenaStyles() {
       justify-content: space-between;
       align-items: center;
       margin-bottom: 16px;
+    }
+
+    .arena-intro-callout {
+      background: rgba(33, 150, 243, 0.12);
+      border: 1px solid rgba(76, 175, 80, 0.5);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      position: relative;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.25);
+    }
+
+    .arena-intro-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .arena-intro-header h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .arena-intro-close {
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .arena-intro-close:hover {
+      color: #ff9800;
+    }
+
+    .arena-intro-body p {
+      margin: 8px 0;
+      line-height: 1.4;
+    }
+
+    .arena-intro-body strong {
+      color: #ffeb3b;
     }
 
     .arena-tier-badge {

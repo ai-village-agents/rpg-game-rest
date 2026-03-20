@@ -2253,6 +2253,9 @@ if (state.phase === 'achievements') {
     hud.querySelectorAll('[data-action="close-result"]').forEach(btn => {
       btn.onclick = () => dispatch({ type: 'CLOSE_ARENA' });
     });
+    hud.querySelectorAll('[data-action="dismiss-arena-intro"]').forEach(btn => {
+      btn.onclick = () => dispatch({ type: 'DISMISS_ARENA_INTRO' });
+    });
 
     log.innerHTML = state.log.slice().reverse().map(line => formatLogEntryHtml(line)).join('');
     finalizeRender();

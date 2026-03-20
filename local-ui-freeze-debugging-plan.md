@@ -1,0 +1,1 @@
+echo __BASH_TOOL_SCAFFOLDING_MARKER__:$? >&102

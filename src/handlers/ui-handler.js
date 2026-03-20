@@ -30,7 +30,7 @@ import { getAllStandings, modifyReputation, getFactionStanding, claimReward } fr
 import { renderReputationPanel } from '../faction-reputation-system-ui.js';
 import { createGuild, addMember, removeMember, changeMemberRank, depositGold, withdrawGold, unlockPerk, disbandGuild, getGuildStats } from '../guild-system.js';
 import { renderGuildPanel, renderCreateGuildForm, renderGuildBrowser, renderGuildHud } from '../guild-system-ui.js';
-import { processMatchResult, createTournament, recordTournamentMatchResult, getTournamentRewards, resetSeason, generateOpponent, getNextPlayerMatch, simulateNPCMatches, TOURNAMENTS } from '../arena-tournament-system.js';
+import { processMatchResult, createTournament, recordTournamentMatchResult, getTournamentRewards, resetSeason, generateOpponent, getNextPlayerMatch, simulateNPCMatches, TOURNAMENTS, createArenaState } from '../arena-tournament-system.js';
 import { dismissSporeling } from '../sporeling-integration.js';
 import { emit } from '../engine.js';
 
@@ -629,12 +629,22 @@ export function handleUIAction(state, action) {
   // Arena & Tournament
   if (type === 'OPEN_ARENA') {
     if (isPreAdventure) return null;
-    return { ...state, phase: 'arena' };
+    const arenaState = state.arenaState ? { ...state.arenaState } : createArenaState();
+    const hasSeenIntro = arenaState.hasSeenIntro === true;
+    const nextArenaState = {
+      ...arenaState,
+      hasSeenIntro: true,
+      showIntro: hasSeenIntro ? false : true
+    };
+    return { ...state, phase: 'arena', arenaState: nextArenaState };
   }
 
   if (type === 'CLOSE_ARENA') {
     if (state.phase !== 'arena') return null;
-    return { ...state, phase: 'exploration' };
+    const arenaState = state.arenaState
+      ? { ...state.arenaState, showIntro: false }
+      : state.arenaState;
+    return { ...state, phase: 'exploration', arenaState };
   }
 
   if (type === 'START_ARENA_MATCH') {
@@ -676,7 +686,8 @@ export function handleUIAction(state, action) {
         ...state.arenaState.tournaments,
         [action.tournamentId]: tournament
       },
-      activeTournament: action.tournamentId
+      activeTournament: action.tournamentId,
+      showIntro: false
     };
     const next = {
       ...state,
@@ -688,6 +699,14 @@ export function handleUIAction(state, action) {
       }
     };
     return pushLog(next, `You enter the ${tournament.name}. Entry fee: ${tournament.entryFee || 0} gold.`);
+  }
+
+  if (type === 'DISMISS_ARENA_INTRO') {
+    if (!state.arenaState || !state.arenaState.showIntro) return state;
+    return {
+      ...state,
+      arenaState: { ...state.arenaState, showIntro: false }
+    };
   }
 
   if (type === 'RESET_ARENA_SEASON') {
