@@ -384,7 +384,7 @@ export const NPCS = {
   elara: {
     id: 'elara',
     name: 'Elara',
-    type: 'VILLAGER',
+    type: 'QUEST_GIVER',
     location: 'center',
     dialog: 'elara_dialog'
   },
