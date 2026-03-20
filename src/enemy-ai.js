@@ -304,6 +304,45 @@ function supportStrategy(enemy, player, turnCount, seed) {
   return { action: 'defend', abilityId: null, newSeed: s1 };
 }
 
+function defensiveStrategy(enemy, player, turnCount, seed) {
+  const hpPct = getHpPercent(enemy);
+  const usable = getUsableAbilities(enemy);
+  const categories = categorizeAbilities(usable);
+  const { seed: s1, value: roll } = nextSeed(seed);
+
+  // Low HP: prioritize self-heal, otherwise defend 50%
+  if (hpPct < 0.35) {
+    if (categories.selfHeal.length > 0) {
+      const { ability, newSeed } = pickRandomAbility(categories.selfHeal, s1);
+      if (ability) return { action: 'ability', abilityId: ability.id, newSeed };
+    }
+    if (roll < 0.5) {
+      return { action: 'defend', abilityId: null, newSeed: s1 };
+    }
+  }
+
+  // If no debuffs on player: apply a debuff 40% of the time
+  if (!hasAnyDebuff(player) && categories.debuff.length > 0 && roll < 0.4) {
+    const { ability, newSeed } = pickRandomAbility(categories.debuff, s1);
+    if (ability) return { action: 'ability', abilityId: ability.id, newSeed };
+  }
+
+  // Normal defensive: 40% defend, 30% attack, 30% ability
+  if (roll < 0.4) {
+    return { action: 'defend', abilityId: null, newSeed: s1 };
+  }
+  if (roll < 0.7) {
+    return { action: 'attack', abilityId: null, newSeed: s1 };
+  }
+  if (usable.length > 0) {
+    const { ability, newSeed } = pickRandomAbility(usable, s1);
+    return ability
+      ? { action: 'ability', abilityId: ability.id, newSeed }
+      : { action: 'attack', abilityId: null, newSeed };
+  }
+  return { action: 'attack', abilityId: null, newSeed: s1 };
+}
+
 function bossStrategy(enemy, player, turnCount, seed) {
   const hpPct = getHpPercent(enemy);
   const usable = getUsableAbilities(enemy);
@@ -392,6 +431,7 @@ const STRATEGIES = {
   aggressive: aggressiveStrategy,
   caster: casterStrategy,
   support: supportStrategy,
+  defensive: defensiveStrategy,
   boss: bossStrategy,
 };
 

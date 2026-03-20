@@ -77,6 +77,14 @@ const renderAvailableCompanion = (npc, { canRecruit = true } = {}) => {
   const actionAttrs = canRecruit
     ? `data-action="RECRUIT_COMPANION" data-companion-id="${npc.id}"`
     : 'disabled';
+  const statsSummary = `ATK: ${stats.attack ?? 0} | DEF: ${stats.defense ?? 0} | SPD: ${stats.speed ?? 0}`;
+  let requirementsNote = '';
+
+  if (npc.recruitConditions) {
+    requirementsNote = npc.recruitConditions.quest
+      ? 'Requirements: Quest required'
+      : 'Requirements: Special conditions';
+  }
 
   return `
     <div class="companion-card companion-card-available" data-companion-id="${npc.id}">
@@ -85,6 +93,8 @@ const renderAvailableCompanion = (npc, { canRecruit = true } = {}) => {
         <div class="companion-meta">${stats.class} • Lv ${stats.level}</div>
       </div>
       <div class="companion-location">Location: ${locationLabel}</div>
+      <div class="companion-meta">${statsSummary}</div>
+      ${requirementsNote ? `<div class="companion-meta">${requirementsNote}</div>` : ''}
       <div class="companion-actions">
         <button class="companion-button" ${actionAttrs}>${actionLabel}</button>
         ${
@@ -99,6 +109,7 @@ const renderAvailableCompanion = (npc, { canRecruit = true } = {}) => {
 
 export const renderCompanionPanel = (state) => {
   const recruited = state?.companions || [];
+  const maxParty = state?.maxCompanions || 2;
 
   const availableCompanionsWithLocation = getAvailableCompanions(state, true);
   let availableHere = [];
@@ -126,6 +137,7 @@ export const renderCompanionPanel = (state) => {
         <h2 class="companion-title">🤝 Companions</h2>
         <button class="companion-close" data-action="CLOSE_COMPANIONS">Close</button>
       </header>
+      <div class="companion-meta">Party: ${recruited.length}/${maxParty} companions</div>
 
       <div class="companion-section">
         <h3 class="companion-section-title">Current Party</h3>
