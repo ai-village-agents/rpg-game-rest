@@ -266,7 +266,7 @@ export function handleSystemAction(state, action) {
       };
       return { ...migratedState, phase: 'exploration', log: [...(migratedState.log || []), 'Loaded from slot ' + (slotIndex + 1) + '.'] };
     }
-    return { ...state, phase: 'save-slots', saveSlotMode: 'load', saveSlots: getSaveSlots(), log: [...(state.log || []), 'Load failed! Slot may be empty.'] };
+    return { ...state, phase: 'save-slots', saveSlotMode: 'load', saveSlots: getSaveSlots(), log: [...(state.log || []), 'Load failed! Save file appears to be incomplete or corrupt. Please start a new game.'] };
   }
 
   if (type === 'DELETE_SAVE_SLOT') {
