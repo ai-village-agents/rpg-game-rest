@@ -149,6 +149,7 @@ const DIALOG_LINES = {
   ],
 };
   elara_1: ["I need someone to deliver a message to Roric in the Southwest Marsh.", "He's a trusted ally — find him and tell him Elara sent you."],
+  roric_1: ["Ah, you come from Elara? She worries too much, but her heart's in the right place.", "Safe travels, adventurer. The marsh holds many secrets."],
 
 const RELATIONSHIP_GREETINGS = {
   village_elder: {
