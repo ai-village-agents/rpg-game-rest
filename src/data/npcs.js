@@ -384,6 +384,7 @@ export const NPCS = {
   elara: {
     id: 'elara',
     name: 'Elara',
+    type: 'QUEST_GIVER',
     location: 'center',
     dialog: 'elara_dialog'
   },
@@ -391,6 +392,7 @@ export const NPCS = {
   roric: {
     id: 'roric',
     name: 'Roric',
+    type: 'VILLAGER',
     location: 'sw',
     dialog: 'roric_dialog'
   }
