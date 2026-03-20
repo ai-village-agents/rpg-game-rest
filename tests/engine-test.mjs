@@ -130,7 +130,8 @@ console.log('\n--- Save System ---');
   localStorage.clear();
 
   const testState = {
-    player: { name: 'TestHero', hp: 50 },
+    player: { name: 'TestHero', hp: 50, maxHP: 50, atk: 10, def: 5, spd: 5 },
+    playerClass: 'warrior',
     turn: 5,
     version: 1
   };

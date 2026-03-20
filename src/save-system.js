@@ -125,7 +125,7 @@ export function triggerAutoSave(state, reason = 'auto') {
  */
 export function exportSaveToJSON(slotIndex = 0) {
   if (!isValidSlot(slotIndex)) return null;
-  const data = loadFromSlot(slotIndex);
+  const data = loadFromSlot(slotIndex, true);
   if (!data) return null;
   return JSON.stringify(data, null, 2);
 }
@@ -186,7 +186,7 @@ export function renameSave(slotIndex, newName) {
   if (!isValidSlot(slotIndex)) {
     return { success: false, error: 'Invalid slot index.' };
   }
-  const data = loadFromSlot(slotIndex);
+  const data = loadFromSlot(slotIndex, true);
   if (!data) {
     return { success: false, error: 'No save data found for this slot.' };
   }

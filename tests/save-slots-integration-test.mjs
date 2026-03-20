@@ -28,7 +28,8 @@ function clearSlots() {
 function makeState(overrides = {}) {
   return {
     phase: 'exploration',
-    player: { name: 'TestHero', hp: 50, maxHp: 50, level: 3 },
+    player: { name: 'TestHero', hp: 50, maxHP: 50, atk: 10, def: 5, spd: 5, level: 3 },
+    playerClass: 'warrior',
     turn: 10,
     log: ['Test log entry'],
     ...overrides
@@ -238,7 +239,7 @@ clearSlots();
   const s1 = makeState({ phase: 'save-slots', saveSlotMode: 'save', turn: 5 });
   simulateDispatch(s1, { type: 'SAVE_TO_SLOT', slotIndex: 0 });
   
-  const s2 = makeState({ phase: 'save-slots', saveSlotMode: 'save', turn: 99, player: { name: 'NewHero', hp: 100, maxHp: 100, level: 10 } });
+  const s2 = makeState({ phase: 'save-slots', saveSlotMode: 'save', turn: 99, player: { name: 'NewHero', hp: 100, maxHP: 100, atk: 15, def: 8, spd: 6, level: 10 } });
   const after = simulateDispatch(s2, { type: 'SAVE_TO_SLOT', slotIndex: 0 });
   check('slot still exists', after.saveSlots[0].exists);
   check('slot has updated player name', after.saveSlots[0].playerName === 'NewHero');
