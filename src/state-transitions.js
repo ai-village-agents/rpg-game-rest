@@ -19,10 +19,6 @@ export function handleStateTransitions(prevState, nextState) {
   let next = nextState;
   const enteringVictory = next.phase === 'victory' && prevState.phase !== 'victory' && prevState.phase !== 'level-up';
   
-  if (enteringVictory && (next.goldGained ?? 0) > 0) {
-    next = recordDashboardGoldEarned(next, next.goldGained, 'combat');
-  }
-  
   // Detect level-ups when entering victory phase
   if (enteringVictory) {
     const player = next.player;
@@ -68,6 +64,9 @@ export function handleStateTransitions(prevState, nextState) {
 
   // After level-up detection, transition victory → battle-summary
   if (next.phase === 'victory' && prevState.phase !== 'battle-summary' && prevState.phase !== 'level-up') {
+    if ((next.goldGained ?? 0) > 0) {
+      next = recordDashboardGoldEarned(next, next.goldGained, 'combat');
+    }
     next = { ...next, phase: 'battle-summary', battleSummary: createBattleSummary(next) };
   }
   
