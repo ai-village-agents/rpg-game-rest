@@ -1,6 +1,7 @@
 import { craftingMaterials, craftedItems, recipes } from './data/recipes.js';
 import { items } from './data/items.js';
 import { addItemToInventory, removeItemFromInventory, getItemCount } from './items.js';
+import { recordItemCrafted } from './statistics-dashboard.js';
 
 /**
  * Create a new crafting state.
@@ -163,6 +164,9 @@ export function craftItem(state, recipeId) {
 
   const resultItem = lookupItem(result.itemId);
   const itemName = resultItem?.name || result.itemId;
+
+  const tracked = recordItemCrafted(state);
+  state.statistics = tracked.statistics;
 
   return {
     success: true,

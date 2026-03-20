@@ -4,6 +4,7 @@ import { createBattleSummary } from './battle-summary.js';
 import { pushLog } from './state.js';
 import { logLevelUp } from './journal.js';
 import { addSkillPoints, createTalentState } from './talents.js';
+import { recordGoldEarned as recordDashboardGoldEarned } from './statistics-dashboard.js';
 
 const SKILL_POINTS_PER_LEVEL = 1;
 
@@ -16,9 +17,14 @@ const SKILL_POINTS_PER_LEVEL = 1;
  */
 export function handleStateTransitions(prevState, nextState) {
   let next = nextState;
+  const enteringVictory = next.phase === 'victory' && prevState.phase !== 'victory' && prevState.phase !== 'level-up';
+  
+  if (enteringVictory && (next.goldGained ?? 0) > 0) {
+    next = recordDashboardGoldEarned(next, next.goldGained, 'combat');
+  }
   
   // Detect level-ups when entering victory phase
-  if (next.phase === 'victory' && prevState.phase !== 'victory' && prevState.phase !== 'level-up') {
+  if (enteringVictory) {
     const player = next.player;
     if (player && player.classId) {
       const oldLevel = player.level ?? 1;

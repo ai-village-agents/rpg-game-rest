@@ -6,7 +6,7 @@ import * as achievements from '../achievements.js';
 import { companionAutoAct } from '../companions.js';
 import { createCombatStats, recordPlayerAttack, recordPlayerDefend, recordAbilityUse, recordItemUse, recordPotionUse, recordDamageReceived as csRecordDamageReceived, recordFleeAttempt, recordWeaknessHit, recordCompanionAction, recordTurn, finalizeCombatStats, formatCombatStatsDisplay } from '../combat-stats-tracker.js';
 import { updateBountyProgress } from '../bounty-board.js';
-import { recordDamageDealt as recordDashboardDamageDealt, recordDamageReceived as recordDashboardDamageReceived, recordEnemyDefeated, recordHealing } from '../statistics-dashboard.js';
+import { recordDamageDealt as recordDashboardDamageDealt, recordDamageReceived as recordDashboardDamageReceived, recordEnemyDefeated, recordHealing, recordItemFound } from '../statistics-dashboard.js';
 
 /**
  * Handles combat-related actions dispatched during 'player-turn'.
@@ -20,7 +20,8 @@ export function handleCombatAction(state, action) {
   if (state.phase !== 'player-turn') return null;
 
   let cs = state.combatStats || null;
-  if (!cs && state.enemy) {
+  // Always create fresh combatStats on Turn 1 to ensure startTime is accurate (Issue #65 - duration bug)
+  if ((!cs || state.turn === 1) && state.enemy) {
     cs = createCombatStats(state.enemy?.displayName ?? state.enemy?.name ?? 'Unknown Enemy', state.enemy?.isBoss || false);
   }
 
@@ -181,7 +182,8 @@ export function handleCombatAction(state, action) {
  */
 export function handleEnemyTurnLogic(state) {
   let cs = state.combatStats || null;
-  if (!cs && state.enemy) {
+  // Always create fresh combatStats on Turn 1 to ensure startTime is accurate (Issue #65 - duration bug)
+  if ((!cs || state.turn === 1) && state.enemy) {
     cs = createCombatStats(state.enemy?.displayName ?? state.enemy?.name ?? 'Unknown Enemy', state.enemy?.isBoss || false);
   }
   const hpBefore = state.player?.hp ?? 0;
@@ -297,6 +299,12 @@ function applyCraftingMaterialDrops(state) {
     const name = item?.name || drop.materialId;
     const label = qty > 1 ? `${name} x${qty}` : name;
     lootedItems.push({ id: drop.materialId, name: label });
+    for (let i = 0; i < qty; i++) {
+      const itemType = item?.type || 'other';
+      const rarity = item?.rarity || 'common';
+      const tracked = recordItemFound(state, itemType, rarity);
+      state.statistics = tracked.statistics;
+    }
   }
 
   state.player = { ...state.player, inventory };

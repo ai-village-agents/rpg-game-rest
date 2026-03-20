@@ -25,13 +25,14 @@ import { clearFloor as clearDungeonFloor, TOTAL_FLOORS } from '../dungeon-floors
 import { handleProvisionAction } from './provisions-handler.js';
 import { handleEncounterAction, shouldCheckForEncounter } from './encounter-handler.js';
 import { BESTIARY_FILTER_DEFAULT, BESTIARY_SORT_DEFAULT } from '../bestiary-ui.js';
-import { completeTutorialStep, dismissCurrentHint, showHint, createTutorialState, resetTutorial } from '../tutorial.js';
+import { completeTutorialStep, dismissCurrentHint, showHint, createTutorialState, resetTutorial, persistTutorialState } from '../tutorial.js';
 import { getAllStandings, modifyReputation, getFactionStanding, claimReward } from '../faction-reputation-system.js';
 import { renderReputationPanel } from '../faction-reputation-system-ui.js';
 import { createGuild, addMember, removeMember, changeMemberRank, depositGold, withdrawGold, unlockPerk, disbandGuild, getGuildStats } from '../guild-system.js';
 import { renderGuildPanel, renderCreateGuildForm, renderGuildBrowser, renderGuildHud } from '../guild-system-ui.js';
 import { processMatchResult, createTournament, recordTournamentMatchResult, getTournamentRewards, resetSeason, generateOpponent, getNextPlayerMatch, simulateNPCMatches, TOURNAMENTS } from '../arena-tournament-system.js';
 import { dismissSporeling } from '../sporeling-integration.js';
+import { emit } from '../engine.js';
 
 function getRoomDescription(worldState) {
   const room = getCurrentRoom(worldState);
@@ -49,6 +50,42 @@ export function handleUIAction(state, action) {
 
   if (type === "CLOSE_HELP") {
     return { ...state, showHelp: false };
+  }
+
+  if (type === 'GO_BACK') {
+    const closeActions = {
+      inventory: 'CLOSE_INVENTORY',
+      quests: 'CLOSE_QUESTS',
+      journal: 'CLOSE_JOURNAL',
+      crafting: 'CLOSE_CRAFTING',
+      talents: 'CLOSE_TALENTS',
+      settings: 'CLOSE_SETTINGS',
+      stats: 'CLOSE_STATS',
+      achievements: 'CLOSE_ACHIEVEMENTS',
+      companions: 'CLOSE_COMPANIONS',
+      factions: 'CLOSE_FACTIONS',
+      sporeling: 'CLOSE_SPORELING',
+      dialog: 'DIALOG_CLOSE',
+      arena: 'CLOSE_ARENA',
+      bestiary: 'CLOSE_BESTIARY',
+      'tavern-dice': 'CLOSE_TAVERN',
+      tavern: 'CLOSE_TAVERN',
+      provisions: 'CLOSE_PROVISIONS',
+    };
+
+    if (state.phase === 'shop') {
+      const { shopState: _ss, ...rest } = state;
+      return { ...rest, phase: 'exploration' };
+    }
+
+    const closeType = closeActions[state.phase];
+    if (closeType) {
+      return handleUIAction(state, { type: closeType });
+    }
+
+    if (state.previousPhase && state.previousPhase !== state.phase) {
+      return { ...state, phase: state.previousPhase || 'exploration' };
+    }
   }
 
   // Journal
@@ -180,6 +217,33 @@ export function handleUIAction(state, action) {
           next2 = pushLog(next2, 'You have reached the level of mastery! Choose your specialization path.');
           return next2;
         }
+        if (state.inDungeonCombat && state.dungeonState?.inDungeon) {
+          const wasBossFight = state.dungeonBossFight;
+          let dungeonState = state.dungeonState;
+          if (wasBossFight) {
+            dungeonState = clearDungeonFloor(dungeonState);
+          }
+          const { inDungeonCombat, dungeonBossFight, ...rest } = state;
+
+          const isFinalBossCleared = wasBossFight
+            && dungeonState.currentFloor === TOTAL_FLOORS
+            && dungeonState.floorsCleared.includes(TOTAL_FLOORS);
+
+          let next2 = {
+            ...rest,
+            dungeonState,
+            phase: isFinalBossCleared ? 'game-complete' : 'dungeon',
+            player: { ...state.player, defending: false },
+            battleSummary: undefined,
+            levelUpState: undefined,
+            pendingLevelUps: undefined,
+          };
+          next2 = pushLog(next2, isFinalBossCleared
+            ? 'The Oblivion Lord is vanquished! Light returns to the realm!'
+            : 'You continue exploring the dungeon.');
+          return next2;
+        }
+
         const exits = getRoomExits(state.world);
         let next2 = {
           ...state,
@@ -506,7 +570,7 @@ export function handleUIAction(state, action) {
 
   if (type === 'CLOSE_TALENTS') {
     if (state.phase !== 'talents') return null;
-    const returnPhase = state.previousPhase || 'exploration';
+    const returnPhase = (state.previousPhase && state.previousPhase !== 'talents') ? state.previousPhase : 'exploration';
     return { ...state, phase: returnPhase };
   }
 
@@ -914,7 +978,8 @@ export function handleUIAction(state, action) {
   }
   if (type === 'CLOSE_BESTIARY') {
     if (state.phase !== 'bestiary') return null;
-    return { ...state, phase: state.previousPhase || 'exploration' };
+    const returnPhase = (state.previousPhase && state.previousPhase !== 'bestiary') ? state.previousPhase : 'exploration';
+    return { ...state, phase: returnPhase };
   }
   if (type === 'SORT_BESTIARY') {
     const sort = action.sort || BESTIARY_SORT_DEFAULT;
@@ -1041,24 +1106,29 @@ export function handleUIAction(state, action) {
   if (action.type === 'TUTORIAL_DISMISS') {
     if (!state.tutorialState || !state.tutorialState.currentHint) return null;
     const stepId = state.tutorialState.currentHint.id;
-    return {
+    const next = {
       ...state,
       tutorialState: completeTutorialStep(
         dismissCurrentHint(state.tutorialState),
         stepId
       ),
     };
+    emit('tutorial_dismiss', { state: next });
+    persistTutorialState(next.tutorialState);
+    return next;
   }
 
   if (action.type === 'TUTORIAL_DISABLE') {
     if (!state.tutorialState) return null;
-    return {
+    const next = {
       ...state,
       tutorialState: {
         ...dismissCurrentHint(state.tutorialState),
         hintsEnabled: false,
       },
     };
+    persistTutorialState(next.tutorialState);
+    return next;
   }
 
   if (action.type === 'VIEW_TUTORIAL_PROGRESS') {

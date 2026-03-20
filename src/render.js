@@ -57,6 +57,7 @@ import { renderArenaPanel, getArenaStyles, renderActiveTournament } from './aren
 import { renderGuildPanel, renderCreateGuildForm, renderGuildBrowser, renderGuildHud } from './guild-system-ui.js';
 import { renderEnemyIntent } from './enemy-intent-ui.js';
 import { getEnemyPictureWithFallback } from './data/enemy-pictures.js';
+import { getNpcEmojiWithFallback } from "./data/npc-emojis.js";
 import { renderAtmospherePanel } from './location-atmosphere.js';
 import { renderAreaScene, getAreaSceneStyles } from './area-scene-renderer.js';
 import { renderCombatHpSection, getCombatHpBarStyles } from './combat-hp-bars.js';
@@ -312,6 +313,8 @@ function renderExplorationButtons(state) {
       <div class="buttons">
         <button id="btnDailyChallenges">Daily 📅</button>
         <button id="btnStatsDashboard">📈 Statistics</button>
+        <button id="btnBestiary">Bestiary 📖</button>
+        <button id="btnAchievements">Achievements 🏆</button>
         <button id="btnJournal">Journal 📔${renderJournalBadge(state)}</button>
       </div>
     </div>
@@ -780,8 +783,8 @@ export function render(state, dispatch) {
     const exploreRoomId = RENDER_ROOM_ID_MAP[state.world?.roomRow]?.[state.world?.roomCol] ?? null;
     const exploreNpcs = exploreRoomId ? getNPCsInRoom(exploreRoomId) : [];
     const npcListHtml = exploreNpcs.length > 0
-      ? exploreNpcs.map(n => `<button class="npc-talk-btn" data-npcid="${esc(n.id)}">${esc(n.name)}</button>`).join('')
-      : '<em>No one is here.</em>';
+      ? exploreNpcs.map(n => `<button class="npc-talk-btn" data-npcid="${esc(n.id)}">${getNpcEmojiWithFallback(n.id)} ${esc(n.name)}</button>`).join("")
+      : "<em>No one is here.</em>";
     const currentXp = state.player.xp ?? 0;
     const nextLevelXp = xpForNextLevel(state.player.level ?? 1);
     const xpLine = nextLevelXp === 0 ? 'MAX LEVEL' : `${currentXp} / ${nextLevelXp} XP`;
@@ -854,6 +857,8 @@ export function render(state, dispatch) {
     document.getElementById('btnFastTravel').onclick = () => dispatch({ type: 'OPEN_FAST_TRAVEL' });
     document.getElementById('btnDailyChallenges').onclick = () => dispatch({ type: 'OPEN_DAILY_CHALLENGES' });
     document.getElementById('btnStatsDashboard').onclick = () => dispatch({ type: 'OPEN_STATISTICS_DASHBOARD' });
+    document.getElementById('btnBestiary').onclick = () => dispatch({ type: 'VIEW_BESTIARY' });
+    document.getElementById('btnAchievements').onclick = () => dispatch({ type: 'VIEW_ACHIEVEMENTS' });
 
     hud.querySelectorAll('.npc-talk-btn').forEach((btn) => {
       btn.onclick = () => dispatch({ type: 'TALK_TO_NPC', npcId: btn.dataset.npcid });
@@ -1796,6 +1801,8 @@ if (state.phase === 'achievements') {
   }
 
   if (state.phase === 'talents') {
+    const activeElement = document.activeElement;
+    const restoreFilterFocus = activeElement && activeElement.id === 'talentFilterInput';
     const talentRenderState = {
       ...state,
       player: { ...(state.player || {}), talents: state.talentState }
@@ -1805,6 +1812,13 @@ if (state.phase === 'achievements') {
     actions.innerHTML = '<div class="buttons"><button id="btnCloseTalents">Close Talents</button></div>';
     attachTalentHandlers(hud, dispatch);
     document.getElementById('btnCloseTalents').onclick = () => dispatch({ type: 'CLOSE_TALENTS' });
+    if (restoreFilterFocus) {
+      const filterInput = document.getElementById('talentFilterInput');
+      if (filterInput) {
+        filterInput.focus();
+        filterInput.setSelectionRange(filterInput.value.length, filterInput.value.length);
+      }
+    }
     log.innerHTML = state.log.slice().reverse().map(line => formatLogEntryHtml(line)).join('');
     finalizeRender();
     return;
@@ -2192,7 +2206,7 @@ if (state.phase === 'achievements') {
       hud.innerHTML = renderActiveTournament(activeTournamentData);
       actions.innerHTML = '<div class="buttons"><button id="btnCloseArena">Back to Arena</button></div>';
     } else {
-      hud.innerHTML = renderArenaPanel(state.arenaState, { showQuickMatch: true, showTournaments: true });
+      hud.innerHTML = renderArenaPanel(state, { showQuickMatch: true, showTournaments: true });
       actions.innerHTML = '<div class="buttons"><button id="btnArenaQuickMatch">Quick Match ⚔️</button><button id="btnArenaTournament">Tournaments 🏆</button><button id="btnCloseArena">Close</button></div>';
     }
 

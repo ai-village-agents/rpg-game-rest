@@ -10,7 +10,8 @@ export const AUTO_SAVE_TRIGGERS = [
   'combat_victory',
   'quest_complete',
   'item_acquired',
-  'level_up'
+  'level_up',
+  'tutorial_dismiss'
 ];
 
 let autoSaveEnabled = true;

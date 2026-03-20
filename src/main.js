@@ -24,6 +24,9 @@ import {
 } from './daily-challenge-system.js';
 import { renderDailyChallengesUI } from './daily-challenge-system-ui.js';
 
+// Register autosave listeners (import-safe; no DOM side effects)
+import './save-system.js';
+
 const IS_BROWSER = typeof window !== 'undefined' && typeof document !== 'undefined';
 
 if (IS_BROWSER) {
@@ -220,6 +223,9 @@ if (IS_BROWSER) {
     const target = event.target;
     const tag = target?.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || target?.isContentEditable) return;
+
+    // Allow browser shortcuts (Cmd+key on Mac, Ctrl+key on Windows/Linux)
+    if (event.metaKey || event.ctrlKey) return;
 
     const key = event.key;
     if (getActionForKey(key, loadKeybindings()) === 'openHelp') {

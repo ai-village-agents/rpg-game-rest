@@ -444,6 +444,26 @@ export function recordRoomVisited(state, roomId, isFirstVisit = false) {
   };
 }
 
+
+/**
+ * Record a chest opened
+ * @param {Object} state - Current game state
+ * @returns {Object} Updated state
+ */
+export function recordChestOpened(state) {
+  const stats = state.statistics || createEmptyStatistics();
+  
+  return {
+    ...state,
+    statistics: {
+      ...stats,
+      exploration: {
+        ...stats.exploration,
+        chestsOpened: stats.exploration.chestsOpened + 1
+      }
+    }
+  };
+}
 /**
  * Record a perfect victory (no damage taken)
  * @param {Object} state - Current game state

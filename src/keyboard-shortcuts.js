@@ -13,6 +13,8 @@ const COMBAT_KEYS = {
 };
 
 const EXPLORATION_KEYS = {
+  'a': { type: 'VIEW_ACHIEVEMENTS' },
+  'A': { type: 'VIEW_ACHIEVEMENTS' },
   'i': { type: 'VIEW_INVENTORY' },
   'I': { type: 'VIEW_INVENTORY' },
   'j': { type: 'OPEN_JOURNAL' },
@@ -80,6 +82,9 @@ export class KeyboardShortcuts {
     const target = event.target;
     const tag = target?.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || target?.isContentEditable) return;
+
+    // Allow browser shortcuts (Cmd+key on Mac, Ctrl+key on Windows/Linux)
+    if (event.metaKey || event.ctrlKey) return;
 
     const key = event.key;
 
@@ -194,6 +199,7 @@ export class KeyboardShortcuts {
             <h3>Exploration</h3>
             <table>
               <tr><td class="ks-key">W/A/S/D</td><td>Move (or Arrow Keys)</td></tr>
+              <tr><td class="ks-key">A</td><td>Achievements</td></tr>
               <tr><td class="ks-key">I</td><td>Inventory</td></tr>
               <tr><td class="ks-key">Q</td><td>Quests</td></tr>
               <tr><td class="ks-key">J</td><td>Journal</td></tr>

@@ -74,6 +74,7 @@ export function initialState() {
       defending: false,
     },
     log: [
+      'Welcome to Eldoria, a land where ancient evils stir and heroes rise. Forge your legend.',
       `A wild ${enemyBase.name} appears.`,
       `Your turn.`,
     ],
@@ -146,6 +147,7 @@ export function initialStateWithClass(classId, characterName = '', difficulty = 
       defending: false,
     },
     log: [
+      "Welcome to Eldoria, a land where ancient evils stir and heroes rise. Forge your legend.",
       `A wild ${enemyBase.name} appears.`,
       `Your turn.`,
     ],
