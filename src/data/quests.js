@@ -166,6 +166,55 @@ export const QUESTS = {
     prerequisites: []
   },
 
+  // Side Quest - Message Delivery
+  side_message_for_the_marsh: {
+    id: 'side_message_for_the_marsh',
+    name: 'Message for the Marsh',
+    description: 'Elara needs you to deliver an urgent message to Roric in the Southwest Marsh.',
+    type: 'SIDE',
+    level: 1,
+    stages: [
+      {
+        id: 'receive_message',
+        name: 'Receive the Message',
+        description: 'Speak with Elara in the Village Square to receive the message.',
+        objectives: [
+          {
+            id: 'talk_elara',
+            type: 'TALK',
+            description: 'Talk to Elara in the Village Square',
+            npcId: 'elara',
+            locationId: 'center',
+            required: true
+          }
+        ],
+        nextStage: 'deliver_message'
+      },
+      {
+        id: 'deliver_message',
+        name: 'Deliver the Message',
+        description: 'Find Roric in the Southwest Marsh and deliver the message.',
+        objectives: [
+          {
+            id: 'talk_roric',
+            type: 'TALK',
+            description: 'Talk to Roric in the Southwest Marsh',
+            npcId: 'roric',
+            locationId: 'sw',
+            required: true
+          }
+        ],
+        nextStage: null
+      }
+    ],
+    rewards: {
+      gold: 20,
+      experience: 50,
+      items: []
+    },
+    prerequisites: []
+  },
+
   // Side Quest - Combat Focused
   side_cave_clearing: {
     id: 'side_cave_clearing',

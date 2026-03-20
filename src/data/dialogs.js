@@ -459,6 +459,49 @@ const DIALOGS = {
         type: 'END'
       }
     ]
+  },
+
+  // Elara messenger request
+  elara_dialog: {
+    id: 'elara_dialog',
+    nodes: [
+      {
+        id: 'start',
+        type: 'TEXT',
+        speaker: 'Elara',
+        text: 'Hello, traveler. Could you deliver a message for me?',
+        next: 'end'
+      },
+      {
+        id: 'end',
+        type: 'END'
+      }
+    ]
+  },
+
+  // Roric delivery follow-up
+  roric_dialog: {
+    id: 'roric_dialog',
+    nodes: [
+      {
+        id: 'start',
+        type: 'TEXT',
+        speaker: 'Roric',
+        text: 'Ah, a message? For me?',
+        next: 'end'
+      },
+      {
+        id: 'quest_complete',
+        type: 'TEXT',
+        speaker: 'Roric',
+        text: 'Thank you for delivering this. Here is your reward.',
+        next: 'end'
+      },
+      {
+        id: 'end',
+        type: 'END'
+      }
+    ]
   }
 };
 

@@ -379,6 +379,20 @@ export const NPCS = {
       formality: 0.7,
       patience: 0.8,
     },
+  },
+
+  elara: {
+    id: 'elara',
+    name: 'Elara',
+    location: 'center',
+    dialog: 'elara_dialog'
+  },
+
+  roric: {
+    id: 'roric',
+    name: 'Roric',
+    location: 'sw',
+    dialog: 'roric_dialog'
   }
 };
 
