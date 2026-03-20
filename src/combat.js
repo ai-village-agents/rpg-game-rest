@@ -514,6 +514,7 @@ export function playerUseAbility(state, abilityId) {
   const { seed, value: rngValue } = nextRng(state.rngSeed);
   state = { ...state, rngSeed: seed };
 
+  let damageDealtToEnemy = 0;
   // Handle by target type
   if (ability.targetType === 'single-enemy' || ability.targetType === 'all-enemies') {
     // Damage ability targeting enemy
@@ -541,6 +542,7 @@ export function playerUseAbility(state, abilityId) {
         ...state,
         enemy: { ...state.enemy, hp: enemyHp },
       };
+      damageDealtToEnemy = damage;
       let msg = `${(state.enemy.displayName ?? state.enemy.name)} takes ${damage} ${abilityElement} damage!`;
       if (critical) msg += ' Critical hit!';
       state = pushLog(state, msg);
@@ -585,6 +587,39 @@ export function playerUseAbility(state, abilityId) {
       };
       state = pushLog(state, `Negative effects purified!`);
     }
+  }
+
+  const isEnemyTarget = ability.targetType === 'single-enemy' || ability.targetType === 'all-enemies';
+  if (isEnemyTarget && state.enemy) {
+    if (ability.special === 'execute') {
+      if (state.enemy.hp < Math.floor(state.enemy.maxHp * 0.25)) {
+        const bonusDamage = Math.floor(state.enemy.hp * 0.20);
+        const enemyHp = clamp(state.enemy.hp - bonusDamage, 0, state.enemy.maxHp);
+        state = {
+          ...state,
+          enemy: { ...state.enemy, hp: enemyHp },
+        };
+        state = pushLog(state, 'Execute!  bonus damage to a weakened foe!');
+      }
+    }
+
+    if (ability.special === 'guaranteed-crit') {
+      state = pushLog(state, 'Shadow Step guarantees a critical hit!');
+      if (damageDealtToEnemy > 0) {
+        const bonusDamage = Math.floor(damageDealtToEnemy * 0.5);
+        const enemyHp = clamp(state.enemy.hp - bonusDamage, 0, state.enemy.maxHp);
+        state = {
+          ...state,
+          enemy: { ...state.enemy, hp: enemyHp },
+        };
+        state = pushLog(state, 'Critical strike!  bonus damage!');
+      }
+    }
+  }
+
+  if (ability.special === 'self-debuff' && ability.statusEffect) {
+    state = addStatusEffect(state, 'player', ability.statusEffect);
+    state = pushLog(state, 'Your defenses weaken!');
   }
 
   if (state.momentumState) {
