@@ -25,6 +25,7 @@ export function createBattleSummary(state) {
     lootedItems,
     levelUps,
     autoEquipped,
+    statistics: state.statistics,
   };
 
   summary.combatStats = state.combatStats ?? null;
