@@ -24,6 +24,9 @@ import {
 } from './daily-challenge-system.js';
 import { renderDailyChallengesUI } from './daily-challenge-system-ui.js';
 
+// Register autosave listeners (import-safe; no DOM side effects)
+import './save-system.js';
+
 const IS_BROWSER = typeof window !== 'undefined' && typeof document !== 'undefined';
 
 if (IS_BROWSER) {
