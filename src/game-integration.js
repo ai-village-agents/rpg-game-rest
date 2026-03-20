@@ -262,6 +262,73 @@ export function handleCombatAction(gameState, action) {
   return { ...updated, messages };
 }
 
+/**
+ * Migrate legacy inventory item IDs when loading a save.
+ * Ensures that hi-potion entries use the modern hiPotion identifier.
+ * @param {object} state
+ * @returns {object}
+ */
+function migrateLoadedState(state) {
+  if (!state || typeof state !== 'object') return state;
+
+  let nextState = state;
+
+  if (state.player && typeof state.player === 'object') {
+    const { updated, changed } = migrateInventoryIds(state.player.inventory);
+    if (changed) {
+      const nextPlayer = { ...state.player, inventory: updated };
+      nextState = { ...nextState, player: nextPlayer };
+    }
+  }
+
+  const { updated: topInventory, changed: topChanged } = migrateInventoryIds(nextState.inventory);
+  if (topChanged) {
+    nextState = { ...nextState, inventory: topInventory };
+  }
+
+  return nextState;
+}
+
+function migrateInventoryIds(inventory) {
+  if (!inventory) {
+    return { updated: inventory, changed: false };
+  }
+
+  if (Array.isArray(inventory)) {
+    let changed = false;
+    const migrated = inventory.map((entry) => {
+      if (entry && typeof entry === 'object' && entry.id === 'hi-potion') {
+        changed = true;
+        return { ...entry, id: 'hiPotion' };
+      }
+      return entry;
+    });
+    return changed ? { updated: migrated, changed: true } : { updated: inventory, changed: false };
+  }
+
+  if (typeof inventory === 'object') {
+    if (!Object.prototype.hasOwnProperty.call(inventory, 'hi-potion')) {
+      return { updated: inventory, changed: false };
+    }
+
+    const migrated = { ...inventory };
+    const quantity = migrated['hi-potion'];
+    delete migrated['hi-potion'];
+    if (quantity !== undefined) {
+      const existing = migrated.hiPotion;
+      if (typeof existing === 'number' && typeof quantity === 'number') {
+        migrated.hiPotion = existing + quantity;
+      } else {
+        migrated.hiPotion = quantity;
+      }
+    }
+
+    return { updated: migrated, changed: true };
+  }
+
+  return { updated: inventory, changed: false };
+}
+
 /** Save the current game state to a slot. @param {object} gameState @param {number} slot @returns {boolean} */
 export function handleSave(gameState, slot) {
   const slots = getSaveSlots();
@@ -273,7 +340,8 @@ export function handleSave(gameState, slot) {
 export function handleLoad(slot) {
   const loaded = loadFromSlot(slot);
   if (!loaded) return null;
-  setGameState(loaded.gamePhase ?? GameState.MENU);
-  emit('game:loaded-state', { state: loaded });
-  return loaded;
+  const migrated = migrateLoadedState(loaded);
+  setGameState(migrated.gamePhase ?? GameState.MENU);
+  emit('game:loaded-state', { state: migrated });
+  return migrated;
 }

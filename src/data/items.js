@@ -207,17 +207,6 @@ export const items = {
     stats: {},
     value: 180,
   },
-  'hi-potion': {
-    id: 'hi-potion',
-    name: 'Hi-Potion',
-    type: 'consumable',
-    category: 'consumable',
-    rarity: 'Uncommon',
-    description: 'A potent restorative draught carried by formidable foes.',
-    effect: { heal: 50 },
-    stats: {},
-    value: 60,
-  },
   'dragon-scale': {
     id: 'dragon-scale',
     name: 'Dragon Scale',

@@ -42,7 +42,7 @@ export const BOSSES = {
     ],
     xpReward: 150,
     goldReward: 100,
-    drops: [{ itemId: 'guardian-bark', chance: 1.0 }, { itemId: 'hi-potion', chance: 0.5 }]
+    drops: [{ itemId: 'guardian-bark', chance: 1.0 }, { itemId: 'hiPotion', chance: 0.5 }]
   },
   
   'fire-drake': {
