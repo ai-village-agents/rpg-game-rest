@@ -123,6 +123,8 @@ if (IS_BROWSER) {
   window.addEventListener('click', startAudio, { once: true });
   window.addEventListener('keydown', startAudio, { once: true });
 
+  let enemyTurnPending = false;
+
   function setState(next, action = null) {
     // Apply automatic state transitions (Level Up, Battle Summary)
     // We pass (state, next) because some transitions depend on phase changes
@@ -135,8 +137,10 @@ if (IS_BROWSER) {
     renderDailyChallengesUI(state, dispatch);
 
     // If it became enemy turn, resolve after a short pause.
-    if (state.phase === 'enemy-turn') {
+    if (state.phase === 'enemy-turn' && !enemyTurnPending) {
+      enemyTurnPending = true;
       window.setTimeout(() => {
+        enemyTurnPending = false;
         try {
           // Execute enemy turn logic
           const afterEnemyTurn = handleEnemyTurnLogic(state);
@@ -146,6 +150,7 @@ if (IS_BROWSER) {
           setState(afterEnemyTurn);
         } catch (e) {
           console.error('Enemy turn error - recovering:', e);
+          enemyTurnPending = false;
           if (state.phase === 'enemy-turn') {
             setState({ ...state, phase: 'player-turn' });
           }

@@ -63,7 +63,7 @@ export function initialState() {
       atk: playerBase.atk,
       def: playerBase.def,
       defending: false,
-      inventory: { potion: 2 },
+      inventory: { potion: 2, travelerBread: 2, ironRation: 1 },
     },
     enemy: {
       name: enemyBase.name,
@@ -138,7 +138,7 @@ export function initialStateWithClass(classId, characterName = '', difficulty = 
       xp: 0,
       defending: false,
       avatar: DEFAULT_AVATAR,
-      inventory: { potion: 3 },
+      inventory: { potion: 3, travelerBread: 2, ironRation: 1 },
     },
     enemy: {
       ...enemyBase,
