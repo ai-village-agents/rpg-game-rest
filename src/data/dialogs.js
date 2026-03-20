@@ -470,6 +470,45 @@ const DIALOGS = {
         type: 'TEXT',
         speaker: 'Elara',
         text: 'Hello, traveler. Could you deliver a message for me?',
+        next: 'choice'
+      },
+      {
+        id: 'choice',
+        type: 'CHOICE',
+        speaker: 'Elara',
+        text: 'Will you help me deliver it?',
+        choices: [
+          { text: 'Yes, I can help.', next: 'accept' },
+          { text: 'Sorry, I\'m busy.', next: 'decline' }
+        ]
+      },
+      {
+        id: 'accept',
+        type: 'ACTION',
+        actions: [
+          { type: 'START_QUEST', questId: 'side_message_for_the_marsh' }
+        ],
+        next: 'accepted_text'
+      },
+      {
+        id: 'accepted_text',
+        type: 'TEXT',
+        speaker: 'Elara',
+        text: 'Thank you! Please find Roric in the Southwest Marsh and give him this message.',
+        next: 'end'
+      },
+      {
+        id: 'decline',
+        type: 'TEXT',
+        speaker: 'Player',
+        text: 'Sorry, I\'m busy.',
+        next: 'declined_text'
+      },
+      {
+        id: 'declined_text',
+        type: 'TEXT',
+        speaker: 'Elara',
+        text: 'I understand. Let me know if you change your mind.',
         next: 'end'
       },
       {
@@ -485,16 +524,48 @@ const DIALOGS = {
     nodes: [
       {
         id: 'start',
+        type: 'CONDITIONAL',
+        conditions: [
+          { type: 'QUEST_ACTIVE', questId: 'side_message_for_the_marsh', then: 'quest_active' }
+        ],
+        default: 'not_active'
+      },
+      {
+        id: 'quest_active',
         type: 'TEXT',
         speaker: 'Roric',
         text: 'Ah, a message? For me?',
-        next: 'end'
+        next: 'choice'
       },
       {
-        id: 'quest_complete',
+        id: 'choice',
+        type: 'CHOICE',
+        speaker: 'Roric',
+        text: 'Do you have something for me?',
+        choices: [
+          { text: '[Yes, from Elara]', next: 'complete' }
+        ]
+      },
+      {
+        id: 'complete',
+        type: 'ACTION',
+        actions: [
+          { type: 'COMPLETE_QUEST', questId: 'side_message_for_the_marsh' }
+        ],
+        next: 'quest_complete_text'
+      },
+      {
+        id: 'quest_complete_text',
         type: 'TEXT',
         speaker: 'Roric',
         text: 'Thank you for delivering this. Here is your reward.',
+        next: 'end'
+      },
+      {
+        id: 'not_active',
+        type: 'TEXT',
+        speaker: 'Roric',
+        text: 'Enjoying the marsh? Be careful, it can be dangerous.',
         next: 'end'
       },
       {
