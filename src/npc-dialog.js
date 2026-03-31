@@ -183,6 +183,18 @@ const RELATIONSHIP_GREETINGS = {
     [RelationshipLevel.ALLIED]:
       "Mira grins. \"My hero! The Wayfarer's Rest is yours whenever you need it.\"",
   },
+  elara: {
+    [RelationshipLevel.HOSTILE]:
+      'Elara tightens her grip on the satchel. "I will not trust you with any message."',
+    [RelationshipLevel.UNFRIENDLY]:
+      'Elara frowns. "I cannot rely on you. Leave me be."',
+    [RelationshipLevel.NEUTRAL]:
+      'Hello, traveler. I have an urgent message that needs delivering to the Southwest Marsh.',
+    [RelationshipLevel.FRIENDLY]:
+      'Elara offers a grateful nod. "You deliver when it matters. Can I ask another favor?"',
+    [RelationshipLevel.ALLIED]:
+      'Elara smiles in relief. "With you by my side, every message will reach its destination."',
+  },
   scout_patrol: {
     [RelationshipLevel.HOSTILE]:
       'The scouts raise their spears. "Enemy sighted! You are not welcome here."',
@@ -266,6 +278,18 @@ const RELATIONSHIP_GREETINGS = {
       'Helga chuckles. "Ah, my favorite customer. Care for a special tonic?"',
     [RelationshipLevel.ALLIED]:
       'Helga grins. "For you, dearie, I\'ll brew the rarest of remedies."',
+  },
+  roric: {
+    [RelationshipLevel.HOSTILE]:
+      'Roric narrows his eyes. "Your presence threatens the marsh. Leave now."',
+    [RelationshipLevel.UNFRIENDLY]:
+      'Roric stays guarded. "State your business quickly."',
+    [RelationshipLevel.NEUTRAL]:
+      "A visitor to the marsh? It's dangerous out here. What brings you?",
+    [RelationshipLevel.FRIENDLY]:
+      'Roric softens. "You respect the marsh. Stay close and you\'ll be safe."',
+    [RelationshipLevel.ALLIED]:
+      'Roric clasps your arm. "With you here, the marsh has true guardians."',
   },
   void_merchant: {
     [RelationshipLevel.HOSTILE]:
