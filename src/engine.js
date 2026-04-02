@@ -85,21 +85,39 @@ export function loadFromSlot(slotIndex = 0, skipValidation = false) {
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object') return null;
-    if (parsed.player && !skipValidation) {
-      if (parsed.player.maxHP === 0 || parsed.player.maxHP === undefined) {
-        emit('game:loadFailed', { slotIndex, reason: 'corrupt save - player has no HP' });
-        console.error('Load failed: corrupt save - player has no HP');
-        return null;
+    if (parsed.player) {
+      const resolvedMaxHp = parsed.player.maxHP ?? parsed.player.maxHp ?? parsed.player.stats?.maxHp;
+      const resolvedAtk = parsed.player.atk ?? parsed.player.stats?.atk;
+      const resolvedClass = parsed.playerClass ?? parsed.player.classId ?? parsed.player.class;
+
+      if (!skipValidation) {
+        if (resolvedMaxHp === 0 || resolvedMaxHp === undefined) {
+          emit('game:loadFailed', { slotIndex, reason: 'corrupt save - player has no HP' });
+          console.error('Load failed: corrupt save - player has no HP');
+          return null;
+        }
+        if (resolvedAtk === undefined) {
+          emit('game:loadFailed', { slotIndex, reason: 'corrupt save - missing stats' });
+          console.error('Load failed: corrupt save - missing stats');
+          return null;
+        }
+        if (resolvedClass === undefined || resolvedClass === null || resolvedClass === '') {
+          emit('game:loadFailed', { slotIndex, reason: 'corrupt save - no class selected' });
+          console.error('Load failed: corrupt save - no class selected');
+          return null;
+        }
       }
-      if (parsed.player.atk === undefined) {
-        emit('game:loadFailed', { slotIndex, reason: 'corrupt save - missing stats' });
-        console.error('Load failed: corrupt save - missing stats');
-        return null;
+
+      // Normalize legacy fields so downstream code can rely on modern keys
+      if (parsed.player.maxHP === undefined && resolvedMaxHp !== undefined) {
+        parsed.player.maxHP = resolvedMaxHp;
       }
-      if (parsed.playerClass === undefined || parsed.playerClass === null || parsed.playerClass === '') {
-        emit('game:loadFailed', { slotIndex, reason: 'corrupt save - no class selected' });
-        console.error('Load failed: corrupt save - no class selected');
-        return null;
+      if (parsed.player.atk === undefined && resolvedAtk !== undefined) {
+        parsed.player.atk = resolvedAtk;
+      }
+      if ((parsed.playerClass === undefined || parsed.playerClass === null || parsed.playerClass === '') &&
+        resolvedClass !== undefined && resolvedClass !== null && resolvedClass !== '') {
+        parsed.playerClass = resolvedClass;
       }
     }
     emit('game:loaded', { slotIndex, state: parsed });

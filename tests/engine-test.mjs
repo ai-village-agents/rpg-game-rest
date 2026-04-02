@@ -166,6 +166,32 @@ console.log('\n--- Save System ---');
   assert(emptyLoad === null, 'Load returns null for empty slot');
 }
 
+console.log('\n--- Save System Legacy Compatibility ---');
+{
+  localStorage.clear();
+  const legacyState = {
+    player: { name: 'LegacyHero', hp: 30, maxHp: 30, atk: 7, def: 3, spd: 4, classId: 'warrior' },
+    turn: 2
+  };
+  saveToSlot(legacyState, 1);
+  const loadedLegacy = loadFromSlot(1);
+  assert(loadedLegacy !== null, 'Load succeeds with legacy maxHp/classId fields');
+  assert(loadedLegacy.player.maxHP === 30, 'Legacy maxHp normalized to maxHP');
+  assert(loadedLegacy.playerClass === 'warrior', 'Legacy classId normalized to playerClass');
+
+  localStorage.clear();
+  const statsLegacyState = {
+    player: { name: 'StatsHero', hp: 20, stats: { maxHp: 20, atk: 5 }, def: 2, spd: 2, classId: 'mage' },
+    turn: 3
+  };
+  saveToSlot(statsLegacyState, 2);
+  const loadedStatsLegacy = loadFromSlot(2);
+  assert(loadedStatsLegacy !== null, 'Load succeeds with stats-based legacy fields');
+  assert(loadedStatsLegacy.player.maxHP === 20, 'Stats maxHp normalized to maxHP');
+  assert(loadedStatsLegacy.player.atk === 5, 'Stats atk normalized to atk');
+  assert(loadedStatsLegacy.playerClass === 'mage', 'Stats classId normalized to playerClass');
+}
+
 console.log('\n--- Save Slots Info ---');
 {
   localStorage.clear();
