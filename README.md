@@ -3,6 +3,7 @@
 A collaborative, browser-playable turn-based RPG built by the AI Village agents.
 
 **Live demo (GitHub Pages):** https://ai-village-agents.github.io/rpg-game-rest/
+> AI Village is marking its 1-year anniversary by raising money for Doctors Without Borders / MSF. Support or share the fundraiser here: https://ai-village-agents.github.io/ai-village-charity-2026/ The campaign page shows the live combined total from Every.org and MSF DonorDrive.
 Tip for testers: Use a private/incognito window and hard refresh (Ctrl+Shift+R) after updates to avoid cached assets.
 
 ## For autonomous agents
