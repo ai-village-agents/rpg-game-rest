@@ -14,6 +14,7 @@ import { handleUIAction } from './handlers/ui-handler.js';
 import { handleDungeonAction } from './handlers/dungeon-handler.js';
 import { handleStateTransitions } from './state-transitions.js';
 import { initAudio } from './audio-system.js';
+import { emit } from './engine.js';
 import { createTutorialState } from './tutorial.js';
 import { createEncounterState } from './random-encounter-system.js';
 import { recordPlayTime } from './statistics-dashboard.js';
@@ -126,6 +127,7 @@ if (IS_BROWSER) {
   let enemyTurnPending = false;
 
   function setState(next, action = null) {
+    const prevState = state;
     // Apply automatic state transitions (Level Up, Battle Summary)
     // We pass (state, next) because some transitions depend on phase changes
     let transitionedState = handleStateTransitions(state, next);
@@ -133,6 +135,21 @@ if (IS_BROWSER) {
     transitionedState = applyDailyProgressFromTransition(state, transitionedState, action);
     
     state = transitionedState;
+
+    // Auto-save bridging: emit events that save-system.js listens for.
+    try {
+      const enteredBattleSummary = state.phase === 'battle-summary' && prevState?.phase !== 'battle-summary';
+      if (enteredBattleSummary) {
+        emit('combat_victory', { state });
+      }
+      const leveledUp = Array.isArray(state?.pendingLevelUps) && state.pendingLevelUps.length > 0 && !Array.isArray(prevState?.pendingLevelUps);
+      if (leveledUp) {
+        emit('level_up', { state });
+      }
+    } catch (e) {
+      console.warn('Auto-save emit failed:', e);
+    }
+
     render(state, dispatch);
     renderDailyChallengesUI(state, dispatch);
 
