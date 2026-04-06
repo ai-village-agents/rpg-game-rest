@@ -15,6 +15,31 @@ import { calcLevel, applyLevelUp, STAT_GROWTH, XP_THRESHOLDS } from './character
 export const DISPLAY_STATS = ['maxHp', 'maxMp', 'atk', 'def', 'spd', 'int', 'lck'];
 
 /**
+ * Derive a normalized stats object from a member, preferring nested stats when present.
+ * @param {object} member
+ * @returns {{hp:number,maxHp:number,mp:number,maxMp:number,atk:number,def:number,spd:number,int:number,lck:number}}
+ */
+function inferStatsFromMember(member = {}) {
+  const nested = member && typeof member.stats === 'object' ? member.stats : null;
+  const hp = nested?.hp ?? member.hp ?? 0;
+  const maxHp = nested?.maxHp ?? member.maxHp ?? member.maxHP ?? hp;
+  const mp = nested?.mp ?? member.mp ?? 0;
+  const maxMp = nested?.maxMp ?? member.maxMp ?? member.maxMP ?? mp;
+
+  return {
+    hp,
+    maxHp,
+    mp,
+    maxMp,
+    atk: nested?.atk ?? member.atk ?? 0,
+    def: nested?.def ?? member.def ?? 0,
+    spd: nested?.spd ?? member.spd ?? 0,
+    int: nested?.int ?? member.int ?? 0,
+    lck: nested?.lck ?? member.lck ?? 0,
+  };
+}
+
+/**
  * Check which party members would level up from gaining XP.
  * Does NOT mutate — returns descriptive objects for each member that leveled.
  *
@@ -31,6 +56,7 @@ export function checkLevelUps(members, xpPerMember) {
     const member = members[i];
     if (!member || !member.classId) continue;
 
+    const resolvedStats = inferStatsFromMember(member);
     const oldLevel = member.level ?? 1;
     const oldXp = member.xp ?? 0;
     const newXp = oldXp + Math.max(0, Math.floor(xpPerMember));
@@ -38,8 +64,8 @@ export function checkLevelUps(members, xpPerMember) {
 
     if (newLevel > oldLevel) {
       // Simulate stat growth to get before/after
-      const oldStats = { ...member.stats };
-      let simChar = { ...member, xp: newXp };
+      const oldStats = { ...resolvedStats };
+      let simChar = { ...member, xp: newXp, stats: resolvedStats };
       for (let lvl = oldLevel; lvl < newLevel; lvl += 1) {
         simChar = applyLevelUp(simChar);
       }

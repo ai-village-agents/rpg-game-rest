@@ -57,6 +57,37 @@ test('handleStateTransitions - level up during victory transition', () => {
   assert.ok(result.log.some(log => log.includes('reached level 2!')));
 });
 
+test('handleStateTransitions - level up with flat stats fallback', () => {
+  const prevState = { phase: 'combat', log: [] };
+  const nextState = { 
+    phase: 'victory', 
+    log: [],
+    xpGained: 120,
+    player: { 
+      name: 'FallbackHero',
+      xp: 120, 
+      hp: 50, 
+      maxHp: 50, 
+      mp: 10, 
+      maxMp: 10, 
+      atk: 8, 
+      def: 6, 
+      spd: 5, 
+      int: 2, 
+      lck: 1, 
+      level: 1, 
+      classId: 'warrior'
+    } 
+  };
+
+  let result;
+  assert.doesNotThrow(() => {
+    result = handleStateTransitions(prevState, nextState);
+  });
+  assert.strictEqual(result.player.level, 2);
+  assert.ok(result.player.maxHp > nextState.player.maxHp);
+});
+
 test('handleStateTransitions - multiple level ups during victory transition', () => {
     const prevState = { phase: 'combat', log: [] };
     const nextState = { 
