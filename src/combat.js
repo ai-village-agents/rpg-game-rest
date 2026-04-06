@@ -1,6 +1,7 @@
 import { recordShieldBroken, recordWeaknessHit, recordDefeatedWhileBroken } from './game-stats.js';
 import { clamp, pushLog } from './state.js';
 import { items } from './data/items.js';
+import { canonicalizeInventory, canonicalizeItemId } from './item-id.js';
 import { removeItemFromInventory, hasItem } from './items.js';
 import { getEnemy, getEncounter } from './data/enemies.js';
 import { getAbility, getAbilityDisplayInfo } from './combat/abilities.js';
@@ -670,7 +671,9 @@ export function playerUseItem(state, itemId) {
     return { ...state, phase: 'enemy-turn' };
   }
 
-  const item = items[itemId];
+  const canonicalItemId = canonicalizeItemId(itemId);
+  const inventory = canonicalizeInventory(state.player.inventory || {});
+  const item = items[canonicalItemId];
   if (!item) {
     return pushLog(state, 'Unknown item.');
   }
@@ -680,13 +683,12 @@ export function playerUseItem(state, itemId) {
   }
 
   // Check if player has the item in inventory
-  const inventory = state.player.inventory || {};
-  if (!hasItem(inventory, itemId)) {
+  if (!hasItem(inventory, canonicalItemId)) {
     return pushLog(state, `You don't have any ${item.name}.`);
   }
 
   // Remove item from inventory
-  const newInventory = removeItemFromInventory(inventory, itemId, 1);
+  const newInventory = removeItemFromInventory(inventory, canonicalItemId, 1);
   state = {
     ...state,
     player: { ...state.player, inventory: newInventory, defending: false },
