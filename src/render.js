@@ -1355,7 +1355,8 @@ export function render(state, dispatch) {
 if (state.phase === 'achievements') {
     hud.innerHTML = renderAchievementsPanel(state);
     attachAchievementsHandlers(hud, dispatch);
-    actions.innerHTML = '';
+    actions.innerHTML = '<div class="buttons"><button id="btnCloseAchievements">Close</button></div>';
+    document.getElementById('btnCloseAchievements').onclick = () => dispatch({ type: 'CLOSE_ACHIEVEMENTS' });
     log.innerHTML = state.log.slice().reverse().map(line => formatLogEntryHtml(line)).join('');
     finalizeRender();
     return;
