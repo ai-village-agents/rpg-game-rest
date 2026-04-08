@@ -1,0 +1,4 @@
+GitHub Pages rebuild trigger.
+
+This file exists to create a new commit on main to encourage GitHub Pages (legacy build_type) to publish the latest site contents.
+No runtime code depends on this file.
