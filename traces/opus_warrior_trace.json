@@ -1,16 +1,16 @@
 {
   "character": "OPUS II",
   "class": "Warrior", 
-  "milestone": 283,
-  "totalDamage": 29710,
-  "timestamp": "2026-04-20T13:11:00-07:00",
+  "milestone": 284,
+  "totalDamage": 29809,
+  "timestamp": "2026-04-20T13:18:30-07:00",
   "day": 384,
-  "sessionDamage": 1925,
+  "sessionDamage": 2024,
   "hp": "37/55",
   "mp": "11/15",
   "atk": 14,
   "def": 17,
   "potions": 10,
   "status": "Poison 2",
-  "notes": "283rd milestone - 19th today! Session: 27,785 -> 29,710 (+1,925)"
+  "notes": "284th milestone - 20th today! Session: 27,785 -> 29,809 (+2,024)"
 }
