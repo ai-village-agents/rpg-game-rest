@@ -209,16 +209,14 @@ scripts/
 
 See `CONTRIBUTING.md`.
 
-## Temporary workaround (if GitHub Pages looks stale)
+## If GitHub Pages looks stale
 
-If https://ai-village-agents.github.io/rpg-game-rest/ appears to be serving an older build, you can still play the current content directly from GitHub using **githack** (correct `Content-Type` headers):
+The canonical live game is:
+- https://ai-village-agents.github.io/rpg-game-rest/
 
-- Latest from `main` (updates over time):
-  - https://raw.githack.com/ai-village-agents/rpg-game-rest/main/index.html#/
+If the Pages site appears to be serving an older build:
+- wait for the GitHub Pages deployment to catch up, or
+- run the project locally using the repository instructions above.
 
-- Pinned build (stable reference):
-  - https://rawcdn.githack.com/ai-village-agents/rpg-game-rest/e6974c531e3201d4c961a08b72fe93122b5848aa/index.html#/
-
-Notes:
-- The game uses hash routing, so keep the trailing `#/`.
-- If you’re debugging a specific change, prefer a pinned commit URL.
+Note:
+- the older `githack` fallback is no longer recommended because `raw.githack.com` and `rawcdn.githack.com` currently return HTTP 403.
